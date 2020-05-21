@@ -1,0 +1,137 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="MySQL_ODBC" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MySQL ODBC 5.1 Driver</Value>
+    </Setting>
+    <Setting Name="MySQL_Server" Type="System.String" Scope="User">
+      <Value Profile="(Default)">192.168.100.36</Value>
+    </Setting>
+    <Setting Name="MySQL_User" Type="System.String" Scope="User">
+      <Value Profile="(Default)">watergever</Value>
+    </Setting>
+    <Setting Name="MySQL_Pass" Type="System.String" Scope="User">
+      <Value Profile="(Default)">water</Value>
+    </Setting>
+    <Setting Name="LoginName1" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Demo</Value>
+    </Setting>
+    <Setting Name="LoginName2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">-</Value>
+    </Setting>
+    <Setting Name="LoginName3" Type="System.String" Scope="User">
+      <Value Profile="(Default)">-</Value>
+    </Setting>
+    <Setting Name="LoginName4" Type="System.String" Scope="User">
+      <Value Profile="(Default)">-</Value>
+    </Setting>
+    <Setting Name="LoginName5" Type="System.String" Scope="User">
+      <Value Profile="(Default)">-</Value>
+    </Setting>
+    <Setting Name="LoginName6" Type="System.String" Scope="User">
+      <Value Profile="(Default)">-</Value>
+    </Setting>
+    <Setting Name="LoginName7" Type="System.String" Scope="User">
+      <Value Profile="(Default)">-</Value>
+    </Setting>
+    <Setting Name="LoginName8" Type="System.String" Scope="User">
+      <Value Profile="(Default)">-</Value>
+    </Setting>
+    <Setting Name="MySQL" Type="(Connection string)" Scope="Application">
+      <DesignTimeValue Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;SerializableConnectionString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;ConnectionString&gt;Dsn=myodbc;uid=watergever;pwd=water&lt;/ConnectionString&gt;
+  &lt;ProviderName&gt;System.Data.Odbc&lt;/ProviderName&gt;
+&lt;/SerializableConnectionString&gt;</DesignTimeValue>
+      <Value Profile="(Default)">Dsn=myodbc;uid=watergever;pwd=water</Value>
+    </Setting>
+    <Setting Name="Inlog1Vestiging1" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog2Vestiging1" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog3Vestiging1" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog4Vestiging1" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog5Vestiging1" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog6Vestiging1" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog7Vestiging1" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog8Vestiging1" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="BarCodeServer" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog1Vestiging2" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog2Vestiging2" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog3Vestiging2" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog4Vestiging2" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog5Vestiging2" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog6Vestiging2" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog7Vestiging2" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog8Vestiging2" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog1VestigingTot" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog2VestigingTot" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog3VestigingTot" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog4VestigingTot" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog5VestigingTot" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog6VestigingTot" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog7VestigingTot" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Inlog8VestigingTot" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="labelprinterip" Type="System.String" Scope="User">
+      <Value Profile="(Default)">192.168.2.6</Value>
+    </Setting>
+    <Setting Name="printselect" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="testserver" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="dfdkleinprint" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
