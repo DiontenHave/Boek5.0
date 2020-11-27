@@ -31,6 +31,7 @@ Partial Class Form1
         Me.C1SizerMainWindow = New C1.Win.C1Sizer.C1Sizer()
         Me.C1SizerTree = New C1.Win.C1Sizer.C1Sizer()
         Me.TreePanel = New System.Windows.Forms.Panel()
+        Me.Tree_BBKlok_cmb = New System.Windows.Forms.ComboBox()
         Me.icon4_pbox = New System.Windows.Forms.PictureBox()
         Me.icon4_chk = New System.Windows.Forms.CheckBox()
         Me.icon3_pbox = New System.Windows.Forms.PictureBox()
@@ -53,6 +54,8 @@ Partial Class Form1
         Me.C1SizerOrderTab = New C1.Win.C1Sizer.C1Sizer()
         Me.Invoer_WpsFilterCombo = New C1.Win.C1List.C1Combo()
         Me.TabOrdersPanelTop = New System.Windows.Forms.Panel()
+        Me.Orders_PlusAccessoires_but = New System.Windows.Forms.Button()
+        Me.TestBuild_but = New System.Windows.Forms.Button()
         Me.Order_bakstikkers_chk = New System.Windows.Forms.CheckBox()
         Me.Order_plantenpaspoort_chk = New System.Windows.Forms.CheckBox()
         Me.Order_Prijscor_plusS_but = New System.Windows.Forms.Button()
@@ -155,6 +158,18 @@ Partial Class Form1
         Me.Kar_opslaan2_but = New System.Windows.Forms.Button()
         Me.HScrollBar1 = New System.Windows.Forms.HScrollBar()
         Me.PanelKarindelingMidden = New System.Windows.Forms.Panel()
+        Me.Kar_fdverzonden4_chk = New System.Windows.Forms.CheckBox()
+        Me.Kar_fdverzonden3_chk = New System.Windows.Forms.CheckBox()
+        Me.Kar_fdverzonden2_chk = New System.Windows.Forms.CheckBox()
+        Me.Kar_fdverzonden1_chk = New System.Windows.Forms.CheckBox()
+        Me.KarCommand4_but = New System.Windows.Forms.Button()
+        Me.KarCommand4_cmb = New System.Windows.Forms.ComboBox()
+        Me.KarCommand3_but = New System.Windows.Forms.Button()
+        Me.KarCommand3_cmb = New System.Windows.Forms.ComboBox()
+        Me.KarCommand2_but = New System.Windows.Forms.Button()
+        Me.KarCommand2_cmb = New System.Windows.Forms.ComboBox()
+        Me.KarCommand1_but = New System.Windows.Forms.Button()
+        Me.KarCommand1_cmb = New System.Windows.Forms.ComboBox()
         Me.kar_overgooien4_wis_but = New System.Windows.Forms.Button()
         Me.kar_overgooien4_hierop_but = New System.Windows.Forms.Button()
         Me.kar_overgooien4_naar_but = New System.Windows.Forms.Button()
@@ -171,10 +186,6 @@ Partial Class Form1
         Me.kar_aanvulling3_but = New System.Windows.Forms.Button()
         Me.kar_aanvulling2_but = New System.Windows.Forms.Button()
         Me.kar_aanvulling1_but = New System.Windows.Forms.Button()
-        Me.Kar_pakbonprint4_but = New System.Windows.Forms.Button()
-        Me.Kar_pakbonprint3_but = New System.Windows.Forms.Button()
-        Me.Kar_pakbonprint2_but = New System.Windows.Forms.Button()
-        Me.Kar_pakbonprint1_but = New System.Windows.Forms.Button()
         Me.Kar_lagenlock4_but = New System.Windows.Forms.Button()
         Me.Kar_lagenlock3_but = New System.Windows.Forms.Button()
         Me.Kar_lagenlock2_but = New System.Windows.Forms.Button()
@@ -183,10 +194,6 @@ Partial Class Form1
         Me.Kar_autosamenvoegen3_chk = New System.Windows.Forms.CheckBox()
         Me.Kar_autosamenvoegen2_chk = New System.Windows.Forms.CheckBox()
         Me.Kar_autosamenvoegen1_chk = New System.Windows.Forms.CheckBox()
-        Me.Kar_sdfversturen4_but = New System.Windows.Forms.Button()
-        Me.Kar_sdfversturen3_but = New System.Windows.Forms.Button()
-        Me.Kar_sdfversturen2_but = New System.Windows.Forms.Button()
-        Me.Kar_sdfversturen1_but = New System.Windows.Forms.Button()
         Me.Kar_nummer4_lbl = New System.Windows.Forms.Label()
         Me.Kar_nummer3_lbl = New System.Windows.Forms.Label()
         Me.Kar_nummer2_lbl = New System.Windows.Forms.Label()
@@ -269,6 +276,12 @@ Partial Class Form1
         Me.Kar_kopernaam_lbl = New System.Windows.Forms.Label()
         Me.C1TabFloriday = New C1.Win.C1Command.C1DockingTabPage()
         Me.C1SizerFloriday = New C1.Win.C1Sizer.C1Sizer()
+        Me.PanelFloridayorders = New System.Windows.Forms.Panel()
+        Me.Floriday_Filterstoepassen_but = New System.Windows.Forms.Button()
+        Me.Floriday_orderlineherstellen_but = New System.Windows.Forms.Button()
+        Me.FDLineCombo = New C1.Win.C1List.C1Combo()
+        Me.FloridayOrderInfo_flx = New C1.Win.C1FlexGrid.C1FlexGrid()
+        Me.FloridayOrderLines_flx = New C1.Win.C1FlexGrid.C1FlexGrid()
         Me.FloridayOrders_flx = New C1.Win.C1FlexGrid.C1FlexGrid()
         Me.C1TabFlorecom = New C1.Win.C1Command.C1DockingTabPage()
         Me.C1SizerFlorecom = New C1.Win.C1Sizer.C1Sizer()
@@ -323,8 +336,6 @@ Partial Class Form1
         Me.DatabaseComboWpsFilter = New C1.Win.C1List.C1Combo()
         Me.DatabaseFlexGridEdit = New C1.Win.C1FlexGrid.C1FlexGrid()
         Me.DatabaseFlexGridShow = New C1.Win.C1FlexGrid.C1FlexGrid()
-        Me.C1TabDatabase2 = New C1.Win.C1Command.C1DockingTabPage()
-        Me.Database_flx = New C1.Win.C1FlexGrid.C1FlexGrid()
         Me.C1TabInstellingen = New C1.Win.C1Command.C1DockingTabPage()
         Me.Inst_paspoortb2_txt = New System.Windows.Forms.TextBox()
         Me.Inst_paspoortb1_txt = New System.Windows.Forms.TextBox()
@@ -606,7 +617,7 @@ Partial Class Form1
         Me.OrdersMenuBekijken = New System.Windows.Forms.Button()
         Me.Orders_pakbonnenprinten = New System.Windows.Forms.Button()
         Me.OrdersMenuVerzamelkar = New System.Windows.Forms.Button()
-        Me.Order_ScanKlaar = New System.Windows.Forms.Button()
+        Me.Order_PrintBriefFloriday = New System.Windows.Forms.Button()
         Me.OrdersMenuAanvulling = New System.Windows.Forms.Button()
         Me.Orders_WpsXML_but = New System.Windows.Forms.Button()
         Me.Orders_Mark = New System.Windows.Forms.Button()
@@ -624,15 +635,15 @@ Partial Class Form1
         Me.C1NavPanelOrders1 = New System.Windows.Forms.Panel()
         Me.Order_MonthCalendar = New System.Windows.Forms.MonthCalendar()
         Me.C1NavBarFloriday = New C1.Win.C1Command.C1NavBarPanel()
+        Me.FdMenu_ordernr_chk = New System.Windows.Forms.CheckBox()
+        Me.fd_updatelist_but = New System.Windows.Forms.Button()
+        Me.Fd_archief_rb = New System.Windows.Forms.RadioButton()
+        Me.Fd_nieuweOrders_rb = New System.Windows.Forms.RadioButton()
+        Me.Floriday_Calendar = New System.Windows.Forms.MonthCalendar()
         Me.FdMenu_Zoek_chk = New System.Windows.Forms.CheckBox()
         Me.FdMenu_Zoek_txt = New System.Windows.Forms.TextBox()
         Me.FdMenu_floridaynr_txt = New System.Windows.Forms.TextBox()
-        Me.Label55 = New System.Windows.Forms.Label()
         Me.FdMenu_Verwerk_but = New System.Windows.Forms.Button()
-        Me.FdMenu_Archief_but = New System.Windows.Forms.Button()
-        Me.FdMenu_datum_dtp = New System.Windows.Forms.DateTimePicker()
-        Me.FdMenu_ArchiefVandaag_but = New System.Windows.Forms.Button()
-        Me.FdMenu_ordersophalen_but = New System.Windows.Forms.Button()
         Me.C1NavBarFlorecom = New C1.Win.C1Command.C1NavBarPanel()
         Me.C1NavPanelFlorecom = New System.Windows.Forms.Panel()
         Me.FcMenu_fczoek_chk = New System.Windows.Forms.CheckBox()
@@ -646,20 +657,15 @@ Partial Class Form1
         Me.FcMenu_nieuw_but = New System.Windows.Forms.Button()
         Me.C1NavBarPanelDatabase = New C1.Win.C1Command.C1NavBarPanel()
         Me.C1NavPanelDatabase1 = New System.Windows.Forms.Panel()
+        Me.DatabaseMenuCopy_but = New System.Windows.Forms.Button()
+        Me.DatabaseMenuHerladen_but = New System.Windows.Forms.Button()
+        Me.Database_preselect_cmb = New System.Windows.Forms.ComboBox()
         Me.DatabaseMenuSDFPL_but = New System.Windows.Forms.Button()
         Me.database_lbl = New System.Windows.Forms.Label()
         Me.DatabaseMenuOpslaan = New System.Windows.Forms.Button()
         Me.DatabaseMenuAanpassen = New System.Windows.Forms.Button()
         Me.DatabaseMenuNieuw = New System.Windows.Forms.Button()
         Me.Database_Combo = New System.Windows.Forms.ComboBox()
-        Me.C1NavBarDatabase2 = New C1.Win.C1Command.C1NavBarPanel()
-        Me.db_databaseload_but = New System.Windows.Forms.Button()
-        Me.db_databasepreselect_cmb = New System.Windows.Forms.ComboBox()
-        Me.db_database_lbl = New System.Windows.Forms.Label()
-        Me.db_databasesave_but = New System.Windows.Forms.Button()
-        Me.db_databasecopy_but = New System.Windows.Forms.Button()
-        Me.db_databasenew_but = New System.Windows.Forms.Button()
-        Me.db_database_cmb = New System.Windows.Forms.ComboBox()
         Me.C1NavBarPanelInstellingen = New C1.Win.C1Command.C1NavBarPanel()
         Me.C1NavPanelInstel = New System.Windows.Forms.Panel()
         Me.Inst_run_update_but = New System.Windows.Forms.Button()
@@ -718,7 +724,6 @@ Partial Class Form1
         Me.Order_ToolStripMenuItem4 = New System.Windows.Forms.ToolStripMenuItem()
         Me.Order_ToolStripMenuItem5 = New System.Windows.Forms.ToolStripMenuItem()
         Me.Order_ToolStripMenuItem6 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ToolTipOrderMix = New System.Windows.Forms.ToolTip(Me.components)
         Me.C1PrintDocument1 = New C1.C1Preview.C1PrintDocument()
         Me.TimerBarcodeServer = New System.Windows.Forms.Timer(Me.components)
         Me.TimerFlorecom = New System.Windows.Forms.Timer(Me.components)
@@ -767,6 +772,10 @@ Partial Class Form1
         Me.C1TabFloriday.SuspendLayout
         CType(Me.C1SizerFloriday, System.ComponentModel.ISupportInitialize).BeginInit
         Me.C1SizerFloriday.SuspendLayout
+        Me.PanelFloridayorders.SuspendLayout
+        CType(Me.FDLineCombo, System.ComponentModel.ISupportInitialize).BeginInit
+        CType(Me.FloridayOrderInfo_flx, System.ComponentModel.ISupportInitialize).BeginInit
+        CType(Me.FloridayOrderLines_flx, System.ComponentModel.ISupportInitialize).BeginInit
         CType(Me.FloridayOrders_flx, System.ComponentModel.ISupportInitialize).BeginInit
         Me.C1TabFlorecom.SuspendLayout
         CType(Me.C1SizerFlorecom, System.ComponentModel.ISupportInitialize).BeginInit
@@ -797,8 +806,6 @@ Partial Class Form1
         CType(Me.DatabaseComboWpsFilter, System.ComponentModel.ISupportInitialize).BeginInit
         CType(Me.DatabaseFlexGridEdit, System.ComponentModel.ISupportInitialize).BeginInit
         CType(Me.DatabaseFlexGridShow, System.ComponentModel.ISupportInitialize).BeginInit
-        Me.C1TabDatabase2.SuspendLayout
-        CType(Me.Database_flx, System.ComponentModel.ISupportInitialize).BeginInit
         Me.C1TabInstellingen.SuspendLayout
         Me.Inst_Overig_GB.SuspendLayout
         CType(Me.Inst_odag7_ud, System.ComponentModel.ISupportInitialize).BeginInit
@@ -859,7 +866,6 @@ Partial Class Form1
         Me.C1NavPanelFlorecom.SuspendLayout
         Me.C1NavBarPanelDatabase.SuspendLayout
         Me.C1NavPanelDatabase1.SuspendLayout
-        Me.C1NavBarDatabase2.SuspendLayout
         Me.C1NavBarPanelInstellingen.SuspendLayout
         Me.C1NavPanelInstel.SuspendLayout
         Me.C1NavBarPrijzen.SuspendLayout
@@ -876,11 +882,11 @@ Partial Class Form1
         Me.C1SizerMainWindow.Controls.Add(Me.C1Tab)
         Me.C1SizerMainWindow.Controls.Add(Me.C1NavBar1)
         Me.C1SizerMainWindow.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.C1SizerMainWindow.GridDefinition = "99.1778006166495:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "24.5213549337261:True:False;15.2430044182621:True:T" &
-    "rue;59.0574374079529:True:False;"
+        Me.C1SizerMainWindow.GridDefinition = "99.1778006166495:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "24.9322493224932:True:False;14.0243902439024:True:T" &
+    "rue;59.9593495934959:True:False;"
         Me.C1SizerMainWindow.Location = New System.Drawing.Point(0, 0)
         Me.C1SizerMainWindow.Name = "C1SizerMainWindow"
-        Me.C1SizerMainWindow.Size = New System.Drawing.Size(1358, 973)
+        Me.C1SizerMainWindow.Size = New System.Drawing.Size(1476, 973)
         Me.C1SizerMainWindow.TabIndex = 0
         Me.C1SizerMainWindow.Text = "C1Sizer1MainWindow"
         '
@@ -888,16 +894,17 @@ Partial Class Form1
         '
         Me.C1SizerTree.Controls.Add(Me.TreePanel)
         Me.C1SizerTree.Controls.Add(Me.TreeView1)
-        Me.C1SizerTree.GridDefinition = "10.7772020725389:False:True;87.979274611399:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "97.5975975975976:False:F" &
+        Me.C1SizerTree.GridDefinition = "10.7772020725389:False:True;87.979274611399:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "97.8260869565217:False:F" &
     "alse;"
         Me.C1SizerTree.Location = New System.Drawing.Point(4, 4)
         Me.C1SizerTree.Name = "C1SizerTree"
-        Me.C1SizerTree.Size = New System.Drawing.Size(333, 965)
+        Me.C1SizerTree.Size = New System.Drawing.Size(368, 965)
         Me.C1SizerTree.TabIndex = 3
         Me.C1SizerTree.Text = "C1Sizer2"
         '
         'TreePanel
         '
+        Me.TreePanel.Controls.Add(Me.Tree_BBKlok_cmb)
         Me.TreePanel.Controls.Add(Me.icon4_pbox)
         Me.TreePanel.Controls.Add(Me.icon4_chk)
         Me.TreePanel.Controls.Add(Me.icon3_pbox)
@@ -915,12 +922,22 @@ Partial Class Form1
         Me.TreePanel.Controls.Add(Me.Tree_Datum_lbl)
         Me.TreePanel.Location = New System.Drawing.Point(4, 4)
         Me.TreePanel.Name = "TreePanel"
-        Me.TreePanel.Size = New System.Drawing.Size(325, 104)
+        Me.TreePanel.Size = New System.Drawing.Size(360, 104)
         Me.TreePanel.TabIndex = 1
+        '
+        'Tree_BBKlok_cmb
+        '
+        Me.Tree_BBKlok_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.Tree_BBKlok_cmb.FormattingEnabled = True
+        Me.Tree_BBKlok_cmb.Items.AddRange(New Object() {"Totaal", "BB", "Klok"})
+        Me.Tree_BBKlok_cmb.Location = New System.Drawing.Point(243, 80)
+        Me.Tree_BBKlok_cmb.Name = "Tree_BBKlok_cmb"
+        Me.Tree_BBKlok_cmb.Size = New System.Drawing.Size(72, 21)
+        Me.Tree_BBKlok_cmb.TabIndex = 16
         '
         'icon4_pbox
         '
-        Me.icon4_pbox.Location = New System.Drawing.Point(267, 81)
+        Me.icon4_pbox.Location = New System.Drawing.Point(185, 81)
         Me.icon4_pbox.Name = "icon4_pbox"
         Me.icon4_pbox.Size = New System.Drawing.Size(16, 16)
         Me.icon4_pbox.TabIndex = 15
@@ -929,7 +946,7 @@ Partial Class Form1
         'icon4_chk
         '
         Me.icon4_chk.AutoSize = True
-        Me.icon4_chk.Location = New System.Drawing.Point(289, 83)
+        Me.icon4_chk.Location = New System.Drawing.Point(207, 83)
         Me.icon4_chk.Name = "icon4_chk"
         Me.icon4_chk.Size = New System.Drawing.Size(15, 14)
         Me.icon4_chk.TabIndex = 14
@@ -937,7 +954,7 @@ Partial Class Form1
         '
         'icon3_pbox
         '
-        Me.icon3_pbox.Location = New System.Drawing.Point(183, 81)
+        Me.icon3_pbox.Location = New System.Drawing.Point(130, 81)
         Me.icon3_pbox.Name = "icon3_pbox"
         Me.icon3_pbox.Size = New System.Drawing.Size(16, 16)
         Me.icon3_pbox.TabIndex = 13
@@ -946,7 +963,7 @@ Partial Class Form1
         'icon3_chk
         '
         Me.icon3_chk.AutoSize = True
-        Me.icon3_chk.Location = New System.Drawing.Point(205, 83)
+        Me.icon3_chk.Location = New System.Drawing.Point(152, 83)
         Me.icon3_chk.Name = "icon3_chk"
         Me.icon3_chk.Size = New System.Drawing.Size(15, 14)
         Me.icon3_chk.TabIndex = 12
@@ -954,7 +971,7 @@ Partial Class Form1
         '
         'icon2_pbox
         '
-        Me.icon2_pbox.Location = New System.Drawing.Point(100, 81)
+        Me.icon2_pbox.Location = New System.Drawing.Point(70, 81)
         Me.icon2_pbox.Name = "icon2_pbox"
         Me.icon2_pbox.Size = New System.Drawing.Size(16, 16)
         Me.icon2_pbox.TabIndex = 11
@@ -963,7 +980,7 @@ Partial Class Form1
         'icon2_chk
         '
         Me.icon2_chk.AutoSize = True
-        Me.icon2_chk.Location = New System.Drawing.Point(122, 83)
+        Me.icon2_chk.Location = New System.Drawing.Point(92, 83)
         Me.icon2_chk.Name = "icon2_chk"
         Me.icon2_chk.Size = New System.Drawing.Size(15, 14)
         Me.icon2_chk.TabIndex = 10
@@ -1063,7 +1080,7 @@ Partial Class Form1
         Me.TreeView1.Location = New System.Drawing.Point(4, 112)
         Me.TreeView1.Name = "TreeView1"
         Me.TreeView1.SelectedImageIndex = 0
-        Me.TreeView1.Size = New System.Drawing.Size(325, 849)
+        Me.TreeView1.Size = New System.Drawing.Size(360, 849)
         Me.TreeView1.TabIndex = 0
         '
         'IconList
@@ -1106,8 +1123,8 @@ Partial Class Form1
         Me.IconList.Images.SetKeyName(33, "labelhelpdone.ico")
         Me.IconList.Images.SetKeyName(34, "labelbericht.ico")
         Me.IconList.Images.SetKeyName(35, "sdfattach.ico")
-        Me.IconList.Images.SetKeyName(36, "tickscan.ico")
-        Me.IconList.Images.SetKeyName(37, "tickscansdft.ico")
+        Me.IconList.Images.SetKeyName(36, "floriday_yellow.ico")
+        Me.IconList.Images.SetKeyName(37, "floriday_blue.ico")
         Me.IconList.Images.SetKeyName(38, "docs.ico")
         Me.IconList.Images.SetKeyName(39, "label2.ico")
         Me.IconList.Images.SetKeyName(40, "labelhelp2.ico")
@@ -1125,6 +1142,7 @@ Partial Class Form1
         Me.IconList.Images.SetKeyName(52, "reload.ico")
         Me.IconList.Images.SetKeyName(53, "labelophoes1.ico")
         Me.IconList.Images.SetKeyName(54, "labelophoes2.ico")
+        Me.IconList.Images.SetKeyName(55, "floriday_red.ico")
         '
         'C1Tab
         '
@@ -1135,16 +1153,15 @@ Partial Class Form1
         Me.C1Tab.Controls.Add(Me.C1TabVervoer)
         Me.C1Tab.Controls.Add(Me.C1TabOverzichten)
         Me.C1Tab.Controls.Add(Me.C1TabDatabase)
-        Me.C1Tab.Controls.Add(Me.C1TabDatabase2)
         Me.C1Tab.Controls.Add(Me.C1TabInstellingen)
         Me.C1Tab.Controls.Add(Me.C1TabPrijzen)
         Me.C1Tab.Controls.Add(Me.C1TabVoorraad)
         Me.C1Tab.Controls.Add(Me.C1TabWPS)
         Me.C1Tab.Controls.Add(Me.C1TabInloggen)
-        Me.C1Tab.Location = New System.Drawing.Point(552, 4)
+        Me.C1Tab.Location = New System.Drawing.Point(587, 4)
         Me.C1Tab.Name = "C1Tab"
         Me.C1Tab.SelectedIndex = 11
-        Me.C1Tab.Size = New System.Drawing.Size(802, 965)
+        Me.C1Tab.Size = New System.Drawing.Size(885, 965)
         Me.C1Tab.TabIndex = 1
         Me.C1Tab.TabsSpacing = 0
         '
@@ -1153,7 +1170,7 @@ Partial Class Form1
         Me.C1TabOrderInvoer.Controls.Add(Me.C1SizerOrderTab)
         Me.C1TabOrderInvoer.Location = New System.Drawing.Point(1, 24)
         Me.C1TabOrderInvoer.Name = "C1TabOrderInvoer"
-        Me.C1TabOrderInvoer.Size = New System.Drawing.Size(800, 940)
+        Me.C1TabOrderInvoer.Size = New System.Drawing.Size(883, 940)
         Me.C1TabOrderInvoer.TabIndex = 0
         Me.C1TabOrderInvoer.Text = "Order invoer"
         '
@@ -1163,10 +1180,11 @@ Partial Class Form1
         Me.C1SizerOrderTab.Controls.Add(Me.TabOrdersPanelTop)
         Me.C1SizerOrderTab.Controls.Add(Me.Order_invoer_FlexGrid)
         Me.C1SizerOrderTab.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.C1SizerOrderTab.GridDefinition = "37.7659574468085:False:True;60.9574468085106:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "99:False:False;"
+        Me.C1SizerOrderTab.GridDefinition = "37.7659574468085:False:True;60.9574468085106:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "99.0939977349943:False:" &
+    "False;"
         Me.C1SizerOrderTab.Location = New System.Drawing.Point(0, 0)
         Me.C1SizerOrderTab.Name = "C1SizerOrderTab"
-        Me.C1SizerOrderTab.Size = New System.Drawing.Size(800, 940)
+        Me.C1SizerOrderTab.Size = New System.Drawing.Size(883, 940)
         Me.C1SizerOrderTab.TabIndex = 0
         Me.C1SizerOrderTab.Text = "C1Sizer1"
         '
@@ -1190,13 +1208,15 @@ Partial Class Form1
         Me.Invoer_WpsFilterCombo.MouseCursor = System.Windows.Forms.Cursors.Default
         Me.Invoer_WpsFilterCombo.Name = "Invoer_WpsFilterCombo"
         Me.Invoer_WpsFilterCombo.RowSubDividerColor = System.Drawing.Color.DarkGray
-        Me.Invoer_WpsFilterCombo.Size = New System.Drawing.Size(792, 21)
+        Me.Invoer_WpsFilterCombo.Size = New System.Drawing.Size(875, 21)
         Me.Invoer_WpsFilterCombo.TabIndex = 35
         Me.Invoer_WpsFilterCombo.Visible = False
         Me.Invoer_WpsFilterCombo.PropBag = resources.GetString("Invoer_WpsFilterCombo.PropBag")
         '
         'TabOrdersPanelTop
         '
+        Me.TabOrdersPanelTop.Controls.Add(Me.Orders_PlusAccessoires_but)
+        Me.TabOrdersPanelTop.Controls.Add(Me.TestBuild_but)
         Me.TabOrdersPanelTop.Controls.Add(Me.Order_bakstikkers_chk)
         Me.TabOrdersPanelTop.Controls.Add(Me.Order_plantenpaspoort_chk)
         Me.TabOrdersPanelTop.Controls.Add(Me.Order_Prijscor_plusS_but)
@@ -1261,8 +1281,26 @@ Partial Class Form1
         Me.TabOrdersPanelTop.Controls.Add(Me.Label8)
         Me.TabOrdersPanelTop.Location = New System.Drawing.Point(4, 4)
         Me.TabOrdersPanelTop.Name = "TabOrdersPanelTop"
-        Me.TabOrdersPanelTop.Size = New System.Drawing.Size(792, 355)
+        Me.TabOrdersPanelTop.Size = New System.Drawing.Size(875, 355)
         Me.TabOrdersPanelTop.TabIndex = 3
+        '
+        'Orders_PlusAccessoires_but
+        '
+        Me.Orders_PlusAccessoires_but.Location = New System.Drawing.Point(798, 301)
+        Me.Orders_PlusAccessoires_but.Name = "Orders_PlusAccessoires_but"
+        Me.Orders_PlusAccessoires_but.Size = New System.Drawing.Size(74, 49)
+        Me.Orders_PlusAccessoires_but.TabIndex = 71
+        Me.Orders_PlusAccessoires_but.Text = "+ Accessoires"
+        Me.Orders_PlusAccessoires_but.UseVisualStyleBackColor = True
+        '
+        'TestBuild_but
+        '
+        Me.TestBuild_but.Location = New System.Drawing.Point(656, 187)
+        Me.TestBuild_but.Name = "TestBuild_but"
+        Me.TestBuild_but.Size = New System.Drawing.Size(81, 38)
+        Me.TestBuild_but.TabIndex = 70
+        Me.TestBuild_but.Text = "Build"
+        Me.TestBuild_but.UseVisualStyleBackColor = True
         '
         'Order_bakstikkers_chk
         '
@@ -2106,7 +2144,7 @@ Partial Class Form1
         Me.Order_invoer_FlexGrid.Name = "Order_invoer_FlexGrid"
         Me.Order_invoer_FlexGrid.Rows.Count = 1
         Me.Order_invoer_FlexGrid.Rows.DefaultSize = 17
-        Me.Order_invoer_FlexGrid.Size = New System.Drawing.Size(792, 573)
+        Me.Order_invoer_FlexGrid.Size = New System.Drawing.Size(875, 573)
         Me.Order_invoer_FlexGrid.TabIndex = 34
         '
         'C1TabKarindeling
@@ -2114,7 +2152,7 @@ Partial Class Form1
         Me.C1TabKarindeling.Controls.Add(Me.C1SizerKarIndeling)
         Me.C1TabKarindeling.Location = New System.Drawing.Point(1, 24)
         Me.C1TabKarindeling.Name = "C1TabKarindeling"
-        Me.C1TabKarindeling.Size = New System.Drawing.Size(800, 940)
+        Me.C1TabKarindeling.Size = New System.Drawing.Size(883, 940)
         Me.C1TabKarindeling.TabIndex = 1
         Me.C1TabKarindeling.Text = "Kar indeling"
         '
@@ -2126,10 +2164,10 @@ Partial Class Form1
         Me.C1SizerKarIndeling.Controls.Add(Me.PanelKarIndelingBoven)
         Me.C1SizerKarIndeling.Dock = System.Windows.Forms.DockStyle.Fill
         Me.C1SizerKarIndeling.GridDefinition = "10.6382978723404:False:True;68.0851063829787:False:True;2.12765957446809:False:Tr" &
-    "ue;17.0212765957447:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "99:False:False;"
+    "ue;17.0212765957447:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "99.0939977349943:False:False;"
         Me.C1SizerKarIndeling.Location = New System.Drawing.Point(0, 0)
         Me.C1SizerKarIndeling.Name = "C1SizerKarIndeling"
-        Me.C1SizerKarIndeling.Size = New System.Drawing.Size(800, 940)
+        Me.C1SizerKarIndeling.Size = New System.Drawing.Size(883, 940)
         Me.C1SizerKarIndeling.TabIndex = 0
         Me.C1SizerKarIndeling.Text = "C1Sizer2"
         '
@@ -2144,7 +2182,7 @@ Partial Class Form1
         Me.PanelKarindelingOnder.Controls.Add(Me.Kar_opslaan2_but)
         Me.PanelKarindelingOnder.Location = New System.Drawing.Point(4, 776)
         Me.PanelKarindelingOnder.Name = "PanelKarindelingOnder"
-        Me.PanelKarindelingOnder.Size = New System.Drawing.Size(792, 160)
+        Me.PanelKarindelingOnder.Size = New System.Drawing.Size(875, 160)
         Me.PanelKarindelingOnder.TabIndex = 3
         '
         'Kar_markeer_chk
@@ -2218,7 +2256,7 @@ Partial Class Form1
         Me.HScrollBar1.Maximum = 99
         Me.HScrollBar1.Minimum = 1
         Me.HScrollBar1.Name = "HScrollBar1"
-        Me.HScrollBar1.Size = New System.Drawing.Size(792, 20)
+        Me.HScrollBar1.Size = New System.Drawing.Size(875, 20)
         Me.HScrollBar1.TabIndex = 2
         Me.HScrollBar1.Value = 1
         '
@@ -2226,6 +2264,18 @@ Partial Class Form1
         '
         Me.PanelKarindelingMidden.AutoScroll = True
         Me.PanelKarindelingMidden.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
+        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_fdverzonden4_chk)
+        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_fdverzonden3_chk)
+        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_fdverzonden2_chk)
+        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_fdverzonden1_chk)
+        Me.PanelKarindelingMidden.Controls.Add(Me.KarCommand4_but)
+        Me.PanelKarindelingMidden.Controls.Add(Me.KarCommand4_cmb)
+        Me.PanelKarindelingMidden.Controls.Add(Me.KarCommand3_but)
+        Me.PanelKarindelingMidden.Controls.Add(Me.KarCommand3_cmb)
+        Me.PanelKarindelingMidden.Controls.Add(Me.KarCommand2_but)
+        Me.PanelKarindelingMidden.Controls.Add(Me.KarCommand2_cmb)
+        Me.PanelKarindelingMidden.Controls.Add(Me.KarCommand1_but)
+        Me.PanelKarindelingMidden.Controls.Add(Me.KarCommand1_cmb)
         Me.PanelKarindelingMidden.Controls.Add(Me.kar_overgooien4_wis_but)
         Me.PanelKarindelingMidden.Controls.Add(Me.kar_overgooien4_hierop_but)
         Me.PanelKarindelingMidden.Controls.Add(Me.kar_overgooien4_naar_but)
@@ -2242,10 +2292,6 @@ Partial Class Form1
         Me.PanelKarindelingMidden.Controls.Add(Me.kar_aanvulling3_but)
         Me.PanelKarindelingMidden.Controls.Add(Me.kar_aanvulling2_but)
         Me.PanelKarindelingMidden.Controls.Add(Me.kar_aanvulling1_but)
-        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_pakbonprint4_but)
-        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_pakbonprint3_but)
-        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_pakbonprint2_but)
-        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_pakbonprint1_but)
         Me.PanelKarindelingMidden.Controls.Add(Me.Kar_lagenlock4_but)
         Me.PanelKarindelingMidden.Controls.Add(Me.Kar_lagenlock3_but)
         Me.PanelKarindelingMidden.Controls.Add(Me.Kar_lagenlock2_but)
@@ -2254,10 +2300,6 @@ Partial Class Form1
         Me.PanelKarindelingMidden.Controls.Add(Me.Kar_autosamenvoegen3_chk)
         Me.PanelKarindelingMidden.Controls.Add(Me.Kar_autosamenvoegen2_chk)
         Me.PanelKarindelingMidden.Controls.Add(Me.Kar_autosamenvoegen1_chk)
-        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_sdfversturen4_but)
-        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_sdfversturen3_but)
-        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_sdfversturen2_but)
-        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_sdfversturen1_but)
         Me.PanelKarindelingMidden.Controls.Add(Me.Kar_nummer4_lbl)
         Me.PanelKarindelingMidden.Controls.Add(Me.Kar_nummer3_lbl)
         Me.PanelKarindelingMidden.Controls.Add(Me.Kar_nummer2_lbl)
@@ -2316,8 +2358,136 @@ Partial Class Form1
         Me.PanelKarindelingMidden.Controls.Add(Me.Kar_plus1_but)
         Me.PanelKarindelingMidden.Location = New System.Drawing.Point(4, 108)
         Me.PanelKarindelingMidden.Name = "PanelKarindelingMidden"
-        Me.PanelKarindelingMidden.Size = New System.Drawing.Size(792, 640)
+        Me.PanelKarindelingMidden.Size = New System.Drawing.Size(875, 640)
         Me.PanelKarindelingMidden.TabIndex = 1
+        '
+        'Kar_fdverzonden4_chk
+        '
+        Me.Kar_fdverzonden4_chk.AutoCheck = False
+        Me.Kar_fdverzonden4_chk.AutoSize = True
+        Me.Kar_fdverzonden4_chk.Location = New System.Drawing.Point(705, 507)
+        Me.Kar_fdverzonden4_chk.Name = "Kar_fdverzonden4_chk"
+        Me.Kar_fdverzonden4_chk.Size = New System.Drawing.Size(115, 17)
+        Me.Kar_fdverzonden4_chk.TabIndex = 112
+        Me.Kar_fdverzonden4_chk.Tag = "1"
+        Me.Kar_fdverzonden4_chk.Text = "Floriday verzonden"
+        Me.Kar_fdverzonden4_chk.UseVisualStyleBackColor = True
+        '
+        'Kar_fdverzonden3_chk
+        '
+        Me.Kar_fdverzonden3_chk.AutoCheck = False
+        Me.Kar_fdverzonden3_chk.AutoSize = True
+        Me.Kar_fdverzonden3_chk.Location = New System.Drawing.Point(474, 507)
+        Me.Kar_fdverzonden3_chk.Name = "Kar_fdverzonden3_chk"
+        Me.Kar_fdverzonden3_chk.Size = New System.Drawing.Size(115, 17)
+        Me.Kar_fdverzonden3_chk.TabIndex = 111
+        Me.Kar_fdverzonden3_chk.Tag = "1"
+        Me.Kar_fdverzonden3_chk.Text = "Floriday verzonden"
+        Me.Kar_fdverzonden3_chk.UseVisualStyleBackColor = True
+        '
+        'Kar_fdverzonden2_chk
+        '
+        Me.Kar_fdverzonden2_chk.AutoCheck = False
+        Me.Kar_fdverzonden2_chk.AutoSize = True
+        Me.Kar_fdverzonden2_chk.Location = New System.Drawing.Point(245, 507)
+        Me.Kar_fdverzonden2_chk.Name = "Kar_fdverzonden2_chk"
+        Me.Kar_fdverzonden2_chk.Size = New System.Drawing.Size(115, 17)
+        Me.Kar_fdverzonden2_chk.TabIndex = 110
+        Me.Kar_fdverzonden2_chk.Tag = "1"
+        Me.Kar_fdverzonden2_chk.Text = "Floriday verzonden"
+        Me.Kar_fdverzonden2_chk.UseVisualStyleBackColor = True
+        '
+        'Kar_fdverzonden1_chk
+        '
+        Me.Kar_fdverzonden1_chk.AutoCheck = False
+        Me.Kar_fdverzonden1_chk.AutoSize = True
+        Me.Kar_fdverzonden1_chk.Location = New System.Drawing.Point(17, 507)
+        Me.Kar_fdverzonden1_chk.Name = "Kar_fdverzonden1_chk"
+        Me.Kar_fdverzonden1_chk.Size = New System.Drawing.Size(115, 17)
+        Me.Kar_fdverzonden1_chk.TabIndex = 109
+        Me.Kar_fdverzonden1_chk.Tag = "1"
+        Me.Kar_fdverzonden1_chk.Text = "Floriday verzonden"
+        Me.Kar_fdverzonden1_chk.UseVisualStyleBackColor = True
+        '
+        'KarCommand4_but
+        '
+        Me.KarCommand4_but.Location = New System.Drawing.Point(877, 463)
+        Me.KarCommand4_but.Name = "KarCommand4_but"
+        Me.KarCommand4_but.Size = New System.Drawing.Size(40, 21)
+        Me.KarCommand4_but.TabIndex = 108
+        Me.KarCommand4_but.Tag = "1"
+        Me.KarCommand4_but.Text = "OK"
+        Me.KarCommand4_but.UseVisualStyleBackColor = True
+        '
+        'KarCommand4_cmb
+        '
+        Me.KarCommand4_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.KarCommand4_cmb.FormattingEnabled = True
+        Me.KarCommand4_cmb.Items.AddRange(New Object() {"Print pakbon", "Print brief via Floriday", "Print brief via SDF", "Fd kar aanpassing ", "Fd brief verwijderen", "Floriday rapport", "Reset floriday fout"})
+        Me.KarCommand4_cmb.Location = New System.Drawing.Point(705, 463)
+        Me.KarCommand4_cmb.Name = "KarCommand4_cmb"
+        Me.KarCommand4_cmb.Size = New System.Drawing.Size(168, 21)
+        Me.KarCommand4_cmb.TabIndex = 107
+        '
+        'KarCommand3_but
+        '
+        Me.KarCommand3_but.Location = New System.Drawing.Point(646, 465)
+        Me.KarCommand3_but.Name = "KarCommand3_but"
+        Me.KarCommand3_but.Size = New System.Drawing.Size(40, 21)
+        Me.KarCommand3_but.TabIndex = 106
+        Me.KarCommand3_but.Tag = "1"
+        Me.KarCommand3_but.Text = "OK"
+        Me.KarCommand3_but.UseVisualStyleBackColor = True
+        '
+        'KarCommand3_cmb
+        '
+        Me.KarCommand3_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.KarCommand3_cmb.FormattingEnabled = True
+        Me.KarCommand3_cmb.Items.AddRange(New Object() {"Print pakbon", "Print brief via Floriday", "Print brief via SDF", "Fd kar aanpassing ", "Fd brief verwijderen", "Floriday rapport", "Reset floriday fout"})
+        Me.KarCommand3_cmb.Location = New System.Drawing.Point(474, 465)
+        Me.KarCommand3_cmb.Name = "KarCommand3_cmb"
+        Me.KarCommand3_cmb.Size = New System.Drawing.Size(168, 21)
+        Me.KarCommand3_cmb.TabIndex = 105
+        '
+        'KarCommand2_but
+        '
+        Me.KarCommand2_but.Location = New System.Drawing.Point(417, 466)
+        Me.KarCommand2_but.Name = "KarCommand2_but"
+        Me.KarCommand2_but.Size = New System.Drawing.Size(40, 21)
+        Me.KarCommand2_but.TabIndex = 104
+        Me.KarCommand2_but.Tag = "1"
+        Me.KarCommand2_but.Text = "OK"
+        Me.KarCommand2_but.UseVisualStyleBackColor = True
+        '
+        'KarCommand2_cmb
+        '
+        Me.KarCommand2_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.KarCommand2_cmb.FormattingEnabled = True
+        Me.KarCommand2_cmb.Items.AddRange(New Object() {"Print pakbon", "Print brief via Floriday", "Print brief via SDF", "Fd kar aanpassing ", "Fd brief verwijderen", "Floriday rapport", "Reset floriday fout"})
+        Me.KarCommand2_cmb.Location = New System.Drawing.Point(245, 466)
+        Me.KarCommand2_cmb.Name = "KarCommand2_cmb"
+        Me.KarCommand2_cmb.Size = New System.Drawing.Size(168, 21)
+        Me.KarCommand2_cmb.TabIndex = 103
+        '
+        'KarCommand1_but
+        '
+        Me.KarCommand1_but.Location = New System.Drawing.Point(183, 465)
+        Me.KarCommand1_but.Name = "KarCommand1_but"
+        Me.KarCommand1_but.Size = New System.Drawing.Size(40, 21)
+        Me.KarCommand1_but.TabIndex = 102
+        Me.KarCommand1_but.Tag = "1"
+        Me.KarCommand1_but.Text = "OK"
+        Me.KarCommand1_but.UseVisualStyleBackColor = True
+        '
+        'KarCommand1_cmb
+        '
+        Me.KarCommand1_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.KarCommand1_cmb.FormattingEnabled = True
+        Me.KarCommand1_cmb.Items.AddRange(New Object() {"Print pakbon", "Print brief via Floriday", "Print brief via SDF", "Fd lagen aanpassing", "Fd brief verwijderen", "Floriday rapport", "Reset floriday fout"})
+        Me.KarCommand1_cmb.Location = New System.Drawing.Point(11, 465)
+        Me.KarCommand1_cmb.Name = "KarCommand1_cmb"
+        Me.KarCommand1_cmb.Size = New System.Drawing.Size(168, 21)
+        Me.KarCommand1_cmb.TabIndex = 101
         '
         'kar_overgooien4_wis_but
         '
@@ -2420,7 +2590,7 @@ Partial Class Form1
         '
         'kar_overgooien1_wis_but
         '
-        Me.kar_overgooien1_wis_but.Location = New System.Drawing.Point(173, 579)
+        Me.kar_overgooien1_wis_but.Location = New System.Drawing.Point(173, 583)
         Me.kar_overgooien1_wis_but.Name = "kar_overgooien1_wis_but"
         Me.kar_overgooien1_wis_but.Size = New System.Drawing.Size(45, 47)
         Me.kar_overgooien1_wis_but.TabIndex = 88
@@ -2431,7 +2601,7 @@ Partial Class Form1
         '
         'kar_overgooien1_hierop_but
         '
-        Me.kar_overgooien1_hierop_but.Location = New System.Drawing.Point(17, 603)
+        Me.kar_overgooien1_hierop_but.Location = New System.Drawing.Point(17, 607)
         Me.kar_overgooien1_hierop_but.Name = "kar_overgooien1_hierop_but"
         Me.kar_overgooien1_hierop_but.Size = New System.Drawing.Size(150, 23)
         Me.kar_overgooien1_hierop_but.TabIndex = 87
@@ -2442,7 +2612,7 @@ Partial Class Form1
         '
         'kar_overgooien1_naar_but
         '
-        Me.kar_overgooien1_naar_but.Location = New System.Drawing.Point(17, 579)
+        Me.kar_overgooien1_naar_but.Location = New System.Drawing.Point(17, 583)
         Me.kar_overgooien1_naar_but.Name = "kar_overgooien1_naar_but"
         Me.kar_overgooien1_naar_but.Size = New System.Drawing.Size(150, 23)
         Me.kar_overgooien1_naar_but.TabIndex = 86
@@ -2486,7 +2656,7 @@ Partial Class Form1
         '
         'kar_aanvulling1_but
         '
-        Me.kar_aanvulling1_but.Location = New System.Drawing.Point(17, 555)
+        Me.kar_aanvulling1_but.Location = New System.Drawing.Point(17, 559)
         Me.kar_aanvulling1_but.Name = "kar_aanvulling1_but"
         Me.kar_aanvulling1_but.Size = New System.Drawing.Size(201, 23)
         Me.kar_aanvulling1_but.TabIndex = 82
@@ -2494,46 +2664,6 @@ Partial Class Form1
         Me.kar_aanvulling1_but.Text = "Aanvullen op deze kar"
         Me.kar_aanvulling1_but.UseVisualStyleBackColor = True
         Me.kar_aanvulling1_but.Visible = False
-        '
-        'Kar_pakbonprint4_but
-        '
-        Me.Kar_pakbonprint4_but.Location = New System.Drawing.Point(810, 466)
-        Me.Kar_pakbonprint4_but.Name = "Kar_pakbonprint4_but"
-        Me.Kar_pakbonprint4_but.Size = New System.Drawing.Size(96, 22)
-        Me.Kar_pakbonprint4_but.TabIndex = 77
-        Me.Kar_pakbonprint4_but.Tag = "4"
-        Me.Kar_pakbonprint4_but.Text = "Print pakbon"
-        Me.Kar_pakbonprint4_but.UseVisualStyleBackColor = True
-        '
-        'Kar_pakbonprint3_but
-        '
-        Me.Kar_pakbonprint3_but.Location = New System.Drawing.Point(579, 464)
-        Me.Kar_pakbonprint3_but.Name = "Kar_pakbonprint3_but"
-        Me.Kar_pakbonprint3_but.Size = New System.Drawing.Size(96, 22)
-        Me.Kar_pakbonprint3_but.TabIndex = 76
-        Me.Kar_pakbonprint3_but.Tag = "3"
-        Me.Kar_pakbonprint3_but.Text = "Print pakbon"
-        Me.Kar_pakbonprint3_but.UseVisualStyleBackColor = True
-        '
-        'Kar_pakbonprint2_but
-        '
-        Me.Kar_pakbonprint2_but.Location = New System.Drawing.Point(351, 464)
-        Me.Kar_pakbonprint2_but.Name = "Kar_pakbonprint2_but"
-        Me.Kar_pakbonprint2_but.Size = New System.Drawing.Size(96, 22)
-        Me.Kar_pakbonprint2_but.TabIndex = 75
-        Me.Kar_pakbonprint2_but.Tag = "2"
-        Me.Kar_pakbonprint2_but.Text = "Print pakbon"
-        Me.Kar_pakbonprint2_but.UseVisualStyleBackColor = True
-        '
-        'Kar_pakbonprint1_but
-        '
-        Me.Kar_pakbonprint1_but.Location = New System.Drawing.Point(122, 464)
-        Me.Kar_pakbonprint1_but.Name = "Kar_pakbonprint1_but"
-        Me.Kar_pakbonprint1_but.Size = New System.Drawing.Size(96, 22)
-        Me.Kar_pakbonprint1_but.TabIndex = 74
-        Me.Kar_pakbonprint1_but.Tag = "1"
-        Me.Kar_pakbonprint1_but.Text = "Print pakbon"
-        Me.Kar_pakbonprint1_but.UseVisualStyleBackColor = True
         '
         'Kar_lagenlock4_but
         '
@@ -2619,46 +2749,6 @@ Partial Class Form1
         Me.Kar_autosamenvoegen1_chk.TabIndex = 66
         Me.Kar_autosamenvoegen1_chk.UseVisualStyleBackColor = True
         '
-        'Kar_sdfversturen4_but
-        '
-        Me.Kar_sdfversturen4_but.Location = New System.Drawing.Point(705, 466)
-        Me.Kar_sdfversturen4_but.Name = "Kar_sdfversturen4_but"
-        Me.Kar_sdfversturen4_but.Size = New System.Drawing.Size(99, 22)
-        Me.Kar_sdfversturen4_but.TabIndex = 65
-        Me.Kar_sdfversturen4_but.Tag = "4"
-        Me.Kar_sdfversturen4_but.Text = "Sdf versturen"
-        Me.Kar_sdfversturen4_but.UseVisualStyleBackColor = True
-        '
-        'Kar_sdfversturen3_but
-        '
-        Me.Kar_sdfversturen3_but.Location = New System.Drawing.Point(474, 464)
-        Me.Kar_sdfversturen3_but.Name = "Kar_sdfversturen3_but"
-        Me.Kar_sdfversturen3_but.Size = New System.Drawing.Size(99, 22)
-        Me.Kar_sdfversturen3_but.TabIndex = 63
-        Me.Kar_sdfversturen3_but.Tag = "3"
-        Me.Kar_sdfversturen3_but.Text = "Sdf versturen"
-        Me.Kar_sdfversturen3_but.UseVisualStyleBackColor = True
-        '
-        'Kar_sdfversturen2_but
-        '
-        Me.Kar_sdfversturen2_but.Location = New System.Drawing.Point(245, 464)
-        Me.Kar_sdfversturen2_but.Name = "Kar_sdfversturen2_but"
-        Me.Kar_sdfversturen2_but.Size = New System.Drawing.Size(99, 22)
-        Me.Kar_sdfversturen2_but.TabIndex = 61
-        Me.Kar_sdfversturen2_but.Tag = "2"
-        Me.Kar_sdfversturen2_but.Text = "Sdf versturen"
-        Me.Kar_sdfversturen2_but.UseVisualStyleBackColor = True
-        '
-        'Kar_sdfversturen1_but
-        '
-        Me.Kar_sdfversturen1_but.Location = New System.Drawing.Point(17, 464)
-        Me.Kar_sdfversturen1_but.Name = "Kar_sdfversturen1_but"
-        Me.Kar_sdfversturen1_but.Size = New System.Drawing.Size(99, 22)
-        Me.Kar_sdfversturen1_but.TabIndex = 59
-        Me.Kar_sdfversturen1_but.Tag = "1"
-        Me.Kar_sdfversturen1_but.Text = "Sdf versturen"
-        Me.Kar_sdfversturen1_but.UseVisualStyleBackColor = True
-        '
         'Kar_nummer4_lbl
         '
         Me.Kar_nummer4_lbl.AutoSize = True
@@ -2719,7 +2809,7 @@ Partial Class Form1
         'Kar_vervoer4_chk
         '
         Me.Kar_vervoer4_chk.AutoSize = True
-        Me.Kar_vervoer4_chk.Location = New System.Drawing.Point(705, 506)
+        Me.Kar_vervoer4_chk.Location = New System.Drawing.Point(811, 489)
         Me.Kar_vervoer4_chk.Name = "Kar_vervoer4_chk"
         Me.Kar_vervoer4_chk.Size = New System.Drawing.Size(63, 17)
         Me.Kar_vervoer4_chk.TabIndex = 51
@@ -2840,7 +2930,7 @@ Partial Class Form1
         'Kar_vervoer3_chk
         '
         Me.Kar_vervoer3_chk.AutoSize = True
-        Me.Kar_vervoer3_chk.Location = New System.Drawing.Point(474, 506)
+        Me.Kar_vervoer3_chk.Location = New System.Drawing.Point(579, 489)
         Me.Kar_vervoer3_chk.Name = "Kar_vervoer3_chk"
         Me.Kar_vervoer3_chk.Size = New System.Drawing.Size(63, 17)
         Me.Kar_vervoer3_chk.TabIndex = 38
@@ -2961,7 +3051,7 @@ Partial Class Form1
         'Kar_vervoer2_chk
         '
         Me.Kar_vervoer2_chk.AutoSize = True
-        Me.Kar_vervoer2_chk.Location = New System.Drawing.Point(245, 506)
+        Me.Kar_vervoer2_chk.Location = New System.Drawing.Point(351, 489)
         Me.Kar_vervoer2_chk.Name = "Kar_vervoer2_chk"
         Me.Kar_vervoer2_chk.Size = New System.Drawing.Size(63, 17)
         Me.Kar_vervoer2_chk.TabIndex = 25
@@ -3082,7 +3172,7 @@ Partial Class Form1
         'Kar_vervoer1_chk
         '
         Me.Kar_vervoer1_chk.AutoSize = True
-        Me.Kar_vervoer1_chk.Location = New System.Drawing.Point(17, 506)
+        Me.Kar_vervoer1_chk.Location = New System.Drawing.Point(122, 489)
         Me.Kar_vervoer1_chk.Name = "Kar_vervoer1_chk"
         Me.Kar_vervoer1_chk.Size = New System.Drawing.Size(63, 17)
         Me.Kar_vervoer1_chk.TabIndex = 12
@@ -3126,7 +3216,7 @@ Partial Class Form1
         'Kar_barcode1_lbl
         '
         Me.Kar_barcode1_lbl.AutoSize = True
-        Me.Kar_barcode1_lbl.Location = New System.Drawing.Point(14, 532)
+        Me.Kar_barcode1_lbl.Location = New System.Drawing.Point(14, 536)
         Me.Kar_barcode1_lbl.Name = "Kar_barcode1_lbl"
         Me.Kar_barcode1_lbl.Size = New System.Drawing.Size(59, 13)
         Me.Kar_barcode1_lbl.TabIndex = 8
@@ -3141,7 +3231,7 @@ Partial Class Form1
         '
         'Kar_barcode1_txt
         '
-        Me.Kar_barcode1_txt.Location = New System.Drawing.Point(76, 529)
+        Me.Kar_barcode1_txt.Location = New System.Drawing.Point(76, 533)
         Me.Kar_barcode1_txt.Name = "Kar_barcode1_txt"
         Me.Kar_barcode1_txt.Size = New System.Drawing.Size(142, 20)
         Me.Kar_barcode1_txt.TabIndex = 6
@@ -3210,7 +3300,7 @@ Partial Class Form1
         Me.PanelKarIndelingBoven.Controls.Add(Me.Kar_kopernaam_lbl)
         Me.PanelKarIndelingBoven.Location = New System.Drawing.Point(4, 4)
         Me.PanelKarIndelingBoven.Name = "PanelKarIndelingBoven"
-        Me.PanelKarIndelingBoven.Size = New System.Drawing.Size(792, 100)
+        Me.PanelKarIndelingBoven.Size = New System.Drawing.Size(875, 100)
         Me.PanelKarIndelingBoven.TabIndex = 0
         '
         'KarBut40
@@ -3446,20 +3536,100 @@ Partial Class Form1
         Me.C1TabFloriday.Controls.Add(Me.C1SizerFloriday)
         Me.C1TabFloriday.Location = New System.Drawing.Point(1, 24)
         Me.C1TabFloriday.Name = "C1TabFloriday"
-        Me.C1TabFloriday.Size = New System.Drawing.Size(800, 940)
+        Me.C1TabFloriday.Size = New System.Drawing.Size(883, 940)
         Me.C1TabFloriday.TabIndex = 11
         Me.C1TabFloriday.Text = "Floriday"
         '
         'C1SizerFloriday
         '
+        Me.C1SizerFloriday.Controls.Add(Me.PanelFloridayorders)
+        Me.C1SizerFloriday.Controls.Add(Me.FDLineCombo)
+        Me.C1SizerFloriday.Controls.Add(Me.FloridayOrderInfo_flx)
+        Me.C1SizerFloriday.Controls.Add(Me.FloridayOrderLines_flx)
         Me.C1SizerFloriday.Controls.Add(Me.FloridayOrders_flx)
         Me.C1SizerFloriday.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.C1SizerFloriday.GridDefinition = "49.3617021276596:False:False;49.3617021276596:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "99:False:False;"
+        Me.C1SizerFloriday.GridDefinition = "31.1702127659574:False:False;31.2765957446809:False:False;4.25531914893617:False:" &
+    "False;31.1702127659574:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "99.0939977349943:False:False;"
         Me.C1SizerFloriday.Location = New System.Drawing.Point(0, 0)
         Me.C1SizerFloriday.Name = "C1SizerFloriday"
-        Me.C1SizerFloriday.Size = New System.Drawing.Size(800, 940)
+        Me.C1SizerFloriday.Size = New System.Drawing.Size(883, 940)
         Me.C1SizerFloriday.TabIndex = 0
         Me.C1SizerFloriday.Text = "C1Sizer2"
+        '
+        'PanelFloridayorders
+        '
+        Me.PanelFloridayorders.Controls.Add(Me.Floriday_Filterstoepassen_but)
+        Me.PanelFloridayorders.Controls.Add(Me.Floriday_orderlineherstellen_but)
+        Me.PanelFloridayorders.Location = New System.Drawing.Point(4, 599)
+        Me.PanelFloridayorders.Name = "PanelFloridayorders"
+        Me.PanelFloridayorders.Size = New System.Drawing.Size(875, 40)
+        Me.PanelFloridayorders.TabIndex = 6
+        '
+        'Floriday_Filterstoepassen_but
+        '
+        Me.Floriday_Filterstoepassen_but.Location = New System.Drawing.Point(205, 3)
+        Me.Floriday_Filterstoepassen_but.Name = "Floriday_Filterstoepassen_but"
+        Me.Floriday_Filterstoepassen_but.Size = New System.Drawing.Size(196, 32)
+        Me.Floriday_Filterstoepassen_but.TabIndex = 1
+        Me.Floriday_Filterstoepassen_but.Text = "Filters toepassen"
+        Me.Floriday_Filterstoepassen_but.UseVisualStyleBackColor = True
+        '
+        'Floriday_orderlineherstellen_but
+        '
+        Me.Floriday_orderlineherstellen_but.Location = New System.Drawing.Point(3, 3)
+        Me.Floriday_orderlineherstellen_but.Name = "Floriday_orderlineherstellen_but"
+        Me.Floriday_orderlineherstellen_but.Size = New System.Drawing.Size(196, 32)
+        Me.Floriday_orderlineherstellen_but.TabIndex = 0
+        Me.Floriday_orderlineherstellen_but.Text = "Orderline herstellen"
+        Me.Floriday_orderlineherstellen_but.UseVisualStyleBackColor = True
+        '
+        'FDLineCombo
+        '
+        Me.FDLineCombo.AddItemSeparator = Global.Microsoft.VisualBasic.ChrW(59)
+        Me.FDLineCombo.Caption = ""
+        Me.FDLineCombo.CaptionHeight = 17
+        Me.FDLineCombo.CharacterCasing = System.Windows.Forms.CharacterCasing.Normal
+        Me.FDLineCombo.ColumnCaptionHeight = 17
+        Me.FDLineCombo.ColumnFooterHeight = 17
+        Me.FDLineCombo.ComboStyle = C1.Win.C1List.ComboStyleEnum.DropdownList
+        Me.FDLineCombo.DeadAreaBackColor = System.Drawing.Color.Empty
+        Me.FDLineCombo.EditorBackColor = System.Drawing.SystemColors.Window
+        Me.FDLineCombo.EditorForeColor = System.Drawing.SystemColors.WindowText
+        Me.FDLineCombo.Images.Add(CType(resources.GetObject("FDLineCombo.Images"), System.Drawing.Image))
+        Me.FDLineCombo.ItemHeight = 15
+        Me.FDLineCombo.Location = New System.Drawing.Point(4, 301)
+        Me.FDLineCombo.MatchEntryTimeout = CType(2000, Long)
+        Me.FDLineCombo.MaxDropDownItems = CType(5, Short)
+        Me.FDLineCombo.MaxLength = 32767
+        Me.FDLineCombo.MouseCursor = System.Windows.Forms.Cursors.Default
+        Me.FDLineCombo.Name = "FDLineCombo"
+        Me.FDLineCombo.RowSubDividerColor = System.Drawing.Color.DarkGray
+        Me.FDLineCombo.Size = New System.Drawing.Size(875, 21)
+        Me.FDLineCombo.TabIndex = 5
+        Me.FDLineCombo.Visible = False
+        Me.FDLineCombo.PropBag = resources.GetString("FDLineCombo.PropBag")
+        '
+        'FloridayOrderInfo_flx
+        '
+        Me.FloridayOrderInfo_flx.AllowDragging = C1.Win.C1FlexGrid.AllowDraggingEnum.None
+        Me.FloridayOrderInfo_flx.AllowSorting = C1.Win.C1FlexGrid.AllowSortingEnum.None
+        Me.FloridayOrderInfo_flx.ColumnInfo = "3,0,0,0,0,-1,Columns:"
+        Me.FloridayOrderInfo_flx.Location = New System.Drawing.Point(4, 643)
+        Me.FloridayOrderInfo_flx.Name = "FloridayOrderInfo_flx"
+        Me.FloridayOrderInfo_flx.Rows.Count = 1
+        Me.FloridayOrderInfo_flx.Rows.Fixed = 0
+        Me.FloridayOrderInfo_flx.Size = New System.Drawing.Size(875, 293)
+        Me.FloridayOrderInfo_flx.TabIndex = 2
+        '
+        'FloridayOrderLines_flx
+        '
+        Me.FloridayOrderLines_flx.AllowDragging = C1.Win.C1FlexGrid.AllowDraggingEnum.None
+        Me.FloridayOrderLines_flx.ColumnInfo = "8,0,0,0,0,-1,Columns:"
+        Me.FloridayOrderLines_flx.Location = New System.Drawing.Point(4, 301)
+        Me.FloridayOrderLines_flx.Name = "FloridayOrderLines_flx"
+        Me.FloridayOrderLines_flx.Rows.Count = 1
+        Me.FloridayOrderLines_flx.Size = New System.Drawing.Size(875, 294)
+        Me.FloridayOrderLines_flx.TabIndex = 1
         '
         'FloridayOrders_flx
         '
@@ -3467,7 +3637,7 @@ Partial Class Form1
         Me.FloridayOrders_flx.Location = New System.Drawing.Point(4, 4)
         Me.FloridayOrders_flx.Name = "FloridayOrders_flx"
         Me.FloridayOrders_flx.Rows.Count = 1
-        Me.FloridayOrders_flx.Size = New System.Drawing.Size(792, 464)
+        Me.FloridayOrders_flx.Size = New System.Drawing.Size(875, 293)
         Me.FloridayOrders_flx.TabIndex = 0
         '
         'C1TabFlorecom
@@ -3475,7 +3645,7 @@ Partial Class Form1
         Me.C1TabFlorecom.Controls.Add(Me.C1SizerFlorecom)
         Me.C1TabFlorecom.Location = New System.Drawing.Point(1, 24)
         Me.C1TabFlorecom.Name = "C1TabFlorecom"
-        Me.C1TabFlorecom.Size = New System.Drawing.Size(800, 940)
+        Me.C1TabFlorecom.Size = New System.Drawing.Size(883, 940)
         Me.C1TabFlorecom.TabIndex = 2
         Me.C1TabFlorecom.Text = "Florecom"
         '
@@ -3488,11 +3658,11 @@ Partial Class Form1
         Me.C1SizerFlorecom.Controls.Add(Me.FC_Flexgrid_orderlines)
         Me.C1SizerFlorecom.Controls.Add(Me.FC_Flexgrid_orderlijst)
         Me.C1SizerFlorecom.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.C1SizerFlorecom.GridDefinition = "21.2765957446809:False:False;77.4468085106383:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "44.25:False:False;54.2" &
-    "5:False:False;"
+        Me.C1SizerFlorecom.GridDefinition = "21.2765957446809:False:False;77.4468085106383:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "44.2808607021518:False" &
+    ":False;54.3601359003397:False:False;"
         Me.C1SizerFlorecom.Location = New System.Drawing.Point(0, 0)
         Me.C1SizerFlorecom.Name = "C1SizerFlorecom"
-        Me.C1SizerFlorecom.Size = New System.Drawing.Size(800, 940)
+        Me.C1SizerFlorecom.Size = New System.Drawing.Size(883, 940)
         Me.C1SizerFlorecom.TabIndex = 0
         Me.C1SizerFlorecom.Text = "C1Sizer2"
         '
@@ -3516,7 +3686,7 @@ Partial Class Form1
         Me.Fc_ContactCombo.MouseCursor = System.Windows.Forms.Cursors.Default
         Me.Fc_ContactCombo.Name = "Fc_ContactCombo"
         Me.Fc_ContactCombo.RowSubDividerColor = System.Drawing.Color.DarkGray
-        Me.Fc_ContactCombo.Size = New System.Drawing.Size(354, 21)
+        Me.Fc_ContactCombo.Size = New System.Drawing.Size(391, 21)
         Me.Fc_ContactCombo.TabIndex = 5
         Me.Fc_ContactCombo.Visible = False
         Me.Fc_ContactCombo.PropBag = resources.GetString("Fc_ContactCombo.PropBag")
@@ -3535,14 +3705,14 @@ Partial Class Form1
         Me.Fc_LineCombo.EditorForeColor = System.Drawing.SystemColors.WindowText
         Me.Fc_LineCombo.Images.Add(CType(resources.GetObject("Fc_LineCombo.Images"), System.Drawing.Image))
         Me.Fc_LineCombo.ItemHeight = 15
-        Me.Fc_LineCombo.Location = New System.Drawing.Point(362, 208)
+        Me.Fc_LineCombo.Location = New System.Drawing.Point(399, 208)
         Me.Fc_LineCombo.MatchEntryTimeout = CType(2000, Long)
         Me.Fc_LineCombo.MaxDropDownItems = CType(5, Short)
         Me.Fc_LineCombo.MaxLength = 32767
         Me.Fc_LineCombo.MouseCursor = System.Windows.Forms.Cursors.Default
         Me.Fc_LineCombo.Name = "Fc_LineCombo"
         Me.Fc_LineCombo.RowSubDividerColor = System.Drawing.Color.DarkGray
-        Me.Fc_LineCombo.Size = New System.Drawing.Size(434, 21)
+        Me.Fc_LineCombo.Size = New System.Drawing.Size(480, 21)
         Me.Fc_LineCombo.TabIndex = 4
         Me.Fc_LineCombo.Visible = False
         Me.Fc_LineCombo.PropBag = resources.GetString("Fc_LineCombo.PropBag")
@@ -3552,11 +3722,11 @@ Partial Class Form1
         Me.Fc_Flexgrid_LineData.AllowDragging = C1.Win.C1FlexGrid.AllowDraggingEnum.None
         Me.Fc_Flexgrid_LineData.AllowSorting = C1.Win.C1FlexGrid.AllowSortingEnum.None
         Me.Fc_Flexgrid_LineData.ColumnInfo = resources.GetString("Fc_Flexgrid_LineData.ColumnInfo")
-        Me.Fc_Flexgrid_LineData.Location = New System.Drawing.Point(362, 208)
+        Me.Fc_Flexgrid_LineData.Location = New System.Drawing.Point(399, 208)
         Me.Fc_Flexgrid_LineData.Name = "Fc_Flexgrid_LineData"
         Me.Fc_Flexgrid_LineData.Rows.DefaultSize = 17
         Me.Fc_Flexgrid_LineData.SelectionMode = C1.Win.C1FlexGrid.SelectionModeEnum.ListBox
-        Me.Fc_Flexgrid_LineData.Size = New System.Drawing.Size(434, 728)
+        Me.Fc_Flexgrid_LineData.Size = New System.Drawing.Size(480, 728)
         Me.Fc_Flexgrid_LineData.TabIndex = 3
         '
         'FC_Flexgrid_contactdata
@@ -3568,7 +3738,7 @@ Partial Class Form1
         Me.FC_Flexgrid_contactdata.Location = New System.Drawing.Point(4, 208)
         Me.FC_Flexgrid_contactdata.Name = "FC_Flexgrid_contactdata"
         Me.FC_Flexgrid_contactdata.Rows.DefaultSize = 17
-        Me.FC_Flexgrid_contactdata.Size = New System.Drawing.Size(354, 728)
+        Me.FC_Flexgrid_contactdata.Size = New System.Drawing.Size(391, 728)
         Me.FC_Flexgrid_contactdata.TabIndex = 2
         '
         'FC_Flexgrid_orderlines
@@ -3576,12 +3746,12 @@ Partial Class Form1
         Me.FC_Flexgrid_orderlines.AllowDragging = C1.Win.C1FlexGrid.AllowDraggingEnum.None
         Me.FC_Flexgrid_orderlines.AllowSorting = C1.Win.C1FlexGrid.AllowSortingEnum.None
         Me.FC_Flexgrid_orderlines.ColumnInfo = resources.GetString("FC_Flexgrid_orderlines.ColumnInfo")
-        Me.FC_Flexgrid_orderlines.Location = New System.Drawing.Point(362, 4)
+        Me.FC_Flexgrid_orderlines.Location = New System.Drawing.Point(399, 4)
         Me.FC_Flexgrid_orderlines.Name = "FC_Flexgrid_orderlines"
         Me.FC_Flexgrid_orderlines.Rows.DefaultSize = 17
         Me.FC_Flexgrid_orderlines.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.FC_Flexgrid_orderlines.SelectionMode = C1.Win.C1FlexGrid.SelectionModeEnum.ListBox
-        Me.FC_Flexgrid_orderlines.Size = New System.Drawing.Size(434, 200)
+        Me.FC_Flexgrid_orderlines.Size = New System.Drawing.Size(480, 200)
         Me.FC_Flexgrid_orderlines.TabIndex = 1
         '
         'FC_Flexgrid_orderlijst
@@ -3595,7 +3765,7 @@ Partial Class Form1
         Me.FC_Flexgrid_orderlijst.Rows.DefaultSize = 17
         Me.FC_Flexgrid_orderlijst.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.FC_Flexgrid_orderlijst.SelectionMode = C1.Win.C1FlexGrid.SelectionModeEnum.ListBox
-        Me.FC_Flexgrid_orderlijst.Size = New System.Drawing.Size(354, 200)
+        Me.FC_Flexgrid_orderlijst.Size = New System.Drawing.Size(391, 200)
         Me.FC_Flexgrid_orderlijst.TabIndex = 0
         '
         'FlorecomDel_menuStrip
@@ -3615,7 +3785,7 @@ Partial Class Form1
         Me.C1TabVervoer.Controls.Add(Me.SizerVervoer)
         Me.C1TabVervoer.Location = New System.Drawing.Point(1, 24)
         Me.C1TabVervoer.Name = "C1TabVervoer"
-        Me.C1TabVervoer.Size = New System.Drawing.Size(800, 940)
+        Me.C1TabVervoer.Size = New System.Drawing.Size(883, 940)
         Me.C1TabVervoer.TabIndex = 3
         Me.C1TabVervoer.Text = "Vervoer"
         '
@@ -3626,20 +3796,20 @@ Partial Class Form1
         Me.SizerVervoer.Controls.Add(Me.Vervoer_PanelRechts)
         Me.SizerVervoer.Controls.Add(Me.Vervoer_PanelLinks)
         Me.SizerVervoer.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.SizerVervoer.GridDefinition = "63.8297872340426:False:False;34.8936170212766:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "49.25:False:False;49.2" &
-    "5:False:False;"
+        Me.SizerVervoer.GridDefinition = "63.8297872340426:False:False;34.8936170212766:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "49.3771234428086:False" &
+    ":False;49.2638731596829:False:False;"
         Me.SizerVervoer.Location = New System.Drawing.Point(0, 0)
         Me.SizerVervoer.Name = "SizerVervoer"
-        Me.SizerVervoer.Size = New System.Drawing.Size(800, 940)
+        Me.SizerVervoer.Size = New System.Drawing.Size(883, 940)
         Me.SizerVervoer.TabIndex = 0
         Me.SizerVervoer.Text = "C1Sizer2"
         '
         'Vervoer_Listbox
         '
         Me.Vervoer_Listbox.FormattingEnabled = True
-        Me.Vervoer_Listbox.Location = New System.Drawing.Point(402, 4)
+        Me.Vervoer_Listbox.Location = New System.Drawing.Point(444, 4)
         Me.Vervoer_Listbox.Name = "Vervoer_Listbox"
-        Me.Vervoer_Listbox.Size = New System.Drawing.Size(394, 589)
+        Me.Vervoer_Listbox.Size = New System.Drawing.Size(435, 589)
         Me.Vervoer_Listbox.TabIndex = 3
         '
         'Vervoer_Treeview
@@ -3647,7 +3817,7 @@ Partial Class Form1
         Me.Vervoer_Treeview.CheckBoxes = True
         Me.Vervoer_Treeview.Location = New System.Drawing.Point(4, 4)
         Me.Vervoer_Treeview.Name = "Vervoer_Treeview"
-        Me.Vervoer_Treeview.Size = New System.Drawing.Size(394, 600)
+        Me.Vervoer_Treeview.Size = New System.Drawing.Size(436, 600)
         Me.Vervoer_Treeview.TabIndex = 2
         '
         'Vervoer_PanelRechts
@@ -3660,9 +3830,9 @@ Partial Class Form1
         Me.Vervoer_PanelRechts.Controls.Add(Me.vervoer_afleverloc_order_but)
         Me.Vervoer_PanelRechts.Controls.Add(Me.Label13)
         Me.Vervoer_PanelRechts.Controls.Add(Me.Vervoer_MonthCalendar)
-        Me.Vervoer_PanelRechts.Location = New System.Drawing.Point(402, 608)
+        Me.Vervoer_PanelRechts.Location = New System.Drawing.Point(444, 608)
         Me.Vervoer_PanelRechts.Name = "Vervoer_PanelRechts"
-        Me.Vervoer_PanelRechts.Size = New System.Drawing.Size(394, 328)
+        Me.Vervoer_PanelRechts.Size = New System.Drawing.Size(435, 328)
         Me.Vervoer_PanelRechts.TabIndex = 1
         '
         'vervoer_vervoerder_klant_but
@@ -3745,7 +3915,7 @@ Partial Class Form1
         Me.Vervoer_PanelLinks.Controls.Add(Me.Vervoer_OphalenBrieven_but)
         Me.Vervoer_PanelLinks.Location = New System.Drawing.Point(4, 608)
         Me.Vervoer_PanelLinks.Name = "Vervoer_PanelLinks"
-        Me.Vervoer_PanelLinks.Size = New System.Drawing.Size(394, 328)
+        Me.Vervoer_PanelLinks.Size = New System.Drawing.Size(436, 328)
         Me.Vervoer_PanelLinks.TabIndex = 0
         '
         'Vervoer_OphalenSelectie_but
@@ -3834,7 +4004,7 @@ Partial Class Form1
         Me.C1TabOverzichten.Controls.Add(Me.OverzichtSizer1)
         Me.C1TabOverzichten.Location = New System.Drawing.Point(1, 24)
         Me.C1TabOverzichten.Name = "C1TabOverzichten"
-        Me.C1TabOverzichten.Size = New System.Drawing.Size(800, 940)
+        Me.C1TabOverzichten.Size = New System.Drawing.Size(883, 940)
         Me.C1TabOverzichten.TabIndex = 4
         Me.C1TabOverzichten.Text = "Overzicht"
         '
@@ -3843,10 +4013,11 @@ Partial Class Form1
         Me.OverzichtSizer1.Controls.Add(Me.OverzichtSizer2)
         Me.OverzichtSizer1.Controls.Add(Me.Overzicht_PictureBox)
         Me.OverzichtSizer1.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.OverzichtSizer1.GridDefinition = "72.1276595744681:False:False;26.5957446808511:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "99:False:False;"
+        Me.OverzichtSizer1.GridDefinition = "72.1276595744681:False:False;26.5957446808511:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "99.0939977349943:False" &
+    ":False;"
         Me.OverzichtSizer1.Location = New System.Drawing.Point(0, 0)
         Me.OverzichtSizer1.Name = "OverzichtSizer1"
-        Me.OverzichtSizer1.Size = New System.Drawing.Size(800, 940)
+        Me.OverzichtSizer1.Size = New System.Drawing.Size(883, 940)
         Me.OverzichtSizer1.TabIndex = 0
         Me.OverzichtSizer1.Text = "C1SizerOverzichten"
         '
@@ -3854,10 +4025,10 @@ Partial Class Form1
         '
         Me.OverzichtSizer2.Controls.Add(Me.Overzicht_FlexGrid)
         Me.OverzichtSizer2.Controls.Add(Me.Overzicht_Panel)
-        Me.OverzichtSizer2.GridDefinition = "96.8:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "51.7676767676768:False:True;46.7171717171717:False:False;"
+        Me.OverzichtSizer2.GridDefinition = "96.8:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "46.8571428571429:False:True;51.7714285714286:False:False;"
         Me.OverzichtSizer2.Location = New System.Drawing.Point(4, 686)
         Me.OverzichtSizer2.Name = "OverzichtSizer2"
-        Me.OverzichtSizer2.Size = New System.Drawing.Size(792, 250)
+        Me.OverzichtSizer2.Size = New System.Drawing.Size(875, 250)
         Me.OverzichtSizer2.TabIndex = 1
         Me.OverzichtSizer2.Text = "C1Sizer2"
         '
@@ -3867,7 +4038,7 @@ Partial Class Form1
         Me.Overzicht_FlexGrid.Location = New System.Drawing.Point(418, 4)
         Me.Overzicht_FlexGrid.Name = "Overzicht_FlexGrid"
         Me.Overzicht_FlexGrid.Rows.DefaultSize = 17
-        Me.Overzicht_FlexGrid.Size = New System.Drawing.Size(370, 242)
+        Me.Overzicht_FlexGrid.Size = New System.Drawing.Size(453, 242)
         Me.Overzicht_FlexGrid.TabIndex = 1
         '
         'Overzicht_Panel
@@ -3968,7 +4139,7 @@ Partial Class Form1
         '
         Me.Overzicht_PictureBox.Location = New System.Drawing.Point(4, 4)
         Me.Overzicht_PictureBox.Name = "Overzicht_PictureBox"
-        Me.Overzicht_PictureBox.Size = New System.Drawing.Size(792, 678)
+        Me.Overzicht_PictureBox.Size = New System.Drawing.Size(875, 678)
         Me.Overzicht_PictureBox.TabIndex = 0
         Me.Overzicht_PictureBox.TabStop = False
         '
@@ -3977,7 +4148,7 @@ Partial Class Form1
         Me.C1TabDatabase.Controls.Add(Me.C1Sizer1)
         Me.C1TabDatabase.Location = New System.Drawing.Point(1, 24)
         Me.C1TabDatabase.Name = "C1TabDatabase"
-        Me.C1TabDatabase.Size = New System.Drawing.Size(800, 940)
+        Me.C1TabDatabase.Size = New System.Drawing.Size(883, 940)
         Me.C1TabDatabase.TabIndex = 5
         Me.C1TabDatabase.Text = "Database"
         '
@@ -3987,10 +4158,11 @@ Partial Class Form1
         Me.C1Sizer1.Controls.Add(Me.DatabaseFlexGridEdit)
         Me.C1Sizer1.Controls.Add(Me.DatabaseFlexGridShow)
         Me.C1Sizer1.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.C1Sizer1.GridDefinition = "6.38297872340426:False:True;92.3404255319149:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "99:False:False;"
+        Me.C1Sizer1.GridDefinition = "6.38297872340426:False:True;92.3404255319149:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "99.0939977349943:False:" &
+    "False;"
         Me.C1Sizer1.Location = New System.Drawing.Point(0, 0)
         Me.C1Sizer1.Name = "C1Sizer1"
-        Me.C1Sizer1.Size = New System.Drawing.Size(800, 940)
+        Me.C1Sizer1.Size = New System.Drawing.Size(883, 940)
         Me.C1Sizer1.TabIndex = 0
         Me.C1Sizer1.Text = "C1Sizer1"
         '
@@ -4014,7 +4186,7 @@ Partial Class Form1
         Me.DatabaseComboWpsFilter.MouseCursor = System.Windows.Forms.Cursors.Default
         Me.DatabaseComboWpsFilter.Name = "DatabaseComboWpsFilter"
         Me.DatabaseComboWpsFilter.RowSubDividerColor = System.Drawing.Color.DarkGray
-        Me.DatabaseComboWpsFilter.Size = New System.Drawing.Size(792, 21)
+        Me.DatabaseComboWpsFilter.Size = New System.Drawing.Size(875, 21)
         Me.DatabaseComboWpsFilter.TabIndex = 2
         Me.DatabaseComboWpsFilter.Visible = False
         Me.DatabaseComboWpsFilter.PropBag = resources.GetString("DatabaseComboWpsFilter.PropBag")
@@ -4027,7 +4199,7 @@ Partial Class Form1
         Me.DatabaseFlexGridEdit.Name = "DatabaseFlexGridEdit"
         Me.DatabaseFlexGridEdit.Rows.Count = 2
         Me.DatabaseFlexGridEdit.Rows.DefaultSize = 17
-        Me.DatabaseFlexGridEdit.Size = New System.Drawing.Size(792, 60)
+        Me.DatabaseFlexGridEdit.Size = New System.Drawing.Size(875, 60)
         Me.DatabaseFlexGridEdit.TabIndex = 0
         '
         'DatabaseFlexGridShow
@@ -4038,33 +4210,10 @@ Partial Class Form1
         Me.DatabaseFlexGridShow.Location = New System.Drawing.Point(4, 68)
         Me.DatabaseFlexGridShow.Name = "DatabaseFlexGridShow"
         Me.DatabaseFlexGridShow.Rows.DefaultSize = 17
+        Me.DatabaseFlexGridShow.Rows.GlyphRow = 0
         Me.DatabaseFlexGridShow.SelectionMode = C1.Win.C1FlexGrid.SelectionModeEnum.ListBox
-        Me.DatabaseFlexGridShow.Size = New System.Drawing.Size(792, 868)
+        Me.DatabaseFlexGridShow.Size = New System.Drawing.Size(875, 868)
         Me.DatabaseFlexGridShow.TabIndex = 1
-        '
-        'C1TabDatabase2
-        '
-        Me.C1TabDatabase2.Controls.Add(Me.Database_flx)
-        Me.C1TabDatabase2.Location = New System.Drawing.Point(1, 24)
-        Me.C1TabDatabase2.Name = "C1TabDatabase2"
-        Me.C1TabDatabase2.Size = New System.Drawing.Size(800, 940)
-        Me.C1TabDatabase2.TabIndex = 12
-        Me.C1TabDatabase2.Text = "DB Floriday"
-        '
-        'Database_flx
-        '
-        Me.Database_flx.AllowDragging = C1.Win.C1FlexGrid.AllowDraggingEnum.None
-        Me.Database_flx.AllowEditing = False
-        Me.Database_flx.AllowFiltering = True
-        Me.Database_flx.ColumnInfo = "10,0,0,0,0,85,Columns:"
-        Me.Database_flx.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.Database_flx.Location = New System.Drawing.Point(0, 0)
-        Me.Database_flx.Name = "Database_flx"
-        Me.Database_flx.Rows.DefaultSize = 17
-        Me.Database_flx.Rows.GlyphRow = 0
-        Me.Database_flx.SelectionMode = C1.Win.C1FlexGrid.SelectionModeEnum.ListBox
-        Me.Database_flx.Size = New System.Drawing.Size(800, 940)
-        Me.Database_flx.TabIndex = 2
         '
         'C1TabInstellingen
         '
@@ -4146,7 +4295,7 @@ Partial Class Form1
         Me.C1TabInstellingen.Controls.Add(Me.SettingsMySQL_lbl1)
         Me.C1TabInstellingen.Location = New System.Drawing.Point(1, 24)
         Me.C1TabInstellingen.Name = "C1TabInstellingen"
-        Me.C1TabInstellingen.Size = New System.Drawing.Size(800, 940)
+        Me.C1TabInstellingen.Size = New System.Drawing.Size(883, 940)
         Me.C1TabInstellingen.TabIndex = 6
         Me.C1TabInstellingen.Text = "Instellingen"
         '
@@ -5533,7 +5682,7 @@ Partial Class Form1
         Me.C1TabPrijzen.Controls.Add(Me.Prijzen_sizer)
         Me.C1TabPrijzen.Location = New System.Drawing.Point(1, 24)
         Me.C1TabPrijzen.Name = "C1TabPrijzen"
-        Me.C1TabPrijzen.Size = New System.Drawing.Size(800, 940)
+        Me.C1TabPrijzen.Size = New System.Drawing.Size(883, 940)
         Me.C1TabPrijzen.TabIndex = 8
         Me.C1TabPrijzen.Text = "Prijzen"
         '
@@ -5544,10 +5693,10 @@ Partial Class Form1
         Me.Prijzen_sizer.Controls.Add(Me.Prijzen_Sizer2)
         Me.Prijzen_sizer.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Prijzen_sizer.GridDefinition = "42.0212765957447:False:False;10.6382978723404:False:True;45.6382978723404:False:F" &
-    "alse;" & Global.Microsoft.VisualBasic.ChrW(9) & "99:False:False;"
+    "alse;" & Global.Microsoft.VisualBasic.ChrW(9) & "99.0939977349943:False:False;"
         Me.Prijzen_sizer.Location = New System.Drawing.Point(0, 0)
         Me.Prijzen_sizer.Name = "Prijzen_sizer"
-        Me.Prijzen_sizer.Size = New System.Drawing.Size(800, 940)
+        Me.Prijzen_sizer.Size = New System.Drawing.Size(883, 940)
         Me.Prijzen_sizer.TabIndex = 0
         Me.Prijzen_sizer.Text = "C1Sizer2"
         '
@@ -5555,10 +5704,10 @@ Partial Class Form1
         '
         Me.C1prijzensizer3.Controls.Add(Me.prijzenpanelmidleft)
         Me.C1prijzensizer3.Controls.Add(Me.prijzenpanelmidright)
-        Me.C1prijzensizer3.GridDefinition = "92:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "65.0252525252525:False:False;33.459595959596:False:False;"
+        Me.C1prijzensizer3.GridDefinition = "92:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "65.1428571428571:False:False;33.4857142857143:False:False;"
         Me.C1prijzensizer3.Location = New System.Drawing.Point(4, 403)
         Me.C1prijzensizer3.Name = "C1prijzensizer3"
-        Me.C1prijzensizer3.Size = New System.Drawing.Size(792, 100)
+        Me.C1prijzensizer3.Size = New System.Drawing.Size(875, 100)
         Me.C1prijzensizer3.TabIndex = 5
         Me.C1prijzensizer3.Text = "C1Sizer2"
         '
@@ -5583,7 +5732,7 @@ Partial Class Form1
         Me.prijzenpanelmidleft.Controls.Add(Me.prijzen_klantgroep_rb)
         Me.prijzenpanelmidleft.Location = New System.Drawing.Point(4, 4)
         Me.prijzenpanelmidleft.Name = "prijzenpanelmidleft"
-        Me.prijzenpanelmidleft.Size = New System.Drawing.Size(515, 92)
+        Me.prijzenpanelmidleft.Size = New System.Drawing.Size(570, 92)
         Me.prijzenpanelmidleft.TabIndex = 4
         '
         'prijzen_actiecode
@@ -5755,9 +5904,9 @@ Partial Class Form1
         Me.prijzenpanelmidright.Controls.Add(Me.prijzen_prijs_lbl)
         Me.prijzenpanelmidright.Controls.Add(Me.prijzen_prijs_txt)
         Me.prijzenpanelmidright.Controls.Add(Me.prijzen_datum_pick)
-        Me.prijzenpanelmidright.Location = New System.Drawing.Point(523, 4)
+        Me.prijzenpanelmidright.Location = New System.Drawing.Point(578, 4)
         Me.prijzenpanelmidright.Name = "prijzenpanelmidright"
-        Me.prijzenpanelmidright.Size = New System.Drawing.Size(265, 92)
+        Me.prijzenpanelmidright.Size = New System.Drawing.Size(293, 92)
         Me.prijzenpanelmidright.TabIndex = 5
         '
         'prijzen_idsel_lbl
@@ -5823,7 +5972,7 @@ Partial Class Form1
         '
         Me.Prijzen_PictureBox.Location = New System.Drawing.Point(4, 4)
         Me.Prijzen_PictureBox.Name = "Prijzen_PictureBox"
-        Me.Prijzen_PictureBox.Size = New System.Drawing.Size(792, 395)
+        Me.Prijzen_PictureBox.Size = New System.Drawing.Size(875, 395)
         Me.Prijzen_PictureBox.TabIndex = 3
         Me.Prijzen_PictureBox.TabStop = False
         '
@@ -5831,11 +5980,11 @@ Partial Class Form1
         '
         Me.Prijzen_Sizer2.Controls.Add(Me.Prijzen_flexgrid_soorten)
         Me.Prijzen_Sizer2.Controls.Add(Me.prijzen_flexgrid_datums)
-        Me.Prijzen_Sizer2.GridDefinition = "98.1351981351981:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "65.0252525252525:False:False;33.459595959596:False:" &
-    "False;"
+        Me.Prijzen_Sizer2.GridDefinition = "98.1351981351981:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "65.1428571428571:False:False;33.4857142857143:False" &
+    ":False;"
         Me.Prijzen_Sizer2.Location = New System.Drawing.Point(4, 507)
         Me.Prijzen_Sizer2.Name = "Prijzen_Sizer2"
-        Me.Prijzen_Sizer2.Size = New System.Drawing.Size(792, 429)
+        Me.Prijzen_Sizer2.Size = New System.Drawing.Size(875, 429)
         Me.Prijzen_Sizer2.TabIndex = 2
         Me.Prijzen_Sizer2.Text = "C1Sizer2"
         '
@@ -5848,7 +5997,7 @@ Partial Class Form1
         Me.Prijzen_flexgrid_soorten.Name = "Prijzen_flexgrid_soorten"
         Me.Prijzen_flexgrid_soorten.Rows.DefaultSize = 17
         Me.Prijzen_flexgrid_soorten.SelectionMode = C1.Win.C1FlexGrid.SelectionModeEnum.ListBox
-        Me.Prijzen_flexgrid_soorten.Size = New System.Drawing.Size(515, 421)
+        Me.Prijzen_flexgrid_soorten.Size = New System.Drawing.Size(570, 421)
         Me.Prijzen_flexgrid_soorten.TabIndex = 1
         '
         'prijzen_flexgrid_datums
@@ -5857,11 +6006,11 @@ Partial Class Form1
         Me.prijzen_flexgrid_datums.ColumnInfo = "2,0,0,0,0,85,Columns:0{Width:108;Caption:""Datum"";}" & Global.Microsoft.VisualBasic.ChrW(9) & "1{Width:100;Caption:""Prijs"";}" & Global.Microsoft.VisualBasic.ChrW(9) &
     ""
         Me.prijzen_flexgrid_datums.HighLight = C1.Win.C1FlexGrid.HighLightEnum.WithFocus
-        Me.prijzen_flexgrid_datums.Location = New System.Drawing.Point(523, 4)
+        Me.prijzen_flexgrid_datums.Location = New System.Drawing.Point(578, 4)
         Me.prijzen_flexgrid_datums.Name = "prijzen_flexgrid_datums"
         Me.prijzen_flexgrid_datums.Rows.DefaultSize = 17
         Me.prijzen_flexgrid_datums.SelectionMode = C1.Win.C1FlexGrid.SelectionModeEnum.ListBox
-        Me.prijzen_flexgrid_datums.Size = New System.Drawing.Size(265, 421)
+        Me.prijzen_flexgrid_datums.Size = New System.Drawing.Size(293, 421)
         Me.prijzen_flexgrid_datums.TabIndex = 0
         '
         'C1TabVoorraad
@@ -5869,7 +6018,7 @@ Partial Class Form1
         Me.C1TabVoorraad.Controls.Add(Me.C1SizerVoorraad)
         Me.C1TabVoorraad.Location = New System.Drawing.Point(1, 24)
         Me.C1TabVoorraad.Name = "C1TabVoorraad"
-        Me.C1TabVoorraad.Size = New System.Drawing.Size(800, 940)
+        Me.C1TabVoorraad.Size = New System.Drawing.Size(883, 940)
         Me.C1TabVoorraad.TabIndex = 9
         Me.C1TabVoorraad.Text = "Voorraad"
         '
@@ -5878,10 +6027,11 @@ Partial Class Form1
         Me.C1SizerVoorraad.Controls.Add(Me.Voorraad_Flexgrid)
         Me.C1SizerVoorraad.Controls.Add(Me.PanelVoorraad)
         Me.C1SizerVoorraad.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.C1SizerVoorraad.GridDefinition = "99.1489361702128:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "31.25:False:True;67.25:False:False;"
+        Me.C1SizerVoorraad.GridDefinition = "99.1489361702128:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "28.312570781427:False:True;70.3284258210646:False:F" &
+    "alse;"
         Me.C1SizerVoorraad.Location = New System.Drawing.Point(0, 0)
         Me.C1SizerVoorraad.Name = "C1SizerVoorraad"
-        Me.C1SizerVoorraad.Size = New System.Drawing.Size(800, 940)
+        Me.C1SizerVoorraad.Size = New System.Drawing.Size(883, 940)
         Me.C1SizerVoorraad.TabIndex = 0
         Me.C1SizerVoorraad.Text = "C1Sizer2"
         '
@@ -5895,7 +6045,7 @@ Partial Class Form1
         Me.Voorraad_Flexgrid.Rows.Count = 1
         Me.Voorraad_Flexgrid.Rows.DefaultSize = 17
         Me.Voorraad_Flexgrid.SelectionMode = C1.Win.C1FlexGrid.SelectionModeEnum.ListBox
-        Me.Voorraad_Flexgrid.Size = New System.Drawing.Size(538, 932)
+        Me.Voorraad_Flexgrid.Size = New System.Drawing.Size(621, 932)
         Me.Voorraad_Flexgrid.TabIndex = 1
         '
         'PanelVoorraad
@@ -6282,7 +6432,7 @@ Partial Class Form1
         Me.C1TabWPS.Controls.Add(Me.C1SizerWpsFilters)
         Me.C1TabWPS.Location = New System.Drawing.Point(1, 24)
         Me.C1TabWPS.Name = "C1TabWPS"
-        Me.C1TabWPS.Size = New System.Drawing.Size(800, 940)
+        Me.C1TabWPS.Size = New System.Drawing.Size(883, 940)
         Me.C1TabWPS.TabIndex = 10
         Me.C1TabWPS.Text = "Wps filters"
         '
@@ -6295,10 +6445,10 @@ Partial Class Form1
         Me.C1SizerWpsFilters.Controls.Add(Me.WpsFilter_FilterFlex)
         Me.C1SizerWpsFilters.Dock = System.Windows.Forms.DockStyle.Fill
         Me.C1SizerWpsFilters.GridDefinition = "4.04255319148936:False:True;51.4893617021277:False:False;4.04255319148936:False:T" &
-    "rue;38.2978723404255:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "99:False:False;"
+    "rue;38.2978723404255:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "99.0939977349943:False:False;"
         Me.C1SizerWpsFilters.Location = New System.Drawing.Point(0, 0)
         Me.C1SizerWpsFilters.Name = "C1SizerWpsFilters"
-        Me.C1SizerWpsFilters.Size = New System.Drawing.Size(800, 940)
+        Me.C1SizerWpsFilters.Size = New System.Drawing.Size(883, 940)
         Me.C1SizerWpsFilters.TabIndex = 0
         Me.C1SizerWpsFilters.Text = "C1Sizer2"
         '
@@ -6322,7 +6472,7 @@ Partial Class Form1
         Me.WpsFilter_flexcombo.MouseCursor = System.Windows.Forms.Cursors.Default
         Me.WpsFilter_flexcombo.Name = "WpsFilter_flexcombo"
         Me.WpsFilter_flexcombo.RowSubDividerColor = System.Drawing.Color.DarkGray
-        Me.WpsFilter_flexcombo.Size = New System.Drawing.Size(792, 21)
+        Me.WpsFilter_flexcombo.Size = New System.Drawing.Size(875, 21)
         Me.WpsFilter_flexcombo.TabIndex = 3
         Me.WpsFilter_flexcombo.Visible = False
         Me.WpsFilter_flexcombo.PropBag = resources.GetString("WpsFilter_flexcombo.PropBag")
@@ -6334,7 +6484,7 @@ Partial Class Form1
         Me.PanelWpsFilterMidBar.Controls.Add(Me.WpsFilter_FilterOpslaan_but)
         Me.PanelWpsFilterMidBar.Location = New System.Drawing.Point(4, 534)
         Me.PanelWpsFilterMidBar.Name = "PanelWpsFilterMidBar"
-        Me.PanelWpsFilterMidBar.Size = New System.Drawing.Size(792, 38)
+        Me.PanelWpsFilterMidBar.Size = New System.Drawing.Size(875, 38)
         Me.PanelWpsFilterMidBar.TabIndex = 4
         '
         'WpsFilter_filternaam_lbl
@@ -6368,7 +6518,7 @@ Partial Class Form1
         Me.PanelWpsFilterTopBar.Controls.Add(Me.WpsFilter_koperIndelingOphalen_but)
         Me.PanelWpsFilterTopBar.Location = New System.Drawing.Point(4, 4)
         Me.PanelWpsFilterTopBar.Name = "PanelWpsFilterTopBar"
-        Me.PanelWpsFilterTopBar.Size = New System.Drawing.Size(792, 38)
+        Me.PanelWpsFilterTopBar.Size = New System.Drawing.Size(875, 38)
         Me.PanelWpsFilterTopBar.TabIndex = 3
         '
         'WpsFilter_koperIndelingOphalen_but
@@ -6401,7 +6551,7 @@ Partial Class Form1
         Me.PanelWpsFilter.Controls.Add(Me.WpsFilter_Add1_but)
         Me.PanelWpsFilter.Location = New System.Drawing.Point(4, 46)
         Me.PanelWpsFilter.Name = "PanelWpsFilter"
-        Me.PanelWpsFilter.Size = New System.Drawing.Size(792, 484)
+        Me.PanelWpsFilter.Size = New System.Drawing.Size(875, 484)
         Me.PanelWpsFilter.TabIndex = 2
         '
         'WpsFilter_Scrollbar
@@ -6568,7 +6718,7 @@ Partial Class Form1
         Me.WpsFilter_FilterFlex.Name = "WpsFilter_FilterFlex"
         Me.WpsFilter_FilterFlex.Rows.Count = 1
         Me.WpsFilter_FilterFlex.Rows.DefaultSize = 17
-        Me.WpsFilter_FilterFlex.Size = New System.Drawing.Size(792, 360)
+        Me.WpsFilter_FilterFlex.Size = New System.Drawing.Size(875, 360)
         Me.WpsFilter_FilterFlex.TabIndex = 1
         '
         'C1TabInloggen
@@ -6576,7 +6726,7 @@ Partial Class Form1
         Me.C1TabInloggen.Controls.Add(Me.C1SizerInloggen)
         Me.C1TabInloggen.Location = New System.Drawing.Point(1, 24)
         Me.C1TabInloggen.Name = "C1TabInloggen"
-        Me.C1TabInloggen.Size = New System.Drawing.Size(800, 940)
+        Me.C1TabInloggen.Size = New System.Drawing.Size(883, 940)
         Me.C1TabInloggen.TabIndex = 7
         Me.C1TabInloggen.Text = "Inloggen"
         '
@@ -6585,10 +6735,11 @@ Partial Class Form1
         Me.C1SizerInloggen.Controls.Add(Me.LoginPanelDown)
         Me.C1SizerInloggen.Controls.Add(Me.LoginPanelup)
         Me.C1SizerInloggen.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.C1SizerInloggen.GridDefinition = "19.1489361702128:False:True;79.5744680851064:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "99:False:False;"
+        Me.C1SizerInloggen.GridDefinition = "19.1489361702128:False:True;79.5744680851064:False:False;" & Global.Microsoft.VisualBasic.ChrW(9) & "99.0939977349943:False:" &
+    "False;"
         Me.C1SizerInloggen.Location = New System.Drawing.Point(0, 0)
         Me.C1SizerInloggen.Name = "C1SizerInloggen"
-        Me.C1SizerInloggen.Size = New System.Drawing.Size(800, 940)
+        Me.C1SizerInloggen.Size = New System.Drawing.Size(883, 940)
         Me.C1SizerInloggen.TabIndex = 32
         Me.C1SizerInloggen.Text = "C1Sizer2"
         '
@@ -6597,7 +6748,7 @@ Partial Class Form1
         Me.LoginPanelDown.Controls.Add(Me.AgendaFlexGrid)
         Me.LoginPanelDown.Location = New System.Drawing.Point(4, 188)
         Me.LoginPanelDown.Name = "LoginPanelDown"
-        Me.LoginPanelDown.Size = New System.Drawing.Size(792, 748)
+        Me.LoginPanelDown.Size = New System.Drawing.Size(875, 748)
         Me.LoginPanelDown.TabIndex = 1
         '
         'AgendaFlexGrid
@@ -6611,7 +6762,7 @@ Partial Class Form1
         Me.AgendaFlexGrid.Name = "AgendaFlexGrid"
         Me.AgendaFlexGrid.Rows.Count = 98
         Me.AgendaFlexGrid.Rows.DefaultSize = 17
-        Me.AgendaFlexGrid.Size = New System.Drawing.Size(792, 748)
+        Me.AgendaFlexGrid.Size = New System.Drawing.Size(875, 748)
         Me.AgendaFlexGrid.TabIndex = 0
         '
         'LoginPanelup
@@ -6634,7 +6785,7 @@ Partial Class Form1
         Me.LoginPanelup.Controls.Add(Me.LoginNaam5_but)
         Me.LoginPanelup.Location = New System.Drawing.Point(4, 4)
         Me.LoginPanelup.Name = "LoginPanelup"
-        Me.LoginPanelup.Size = New System.Drawing.Size(792, 180)
+        Me.LoginPanelup.Size = New System.Drawing.Size(875, 180)
         Me.LoginPanelup.TabIndex = 0
         '
         'Inloglijst_lst
@@ -6782,10 +6933,9 @@ Partial Class Form1
         Me.C1NavBar1.Controls.Add(Me.C1NavBarFloriday)
         Me.C1NavBar1.Controls.Add(Me.C1NavBarFlorecom)
         Me.C1NavBar1.Controls.Add(Me.C1NavBarPanelDatabase)
-        Me.C1NavBar1.Controls.Add(Me.C1NavBarDatabase2)
         Me.C1NavBar1.Controls.Add(Me.C1NavBarPanelInstellingen)
         Me.C1NavBar1.Controls.Add(Me.C1NavBarPrijzen)
-        Me.C1NavBar1.Location = New System.Drawing.Point(341, 4)
+        Me.C1NavBar1.Location = New System.Drawing.Point(376, 4)
         Me.C1NavBar1.Name = "C1NavBar1"
         Me.C1NavBar1.ShowOptionsMenu = False
         Me.C1NavBar1.Size = New System.Drawing.Size(207, 965)
@@ -6801,7 +6951,7 @@ Partial Class Form1
         Me.C1NavBarPanelOrders.Controls.Add(Me.C1NavPanelOrders1)
         Me.C1NavBarPanelOrders.ID = 1
         Me.C1NavBarPanelOrders.Name = "C1NavBarPanelOrders"
-        Me.C1NavBarPanelOrders.Size = New System.Drawing.Size(205, 675)
+        Me.C1NavBarPanelOrders.Size = New System.Drawing.Size(205, 707)
         '
         'C1NavPanelOrders2
         '
@@ -6809,7 +6959,7 @@ Partial Class Form1
         Me.C1NavPanelOrders2.Controls.Add(Me.OrdersMenuBekijken)
         Me.C1NavPanelOrders2.Controls.Add(Me.Orders_pakbonnenprinten)
         Me.C1NavPanelOrders2.Controls.Add(Me.OrdersMenuVerzamelkar)
-        Me.C1NavPanelOrders2.Controls.Add(Me.Order_ScanKlaar)
+        Me.C1NavPanelOrders2.Controls.Add(Me.Order_PrintBriefFloriday)
         Me.C1NavPanelOrders2.Controls.Add(Me.OrdersMenuAanvulling)
         Me.C1NavPanelOrders2.Controls.Add(Me.Orders_WpsXML_but)
         Me.C1NavPanelOrders2.Controls.Add(Me.Orders_Mark)
@@ -6827,7 +6977,7 @@ Partial Class Form1
         Me.C1NavPanelOrders2.Dock = System.Windows.Forms.DockStyle.Fill
         Me.C1NavPanelOrders2.Location = New System.Drawing.Point(0, 196)
         Me.C1NavPanelOrders2.Name = "C1NavPanelOrders2"
-        Me.C1NavPanelOrders2.Size = New System.Drawing.Size(205, 479)
+        Me.C1NavPanelOrders2.Size = New System.Drawing.Size(205, 511)
         Me.C1NavPanelOrders2.TabIndex = 1
         '
         'OrdersMenuBekijken
@@ -6857,15 +7007,14 @@ Partial Class Form1
         Me.OrdersMenuVerzamelkar.Text = "Toevoegen aan Verzamel kar"
         Me.OrdersMenuVerzamelkar.UseVisualStyleBackColor = True
         '
-        'Order_ScanKlaar
+        'Order_PrintBriefFloriday
         '
-        Me.Order_ScanKlaar.Location = New System.Drawing.Point(22, 193)
-        Me.Order_ScanKlaar.Name = "Order_ScanKlaar"
-        Me.Order_ScanKlaar.Size = New System.Drawing.Size(77, 18)
-        Me.Order_ScanKlaar.TabIndex = 17
-        Me.Order_ScanKlaar.Text = "Scan klaar"
-        Me.Order_ScanKlaar.UseVisualStyleBackColor = True
-        Me.Order_ScanKlaar.Visible = False
+        Me.Order_PrintBriefFloriday.Location = New System.Drawing.Point(22, 193)
+        Me.Order_PrintBriefFloriday.Name = "Order_PrintBriefFloriday"
+        Me.Order_PrintBriefFloriday.Size = New System.Drawing.Size(163, 21)
+        Me.Order_PrintBriefFloriday.TabIndex = 17
+        Me.Order_PrintBriefFloriday.Text = "Print Brief Floriday"
+        Me.Order_PrintBriefFloriday.UseVisualStyleBackColor = True
         '
         'OrdersMenuAanvulling
         '
@@ -6907,7 +7056,7 @@ Partial Class Form1
         '
         Me.Orders_SdfVersturen.Location = New System.Drawing.Point(24, 161)
         Me.Orders_SdfVersturen.Name = "Orders_SdfVersturen"
-        Me.Orders_SdfVersturen.Size = New System.Drawing.Size(161, 32)
+        Me.Orders_SdfVersturen.Size = New System.Drawing.Size(161, 26)
         Me.Orders_SdfVersturen.TabIndex = 11
         Me.Orders_SdfVersturen.Text = "Sdf verstuur"
         Me.Orders_SdfVersturen.UseVisualStyleBackColor = True
@@ -7011,106 +7160,112 @@ Partial Class Form1
         '
         'C1NavBarFloriday
         '
+        Me.C1NavBarFloriday.Button.Image = CType(resources.GetObject("resource.Image1"), System.Drawing.Image)
         Me.C1NavBarFloriday.Button.Text = "Floriday"
+        Me.C1NavBarFloriday.Controls.Add(Me.FdMenu_ordernr_chk)
+        Me.C1NavBarFloriday.Controls.Add(Me.fd_updatelist_but)
+        Me.C1NavBarFloriday.Controls.Add(Me.Fd_archief_rb)
+        Me.C1NavBarFloriday.Controls.Add(Me.Fd_nieuweOrders_rb)
+        Me.C1NavBarFloriday.Controls.Add(Me.Floriday_Calendar)
         Me.C1NavBarFloriday.Controls.Add(Me.FdMenu_Zoek_chk)
         Me.C1NavBarFloriday.Controls.Add(Me.FdMenu_Zoek_txt)
         Me.C1NavBarFloriday.Controls.Add(Me.FdMenu_floridaynr_txt)
-        Me.C1NavBarFloriday.Controls.Add(Me.Label55)
         Me.C1NavBarFloriday.Controls.Add(Me.FdMenu_Verwerk_but)
-        Me.C1NavBarFloriday.Controls.Add(Me.FdMenu_Archief_but)
-        Me.C1NavBarFloriday.Controls.Add(Me.FdMenu_datum_dtp)
-        Me.C1NavBarFloriday.Controls.Add(Me.FdMenu_ArchiefVandaag_but)
-        Me.C1NavBarFloriday.Controls.Add(Me.FdMenu_ordersophalen_but)
         Me.C1NavBarFloriday.ID = 6
         Me.C1NavBarFloriday.Name = "C1NavBarFloriday"
-        Me.C1NavBarFloriday.Size = New System.Drawing.Size(205, 675)
+        Me.C1NavBarFloriday.Size = New System.Drawing.Size(205, 707)
+        '
+        'FdMenu_ordernr_chk
+        '
+        Me.FdMenu_ordernr_chk.AutoSize = True
+        Me.FdMenu_ordernr_chk.Location = New System.Drawing.Point(4, 245)
+        Me.FdMenu_ordernr_chk.Name = "FdMenu_ordernr_chk"
+        Me.FdMenu_ordernr_chk.Size = New System.Drawing.Size(77, 17)
+        Me.FdMenu_ordernr_chk.TabIndex = 24
+        Me.FdMenu_ordernr_chk.Text = "Fd ordernr:"
+        Me.FdMenu_ordernr_chk.UseVisualStyleBackColor = True
+        '
+        'fd_updatelist_but
+        '
+        Me.fd_updatelist_but.Location = New System.Drawing.Point(4, 268)
+        Me.fd_updatelist_but.Name = "fd_updatelist_but"
+        Me.fd_updatelist_but.Size = New System.Drawing.Size(198, 28)
+        Me.fd_updatelist_but.TabIndex = 23
+        Me.fd_updatelist_but.Text = "Update"
+        Me.fd_updatelist_but.UseVisualStyleBackColor = True
+        '
+        'Fd_archief_rb
+        '
+        Me.Fd_archief_rb.AutoSize = True
+        Me.Fd_archief_rb.Location = New System.Drawing.Point(138, 184)
+        Me.Fd_archief_rb.Name = "Fd_archief_rb"
+        Me.Fd_archief_rb.Size = New System.Drawing.Size(58, 17)
+        Me.Fd_archief_rb.TabIndex = 22
+        Me.Fd_archief_rb.Text = "Archief"
+        Me.Fd_archief_rb.UseVisualStyleBackColor = True
+        '
+        'Fd_nieuweOrders_rb
+        '
+        Me.Fd_nieuweOrders_rb.AutoSize = True
+        Me.Fd_nieuweOrders_rb.Checked = True
+        Me.Fd_nieuweOrders_rb.Location = New System.Drawing.Point(13, 184)
+        Me.Fd_nieuweOrders_rb.Name = "Fd_nieuweOrders_rb"
+        Me.Fd_nieuweOrders_rb.Size = New System.Drawing.Size(93, 17)
+        Me.Fd_nieuweOrders_rb.TabIndex = 21
+        Me.Fd_nieuweOrders_rb.TabStop = True
+        Me.Fd_nieuweOrders_rb.Text = "Nieuwe orders"
+        Me.Fd_nieuweOrders_rb.UseVisualStyleBackColor = True
+        '
+        'Floriday_Calendar
+        '
+        Me.Floriday_Calendar.Location = New System.Drawing.Point(13, 9)
+        Me.Floriday_Calendar.Name = "Floriday_Calendar"
+        Me.Floriday_Calendar.ShowWeekNumbers = True
+        Me.Floriday_Calendar.TabIndex = 20
         '
         'FdMenu_Zoek_chk
         '
         Me.FdMenu_Zoek_chk.AutoSize = True
-        Me.FdMenu_Zoek_chk.Location = New System.Drawing.Point(30, 130)
+        Me.FdMenu_Zoek_chk.Location = New System.Drawing.Point(4, 219)
         Me.FdMenu_Zoek_chk.Name = "FdMenu_Zoek_chk"
-        Me.FdMenu_Zoek_chk.Size = New System.Drawing.Size(54, 17)
+        Me.FdMenu_Zoek_chk.Size = New System.Drawing.Size(84, 17)
         Me.FdMenu_Zoek_chk.TabIndex = 19
-        Me.FdMenu_Zoek_chk.Text = "Zoek:"
+        Me.FdMenu_Zoek_chk.Text = "Zoek koper:"
         Me.FdMenu_Zoek_chk.UseVisualStyleBackColor = True
         '
         'FdMenu_Zoek_txt
         '
-        Me.FdMenu_Zoek_txt.Location = New System.Drawing.Point(98, 128)
+        Me.FdMenu_Zoek_txt.Location = New System.Drawing.Point(94, 217)
         Me.FdMenu_Zoek_txt.Name = "FdMenu_Zoek_txt"
-        Me.FdMenu_Zoek_txt.Size = New System.Drawing.Size(75, 20)
+        Me.FdMenu_Zoek_txt.Size = New System.Drawing.Size(108, 20)
         Me.FdMenu_Zoek_txt.TabIndex = 18
         '
         'FdMenu_floridaynr_txt
         '
-        Me.FdMenu_floridaynr_txt.Location = New System.Drawing.Point(98, 154)
+        Me.FdMenu_floridaynr_txt.Location = New System.Drawing.Point(94, 243)
         Me.FdMenu_floridaynr_txt.Name = "FdMenu_floridaynr_txt"
-        Me.FdMenu_floridaynr_txt.Size = New System.Drawing.Size(75, 20)
+        Me.FdMenu_floridaynr_txt.Size = New System.Drawing.Size(108, 20)
         Me.FdMenu_floridaynr_txt.TabIndex = 17
-        '
-        'Label55
-        '
-        Me.Label55.AutoSize = True
-        Me.Label55.Location = New System.Drawing.Point(27, 157)
-        Me.Label55.Name = "Label55"
-        Me.Label55.Size = New System.Drawing.Size(61, 13)
-        Me.Label55.TabIndex = 16
-        Me.Label55.Text = "Fd order nr:"
         '
         'FdMenu_Verwerk_but
         '
-        Me.FdMenu_Verwerk_but.Location = New System.Drawing.Point(34, 272)
+        Me.FdMenu_Verwerk_but.Location = New System.Drawing.Point(4, 367)
         Me.FdMenu_Verwerk_but.Name = "FdMenu_Verwerk_but"
-        Me.FdMenu_Verwerk_but.Size = New System.Drawing.Size(141, 39)
+        Me.FdMenu_Verwerk_but.Size = New System.Drawing.Size(198, 39)
         Me.FdMenu_Verwerk_but.TabIndex = 15
         Me.FdMenu_Verwerk_but.Text = "Verwerk"
         Me.FdMenu_Verwerk_but.UseVisualStyleBackColor = True
         '
-        'FdMenu_Archief_but
-        '
-        Me.FdMenu_Archief_but.Location = New System.Drawing.Point(32, 206)
-        Me.FdMenu_Archief_but.Name = "FdMenu_Archief_but"
-        Me.FdMenu_Archief_but.Size = New System.Drawing.Size(141, 31)
-        Me.FdMenu_Archief_but.TabIndex = 14
-        Me.FdMenu_Archief_but.Text = "Archief"
-        Me.FdMenu_Archief_but.UseVisualStyleBackColor = True
-        '
-        'FdMenu_datum_dtp
-        '
-        Me.FdMenu_datum_dtp.Location = New System.Drawing.Point(32, 180)
-        Me.FdMenu_datum_dtp.Name = "FdMenu_datum_dtp"
-        Me.FdMenu_datum_dtp.Size = New System.Drawing.Size(143, 20)
-        Me.FdMenu_datum_dtp.TabIndex = 13
-        '
-        'FdMenu_ArchiefVandaag_but
-        '
-        Me.FdMenu_ArchiefVandaag_but.Location = New System.Drawing.Point(30, 73)
-        Me.FdMenu_ArchiefVandaag_but.Name = "FdMenu_ArchiefVandaag_but"
-        Me.FdMenu_ArchiefVandaag_but.Size = New System.Drawing.Size(141, 31)
-        Me.FdMenu_ArchiefVandaag_but.TabIndex = 12
-        Me.FdMenu_ArchiefVandaag_but.Text = "Archief Vandaag"
-        Me.FdMenu_ArchiefVandaag_but.UseVisualStyleBackColor = True
-        '
-        'FdMenu_ordersophalen_but
-        '
-        Me.FdMenu_ordersophalen_but.Location = New System.Drawing.Point(30, 29)
-        Me.FdMenu_ordersophalen_but.Name = "FdMenu_ordersophalen_but"
-        Me.FdMenu_ordersophalen_but.Size = New System.Drawing.Size(141, 38)
-        Me.FdMenu_ordersophalen_but.TabIndex = 11
-        Me.FdMenu_ordersophalen_but.Text = "Nieuwe Floriday orders ophalen"
-        Me.FdMenu_ordersophalen_but.UseVisualStyleBackColor = True
-        '
         'C1NavBarFlorecom
         '
-        Me.C1NavBarFlorecom.Button.Image = CType(resources.GetObject("resource.Image1"), System.Drawing.Image)
+        Me.C1NavBarFlorecom.Button.Image = CType(resources.GetObject("resource.Image2"), System.Drawing.Image)
         Me.C1NavBarFlorecom.Button.ImageTransparentColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(255, Byte), Integer), CType(CType(255, Byte), Integer))
         Me.C1NavBarFlorecom.Button.SmallImage = CType(resources.GetObject("resource.SmallImage"), System.Drawing.Image)
         Me.C1NavBarFlorecom.Button.Text = "Florecom"
         Me.C1NavBarFlorecom.Controls.Add(Me.C1NavPanelFlorecom)
         Me.C1NavBarFlorecom.ID = 5
         Me.C1NavBarFlorecom.Name = "C1NavBarFlorecom"
-        Me.C1NavBarFlorecom.Size = New System.Drawing.Size(205, 675)
+        Me.C1NavBarFlorecom.Size = New System.Drawing.Size(205, 707)
         '
         'C1NavPanelFlorecom
         '
@@ -7126,7 +7281,7 @@ Partial Class Form1
         Me.C1NavPanelFlorecom.Dock = System.Windows.Forms.DockStyle.Fill
         Me.C1NavPanelFlorecom.Location = New System.Drawing.Point(0, 0)
         Me.C1NavPanelFlorecom.Name = "C1NavPanelFlorecom"
-        Me.C1NavPanelFlorecom.Size = New System.Drawing.Size(205, 675)
+        Me.C1NavPanelFlorecom.Size = New System.Drawing.Size(205, 707)
         Me.C1NavPanelFlorecom.TabIndex = 0
         '
         'FcMenu_fczoek_chk
@@ -7207,17 +7362,20 @@ Partial Class Form1
         '
         'C1NavBarPanelDatabase
         '
-        Me.C1NavBarPanelDatabase.Button.Image = CType(resources.GetObject("resource.Image2"), System.Drawing.Image)
+        Me.C1NavBarPanelDatabase.Button.Image = CType(resources.GetObject("resource.Image3"), System.Drawing.Image)
         Me.C1NavBarPanelDatabase.Button.ImageTransparentColor = System.Drawing.Color.FromArgb(CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer))
         Me.C1NavBarPanelDatabase.Button.SmallImage = CType(resources.GetObject("resource.SmallImage1"), System.Drawing.Image)
         Me.C1NavBarPanelDatabase.Button.Text = "Database"
         Me.C1NavBarPanelDatabase.Controls.Add(Me.C1NavPanelDatabase1)
         Me.C1NavBarPanelDatabase.ID = 2
         Me.C1NavBarPanelDatabase.Name = "C1NavBarPanelDatabase"
-        Me.C1NavBarPanelDatabase.Size = New System.Drawing.Size(205, 675)
+        Me.C1NavBarPanelDatabase.Size = New System.Drawing.Size(205, 707)
         '
         'C1NavPanelDatabase1
         '
+        Me.C1NavPanelDatabase1.Controls.Add(Me.DatabaseMenuCopy_but)
+        Me.C1NavPanelDatabase1.Controls.Add(Me.DatabaseMenuHerladen_but)
+        Me.C1NavPanelDatabase1.Controls.Add(Me.Database_preselect_cmb)
         Me.C1NavPanelDatabase1.Controls.Add(Me.DatabaseMenuSDFPL_but)
         Me.C1NavPanelDatabase1.Controls.Add(Me.database_lbl)
         Me.C1NavPanelDatabase1.Controls.Add(Me.DatabaseMenuOpslaan)
@@ -7227,12 +7385,44 @@ Partial Class Form1
         Me.C1NavPanelDatabase1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.C1NavPanelDatabase1.Location = New System.Drawing.Point(0, 0)
         Me.C1NavPanelDatabase1.Name = "C1NavPanelDatabase1"
-        Me.C1NavPanelDatabase1.Size = New System.Drawing.Size(205, 675)
+        Me.C1NavPanelDatabase1.Size = New System.Drawing.Size(205, 707)
         Me.C1NavPanelDatabase1.TabIndex = 0
+        '
+        'DatabaseMenuCopy_but
+        '
+        Me.DatabaseMenuCopy_but.Location = New System.Drawing.Point(14, 216)
+        Me.DatabaseMenuCopy_but.Name = "DatabaseMenuCopy_but"
+        Me.DatabaseMenuCopy_but.Size = New System.Drawing.Size(175, 35)
+        Me.DatabaseMenuCopy_but.TabIndex = 13
+        Me.DatabaseMenuCopy_but.Text = "Copy"
+        Me.DatabaseMenuCopy_but.UseVisualStyleBackColor = True
+        Me.DatabaseMenuCopy_but.Visible = False
+        '
+        'DatabaseMenuHerladen_but
+        '
+        Me.DatabaseMenuHerladen_but.Location = New System.Drawing.Point(14, 93)
+        Me.DatabaseMenuHerladen_but.Name = "DatabaseMenuHerladen_but"
+        Me.DatabaseMenuHerladen_but.Size = New System.Drawing.Size(175, 35)
+        Me.DatabaseMenuHerladen_but.TabIndex = 12
+        Me.DatabaseMenuHerladen_but.Text = "Herladen"
+        Me.DatabaseMenuHerladen_but.UseVisualStyleBackColor = True
+        Me.DatabaseMenuHerladen_but.Visible = False
+        '
+        'Database_preselect_cmb
+        '
+        Me.Database_preselect_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.Database_preselect_cmb.FormattingEnabled = True
+        Me.Database_preselect_cmb.Items.AddRange(New Object() {"Accessoires", "Accessoire prijzen", "Agenda", "Fusten", "Favorieten", "Kopers", "Koper alias", "Kopersgroepen", "Mixen naam", "Mixen vullen", "Mix lagen", "Soorten", "Soortgroepen", "Soort volgorde", "Florecom soortmatch opm", "Florecom soortmatch -", "Fust categorie vullen", "Hoes categorie vullen", "Kwekerscode", "Prijslijst J&P importeren", "Prijslijst kortingtabel", "Prijslijst koppelingen"})
+        Me.Database_preselect_cmb.Location = New System.Drawing.Point(15, 49)
+        Me.Database_preselect_cmb.MaxDropDownItems = 16
+        Me.Database_preselect_cmb.Name = "Database_preselect_cmb"
+        Me.Database_preselect_cmb.Size = New System.Drawing.Size(174, 21)
+        Me.Database_preselect_cmb.TabIndex = 11
+        Me.Database_preselect_cmb.Visible = False
         '
         'DatabaseMenuSDFPL_but
         '
-        Me.DatabaseMenuSDFPL_but.Location = New System.Drawing.Point(16, 246)
+        Me.DatabaseMenuSDFPL_but.Location = New System.Drawing.Point(15, 366)
         Me.DatabaseMenuSDFPL_but.Name = "DatabaseMenuSDFPL_but"
         Me.DatabaseMenuSDFPL_but.Size = New System.Drawing.Size(174, 35)
         Me.DatabaseMenuSDFPL_but.TabIndex = 5
@@ -7243,7 +7433,7 @@ Partial Class Form1
         'database_lbl
         '
         Me.database_lbl.AutoSize = True
-        Me.database_lbl.Location = New System.Drawing.Point(54, 66)
+        Me.database_lbl.Location = New System.Drawing.Point(51, 75)
         Me.database_lbl.Name = "database_lbl"
         Me.database_lbl.Size = New System.Drawing.Size(94, 13)
         Me.database_lbl.TabIndex = 4
@@ -7251,30 +7441,33 @@ Partial Class Form1
         '
         'DatabaseMenuOpslaan
         '
-        Me.DatabaseMenuOpslaan.Location = New System.Drawing.Point(15, 178)
+        Me.DatabaseMenuOpslaan.Location = New System.Drawing.Point(14, 257)
         Me.DatabaseMenuOpslaan.Name = "DatabaseMenuOpslaan"
-        Me.DatabaseMenuOpslaan.Size = New System.Drawing.Size(174, 35)
+        Me.DatabaseMenuOpslaan.Size = New System.Drawing.Size(175, 35)
         Me.DatabaseMenuOpslaan.TabIndex = 3
         Me.DatabaseMenuOpslaan.Text = "Opslaan"
         Me.DatabaseMenuOpslaan.UseVisualStyleBackColor = True
+        Me.DatabaseMenuOpslaan.Visible = False
         '
         'DatabaseMenuAanpassen
         '
-        Me.DatabaseMenuAanpassen.Location = New System.Drawing.Point(15, 137)
+        Me.DatabaseMenuAanpassen.Location = New System.Drawing.Point(14, 175)
         Me.DatabaseMenuAanpassen.Name = "DatabaseMenuAanpassen"
-        Me.DatabaseMenuAanpassen.Size = New System.Drawing.Size(174, 35)
+        Me.DatabaseMenuAanpassen.Size = New System.Drawing.Size(175, 35)
         Me.DatabaseMenuAanpassen.TabIndex = 2
         Me.DatabaseMenuAanpassen.Text = "Aanpassen"
         Me.DatabaseMenuAanpassen.UseVisualStyleBackColor = True
+        Me.DatabaseMenuAanpassen.Visible = False
         '
         'DatabaseMenuNieuw
         '
-        Me.DatabaseMenuNieuw.Location = New System.Drawing.Point(16, 96)
+        Me.DatabaseMenuNieuw.Location = New System.Drawing.Point(14, 134)
         Me.DatabaseMenuNieuw.Name = "DatabaseMenuNieuw"
-        Me.DatabaseMenuNieuw.Size = New System.Drawing.Size(174, 35)
+        Me.DatabaseMenuNieuw.Size = New System.Drawing.Size(175, 35)
         Me.DatabaseMenuNieuw.TabIndex = 1
         Me.DatabaseMenuNieuw.Text = "Nieuw"
         Me.DatabaseMenuNieuw.UseVisualStyleBackColor = True
+        Me.DatabaseMenuNieuw.Visible = False
         '
         'Database_Combo
         '
@@ -7284,100 +7477,19 @@ Partial Class Form1
         Me.Database_Combo.Location = New System.Drawing.Point(14, 22)
         Me.Database_Combo.MaxDropDownItems = 16
         Me.Database_Combo.Name = "Database_Combo"
-        Me.Database_Combo.Size = New System.Drawing.Size(176, 21)
+        Me.Database_Combo.Size = New System.Drawing.Size(175, 21)
         Me.Database_Combo.TabIndex = 0
-        '
-        'C1NavBarDatabase2
-        '
-        Me.C1NavBarDatabase2.Button.Text = "Database Floriday"
-        Me.C1NavBarDatabase2.Controls.Add(Me.db_databaseload_but)
-        Me.C1NavBarDatabase2.Controls.Add(Me.db_databasepreselect_cmb)
-        Me.C1NavBarDatabase2.Controls.Add(Me.db_database_lbl)
-        Me.C1NavBarDatabase2.Controls.Add(Me.db_databasesave_but)
-        Me.C1NavBarDatabase2.Controls.Add(Me.db_databasecopy_but)
-        Me.C1NavBarDatabase2.Controls.Add(Me.db_databasenew_but)
-        Me.C1NavBarDatabase2.Controls.Add(Me.db_database_cmb)
-        Me.C1NavBarDatabase2.ID = 7
-        Me.C1NavBarDatabase2.Name = "C1NavBarDatabase2"
-        Me.C1NavBarDatabase2.Size = New System.Drawing.Size(205, 675)
-        '
-        'db_databaseload_but
-        '
-        Me.db_databaseload_but.Location = New System.Drawing.Point(18, 144)
-        Me.db_databaseload_but.Name = "db_databaseload_but"
-        Me.db_databaseload_but.Size = New System.Drawing.Size(174, 35)
-        Me.db_databaseload_but.TabIndex = 11
-        Me.db_databaseload_but.Text = "Herladen"
-        Me.db_databaseload_but.UseVisualStyleBackColor = True
-        '
-        'db_databasepreselect_cmb
-        '
-        Me.db_databasepreselect_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.db_databasepreselect_cmb.FormattingEnabled = True
-        Me.db_databasepreselect_cmb.Items.AddRange(New Object() {"Accessoires", "Accessoire prijzen", "Agenda", "Fusten", "Favorieten", "Kopers", "Koper alias", "Kopersgroepen", "Mixen naam", "Mixen vullen", "Mix lagen", "Soorten", "Soortgroepen", "Soort volgorde", "Florecom soortmatch opm", "Florecom soortmatch -", "Fust categorie vullen", "Hoes categorie vullen", "Kwekerscode", "Prijslijst J&P importeren", "Prijslijst kortingtabel", "Prijslijst koppelingen"})
-        Me.db_databasepreselect_cmb.Location = New System.Drawing.Point(16, 43)
-        Me.db_databasepreselect_cmb.MaxDropDownItems = 16
-        Me.db_databasepreselect_cmb.Name = "db_databasepreselect_cmb"
-        Me.db_databasepreselect_cmb.Size = New System.Drawing.Size(176, 21)
-        Me.db_databasepreselect_cmb.TabIndex = 10
-        '
-        'db_database_lbl
-        '
-        Me.db_database_lbl.AutoSize = True
-        Me.db_database_lbl.Location = New System.Drawing.Point(56, 101)
-        Me.db_database_lbl.Name = "db_database_lbl"
-        Me.db_database_lbl.Size = New System.Drawing.Size(94, 13)
-        Me.db_database_lbl.TabIndex = 9
-        Me.db_database_lbl.Text = "Maak een selectie"
-        '
-        'db_databasesave_but
-        '
-        Me.db_databasesave_but.Location = New System.Drawing.Point(17, 269)
-        Me.db_databasesave_but.Name = "db_databasesave_but"
-        Me.db_databasesave_but.Size = New System.Drawing.Size(174, 35)
-        Me.db_databasesave_but.TabIndex = 8
-        Me.db_databasesave_but.Text = "Opslaan"
-        Me.db_databasesave_but.UseVisualStyleBackColor = True
-        '
-        'db_databasecopy_but
-        '
-        Me.db_databasecopy_but.Location = New System.Drawing.Point(17, 228)
-        Me.db_databasecopy_but.Name = "db_databasecopy_but"
-        Me.db_databasecopy_but.Size = New System.Drawing.Size(174, 35)
-        Me.db_databasecopy_but.TabIndex = 7
-        Me.db_databasecopy_but.Text = "Copy"
-        Me.db_databasecopy_but.UseVisualStyleBackColor = True
-        '
-        'db_databasenew_but
-        '
-        Me.db_databasenew_but.Location = New System.Drawing.Point(18, 187)
-        Me.db_databasenew_but.Name = "db_databasenew_but"
-        Me.db_databasenew_but.Size = New System.Drawing.Size(174, 35)
-        Me.db_databasenew_but.TabIndex = 6
-        Me.db_databasenew_but.Text = "Nieuw"
-        Me.db_databasenew_but.UseVisualStyleBackColor = True
-        '
-        'db_database_cmb
-        '
-        Me.db_database_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.db_database_cmb.FormattingEnabled = True
-        Me.db_database_cmb.Items.AddRange(New Object() {"Accessoires", "Accessoire prijzen", "Agenda", "Fusten", "Favorieten", "Kopers", "Koper alias", "Kopersgroepen", "Mixen naam", "Mixen vullen", "Mix lagen", "Soorten", "Soortgroepen", "Soort volgorde", "Florecom soortmatch opm", "Florecom soortmatch -", "Fust categorie vullen", "Hoes categorie vullen", "Kwekerscode", "Prijslijst J&P importeren", "Prijslijst kortingtabel", "Prijslijst koppelingen"})
-        Me.db_database_cmb.Location = New System.Drawing.Point(16, 16)
-        Me.db_database_cmb.MaxDropDownItems = 16
-        Me.db_database_cmb.Name = "db_database_cmb"
-        Me.db_database_cmb.Size = New System.Drawing.Size(176, 21)
-        Me.db_database_cmb.TabIndex = 5
         '
         'C1NavBarPanelInstellingen
         '
-        Me.C1NavBarPanelInstellingen.Button.Image = CType(resources.GetObject("resource.Image3"), System.Drawing.Image)
+        Me.C1NavBarPanelInstellingen.Button.Image = CType(resources.GetObject("resource.Image4"), System.Drawing.Image)
         Me.C1NavBarPanelInstellingen.Button.ImageTransparentColor = System.Drawing.Color.FromArgb(CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer))
         Me.C1NavBarPanelInstellingen.Button.SmallImage = CType(resources.GetObject("resource.SmallImage2"), System.Drawing.Image)
         Me.C1NavBarPanelInstellingen.Button.Text = "Instellingen"
         Me.C1NavBarPanelInstellingen.Controls.Add(Me.C1NavPanelInstel)
         Me.C1NavBarPanelInstellingen.ID = 3
         Me.C1NavBarPanelInstellingen.Name = "C1NavBarPanelInstellingen"
-        Me.C1NavBarPanelInstellingen.Size = New System.Drawing.Size(205, 675)
+        Me.C1NavBarPanelInstellingen.Size = New System.Drawing.Size(205, 707)
         '
         'C1NavPanelInstel
         '
@@ -7387,7 +7499,7 @@ Partial Class Form1
         Me.C1NavPanelInstel.Dock = System.Windows.Forms.DockStyle.Fill
         Me.C1NavPanelInstel.Location = New System.Drawing.Point(0, 0)
         Me.C1NavPanelInstel.Name = "C1NavPanelInstel"
-        Me.C1NavPanelInstel.Size = New System.Drawing.Size(205, 675)
+        Me.C1NavPanelInstel.Size = New System.Drawing.Size(205, 707)
         Me.C1NavPanelInstel.TabIndex = 0
         '
         'Inst_run_update_but
@@ -7419,14 +7531,14 @@ Partial Class Form1
         '
         'C1NavBarPrijzen
         '
-        Me.C1NavBarPrijzen.Button.Image = CType(resources.GetObject("resource.Image4"), System.Drawing.Image)
+        Me.C1NavBarPrijzen.Button.Image = CType(resources.GetObject("resource.Image5"), System.Drawing.Image)
         Me.C1NavBarPrijzen.Button.ImageTransparentColor = System.Drawing.Color.FromArgb(CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer), CType(CType(238, Byte), Integer))
         Me.C1NavBarPrijzen.Button.SmallImage = CType(resources.GetObject("resource.SmallImage3"), System.Drawing.Image)
         Me.C1NavBarPrijzen.Button.Text = "Prijzen"
         Me.C1NavBarPrijzen.Controls.Add(Me.C1NavPanelPrijzen)
         Me.C1NavBarPrijzen.ID = 4
         Me.C1NavBarPrijzen.Name = "C1NavBarPrijzen"
-        Me.C1NavBarPrijzen.Size = New System.Drawing.Size(205, 675)
+        Me.C1NavBarPrijzen.Size = New System.Drawing.Size(205, 707)
         '
         'C1NavPanelPrijzen
         '
@@ -7437,7 +7549,7 @@ Partial Class Form1
         Me.C1NavPanelPrijzen.Dock = System.Windows.Forms.DockStyle.Fill
         Me.C1NavPanelPrijzen.Location = New System.Drawing.Point(0, 0)
         Me.C1NavPanelPrijzen.Name = "C1NavPanelPrijzen"
-        Me.C1NavPanelPrijzen.Size = New System.Drawing.Size(205, 675)
+        Me.C1NavPanelPrijzen.Size = New System.Drawing.Size(205, 707)
         Me.C1NavPanelPrijzen.TabIndex = 0
         '
         'Prijzen_opslaan_but
@@ -7774,7 +7886,7 @@ Partial Class Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(1358, 973)
+        Me.ClientSize = New System.Drawing.Size(1476, 973)
         Me.Controls.Add(Me.C1SizerMainWindow)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "Form1"
@@ -7842,6 +7954,11 @@ Partial Class Form1
         Me.C1TabFloriday.ResumeLayout(False)
         CType(Me.C1SizerFloriday, System.ComponentModel.ISupportInitialize).EndInit
         Me.C1SizerFloriday.ResumeLayout(False)
+        Me.C1SizerFloriday.PerformLayout
+        Me.PanelFloridayorders.ResumeLayout(False)
+        CType(Me.FDLineCombo, System.ComponentModel.ISupportInitialize).EndInit
+        CType(Me.FloridayOrderInfo_flx, System.ComponentModel.ISupportInitialize).EndInit
+        CType(Me.FloridayOrderLines_flx, System.ComponentModel.ISupportInitialize).EndInit
         CType(Me.FloridayOrders_flx, System.ComponentModel.ISupportInitialize).EndInit
         Me.C1TabFlorecom.ResumeLayout(False)
         CType(Me.C1SizerFlorecom, System.ComponentModel.ISupportInitialize).EndInit
@@ -7877,8 +7994,6 @@ Partial Class Form1
         CType(Me.DatabaseComboWpsFilter, System.ComponentModel.ISupportInitialize).EndInit
         CType(Me.DatabaseFlexGridEdit, System.ComponentModel.ISupportInitialize).EndInit
         CType(Me.DatabaseFlexGridShow, System.ComponentModel.ISupportInitialize).EndInit
-        Me.C1TabDatabase2.ResumeLayout(False)
-        CType(Me.Database_flx, System.ComponentModel.ISupportInitialize).EndInit
         Me.C1TabInstellingen.ResumeLayout(False)
         Me.C1TabInstellingen.PerformLayout
         Me.Inst_Overig_GB.ResumeLayout(False)
@@ -7952,8 +8067,6 @@ Partial Class Form1
         Me.C1NavBarPanelDatabase.ResumeLayout(False)
         Me.C1NavPanelDatabase1.ResumeLayout(False)
         Me.C1NavPanelDatabase1.PerformLayout
-        Me.C1NavBarDatabase2.ResumeLayout(False)
-        Me.C1NavBarDatabase2.PerformLayout
         Me.C1NavBarPanelInstellingen.ResumeLayout(False)
         Me.C1NavPanelInstel.ResumeLayout(False)
         Me.C1NavBarPrijzen.ResumeLayout(False)
@@ -8227,10 +8340,6 @@ Partial Class Form1
     Friend WithEvents KarBut2 As System.Windows.Forms.Button
     Friend WithEvents KarBut1 As System.Windows.Forms.Button
     Friend WithEvents KarBut100 As System.Windows.Forms.Button
-    Friend WithEvents Kar_sdfversturen4_but As System.Windows.Forms.Button
-    Friend WithEvents Kar_sdfversturen3_but As System.Windows.Forms.Button
-    Friend WithEvents Kar_sdfversturen2_but As System.Windows.Forms.Button
-    Friend WithEvents Kar_sdfversturen1_but As System.Windows.Forms.Button
     Friend WithEvents Kar_autosamenvoegen4_chk As System.Windows.Forms.CheckBox
     Friend WithEvents Kar_autosamenvoegen3_chk As System.Windows.Forms.CheckBox
     Friend WithEvents Kar_autosamenvoegen2_chk As System.Windows.Forms.CheckBox
@@ -8289,16 +8398,11 @@ Partial Class Form1
     Friend WithEvents Order_ToolStripMenuItem6 As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents OverzichtSizer1 As C1.Win.C1Sizer.C1Sizer
     Friend WithEvents Overzicht_PictureBox As System.Windows.Forms.PictureBox
-    Friend WithEvents ToolTipOrderMix As System.Windows.Forms.ToolTip
     Friend WithEvents OverzichtSizer2 As C1.Win.C1Sizer.C1Sizer
     Friend WithEvents Overzicht_FlexGrid As C1.Win.C1FlexGrid.C1FlexGrid
     Friend WithEvents Overzicht_Panel As System.Windows.Forms.Panel
     Friend WithEvents Overzicht_MonthCalendar As System.Windows.Forms.MonthCalendar
     Friend WithEvents OrderKopierenToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
-    Friend WithEvents Kar_pakbonprint4_but As System.Windows.Forms.Button
-    Friend WithEvents Kar_pakbonprint3_but As System.Windows.Forms.Button
-    Friend WithEvents Kar_pakbonprint2_but As System.Windows.Forms.Button
-    Friend WithEvents Kar_pakbonprint1_but As System.Windows.Forms.Button
     Friend WithEvents Order_herbereken_prijzen As System.Windows.Forms.Button
     Friend WithEvents TreeMenu_StatusNenI As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents TreeMenu_StatusVerkort As System.Windows.Forms.ToolStripMenuItem
@@ -8434,7 +8538,7 @@ Partial Class Form1
     Friend WithEvents Overzicht_gegevensophalen_but As System.Windows.Forms.Button
     Friend WithEvents Overzicht_klantspecifiek_chk As System.Windows.Forms.CheckBox
     Friend WithEvents Overzicht_klantspecifiek_cmb As System.Windows.Forms.ComboBox
-    Friend WithEvents Order_ScanKlaar As System.Windows.Forms.Button
+    Friend WithEvents Order_PrintBriefFloriday As System.Windows.Forms.Button
     Friend WithEvents TimerBarcodeServer As System.Windows.Forms.Timer
     Friend WithEvents OrdersMenuVerzamelkar As System.Windows.Forms.Button
     Friend WithEvents FC_Toolstrip_SoortOpmerking As System.Windows.Forms.ToolStripMenuItem
@@ -8651,20 +8755,34 @@ Partial Class Form1
     Friend WithEvents FdMenu_Zoek_chk As CheckBox
     Friend WithEvents FdMenu_Zoek_txt As TextBox
     Friend WithEvents FdMenu_floridaynr_txt As TextBox
-    Friend WithEvents Label55 As Label
     Friend WithEvents FdMenu_Verwerk_but As Button
-    Friend WithEvents FdMenu_Archief_but As Button
-    Friend WithEvents FdMenu_datum_dtp As DateTimePicker
-    Friend WithEvents FdMenu_ArchiefVandaag_but As Button
-    Friend WithEvents FdMenu_ordersophalen_but As Button
-    Friend WithEvents C1TabDatabase2 As C1.Win.C1Command.C1DockingTabPage
-    Friend WithEvents Database_flx As C1.Win.C1FlexGrid.C1FlexGrid
-    Friend WithEvents C1NavBarDatabase2 As C1.Win.C1Command.C1NavBarPanel
-    Friend WithEvents db_databasepreselect_cmb As ComboBox
-    Friend WithEvents db_database_lbl As Label
-    Friend WithEvents db_databasesave_but As Button
-    Friend WithEvents db_databasecopy_but As Button
-    Friend WithEvents db_databasenew_but As Button
-    Friend WithEvents db_database_cmb As ComboBox
-    Friend WithEvents db_databaseload_but As Button
+    Friend WithEvents FloridayOrderInfo_flx As C1.Win.C1FlexGrid.C1FlexGrid
+    Friend WithEvents FloridayOrderLines_flx As C1.Win.C1FlexGrid.C1FlexGrid
+    Friend WithEvents FDLineCombo As C1.Win.C1List.C1Combo
+    Friend WithEvents PanelFloridayorders As Panel
+    Friend WithEvents Floriday_Filterstoepassen_but As Button
+    Friend WithEvents Floriday_orderlineherstellen_but As Button
+    Friend WithEvents DatabaseMenuCopy_but As Button
+    Friend WithEvents DatabaseMenuHerladen_but As Button
+    Friend WithEvents Database_preselect_cmb As ComboBox
+    Friend WithEvents TestBuild_but As Button
+    Friend WithEvents Orders_PlusAccessoires_but As Button
+    Friend WithEvents Floriday_Calendar As MonthCalendar
+    Friend WithEvents Fd_archief_rb As RadioButton
+    Friend WithEvents Fd_nieuweOrders_rb As RadioButton
+    Friend WithEvents fd_updatelist_but As Button
+    Friend WithEvents Tree_BBKlok_cmb As ComboBox
+    Friend WithEvents KarCommand1_but As Button
+    Friend WithEvents KarCommand1_cmb As ComboBox
+    Friend WithEvents KarCommand4_but As Button
+    Friend WithEvents KarCommand4_cmb As ComboBox
+    Friend WithEvents KarCommand3_but As Button
+    Friend WithEvents KarCommand3_cmb As ComboBox
+    Friend WithEvents KarCommand2_but As Button
+    Friend WithEvents KarCommand2_cmb As ComboBox
+    Friend WithEvents Kar_fdverzonden4_chk As CheckBox
+    Friend WithEvents Kar_fdverzonden3_chk As CheckBox
+    Friend WithEvents Kar_fdverzonden2_chk As CheckBox
+    Friend WithEvents Kar_fdverzonden1_chk As CheckBox
+    Friend WithEvents FdMenu_ordernr_chk As CheckBox
 End Class

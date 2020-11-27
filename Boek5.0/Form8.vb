@@ -15,6 +15,7 @@ Public Class LabelWindow
     Dim bartendercode As String = ""
     Dim flexgridrownr As Integer = 1
     Dim labelnummer As Integer = 0
+    Dim save_target As Integer = 0   '(0 = orderinvoer, 1 = florecom, 2 = floriday)
 
     Dim selected_label_id As Integer = 0
     Dim selected_label_aantal As Integer = 0
@@ -29,7 +30,7 @@ Public Class LabelWindow
     Dim demoxscale As Double = 1
     Dim demoyscale As Double = 1
 
-    Public Sub Init(ByVal rowlabelnummer As Integer, ByVal soort_id As Integer, ByVal aantal As Integer, ByVal fust_id As Integer, ByVal flexgridrow As Integer, ByVal koper_ean As String, ByVal koper_naam As String, ByVal opmerkingboek As String, ByVal accessoire1naam As String)
+    Public Sub Init(ByVal rowlabelnummer As Integer, ByVal soort_id As Integer, ByVal aantal As Integer, ByVal fust_id As Integer, ByVal flexgridrow As Integer, ByVal koper_ean As String, ByVal koper_naam As String, ByVal opmerkingboek As String, ByVal accessoire1naam As String, ByVal savetarget As Integer)
         labelnummer = rowlabelnummer
 
         save_soort_id = soort_id
@@ -41,6 +42,7 @@ Public Class LabelWindow
         Soortnaam_lbl.Tag = Str(soort_id)
         'LabelType_OrderlineSpec_rb.Tag = Str(aantal) + " x " + Trim(Str(fust(Form1.GID(fust, fust_id)).aantal_per_fust)) + " " + soort
         flexgridrownr = flexgridrow
+        save_target = savetarget
         Id_lbl.Text = "0"
 
         OpmerkingBoek_txt.Text = opmerkingboek
@@ -1161,12 +1163,17 @@ Public Class LabelWindow
         Me.Close()
     End Sub
     Private Sub Annuleer_en_wis_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Annuleer_en_wis_but.Click
-        If flexgridrownr > 0 Then
-            Form1.Order_invoer_FlexGrid.Item(flexgridrownr, 15) = ""
-        Else
+        If save_target = 0 Then
+            Form1.Order_invoer_FlexGrid.Item(flexgridrownr, labelcol) = ""
+
+        ElseIf save_target = 1 Then
             Form1.SaveLineData("label_nummer", "0")
             Form1.SaveLineData("opmerkingboek", "")
             Form1.ShowLineData(FC_CurrentEditLine)
+
+        ElseIf save_target = 2 Then
+
+            Form1.SaveFloridayLabelData(flexgridrownr, 0, "")
         End If
 
         Me.Close()
@@ -1642,29 +1649,29 @@ Public Class LabelWindow
             End Try
         End If
 
-        If flexgridrownr > 0 Then  ' genereer labels in orderinvoer
+        If save_target = 0 Then  ' genereer labels in orderinvoer
 
-            Form1.Order_invoer_FlexGrid.Item(flexgridrownr, 15) = Str(info_id)
-            If Form1.Order_invoer_FlexGrid.Item(flexgridrownr, 14) = "" Then
+            Form1.Order_invoer_FlexGrid.Item(flexgridrownr, labelcol) = Str(info_id)
+            If Form1.Order_invoer_FlexGrid.Item(flexgridrownr, opmerkingcol) = "" Then
                 If AlleenPaspoort = True Then
                     If PPopPot_rb.Checked = True Then
-                        Form1.Order_invoer_FlexGrid.Item(flexgridrownr, 14) = "PP op Pot!!!"
+                        Form1.Order_invoer_FlexGrid.Item(flexgridrownr, opmerkingcol) = "PP op Pot!!!"
                     Else
-                        Form1.Order_invoer_FlexGrid.Item(flexgridrownr, 14) = "PP op Bak!!!"
+                        Form1.Order_invoer_FlexGrid.Item(flexgridrownr, opmerkingcol) = "PP op Bak!!!"
                     End If
                 Else
                     If PPopPot_rb.Checked = True Then
-                        Form1.Order_invoer_FlexGrid.Item(flexgridrownr, 14) = "PPopPot+Stikker!!!"
+                        Form1.Order_invoer_FlexGrid.Item(flexgridrownr, opmerkingcol) = "PPopPot+Stikker!!!"
                     ElseIf PPopBak_rb.Checked = True Then
-                        Form1.Order_invoer_FlexGrid.Item(flexgridrownr, 14) = "PPopBak+Stikker!!!"
+                        Form1.Order_invoer_FlexGrid.Item(flexgridrownr, opmerkingcol) = "PPopBak+Stikker!!!"
                     Else
-                        Form1.Order_invoer_FlexGrid.Item(flexgridrownr, 14) = "Stikker !!!"
+                        Form1.Order_invoer_FlexGrid.Item(flexgridrownr, opmerkingcol) = "Stikker !!!"
                     End If
                 End If
 
             End If
 
-        Else                     ' genereer labels in florecom overzicht
+        ElseIf save_target = 1 Then                    ' genereer labels in florecom overzicht
 
             Dim fopmerking As String = "Stikker!!!"
             If AlleenPaspoort = True Then
@@ -1686,6 +1693,29 @@ Public Class LabelWindow
             Form1.SaveLineData("label_nummer", Str(info_id))
             Form1.SaveLineData("opmerkingboek", fopmerking)
             Form1.ShowLineData(FC_CurrentEditLine)
+
+        ElseIf save_target = 2 Then                    ' genereer labels in floriday overzicht
+
+            Dim fopmerking As String = "Stikker!!!"
+            If AlleenPaspoort = True Then
+                If PPopPot_rb.Checked = True Then
+                    fopmerking = "PP op Pot!!!"
+                Else
+                    fopmerking = "PP op Bak!!!"
+                End If
+            Else
+                If PPopPot_rb.Checked = True Then
+                    fopmerking = "PPopPot+Stikker!!!"
+                ElseIf PPopBak_rb.Checked = True Then
+                    fopmerking = "PPopBak+Stikker!!!"
+                Else
+                    fopmerking = "Stikker !!!"
+                End If
+            End If
+
+            Form1.SaveFloridayLabelData(flexgridrownr, info_id, opmerking)
+
+
 
         End If
         Me.Close()

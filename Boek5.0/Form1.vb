@@ -99,6 +99,7 @@ Public Class Form1
         'set tabs
         C1TabOrderInvoer.Enabled = True
         C1TabKarindeling.Enabled = True
+        C1TabFloriday.Enabled = False
         C1TabFlorecom.Enabled = False
         C1TabVervoer.Enabled = False
         C1TabOverzichten.Enabled = False
@@ -118,6 +119,9 @@ Public Class Form1
         Database_reload_counter = 0
         Inst_weekdag_cmb.SelectedIndex = 0
 
+        Tree_BBKlok_cmb.Tag = "system"
+        Tree_BBKlok_cmb.SelectedIndex = 0
+        Tree_BBKlok_cmb.Tag = ""
         '
         ' tabellen voor rijpheid,diameter,hoogte opstellen
         If dt_rijpheid.Columns.Count = 0 Then
@@ -126,15 +130,17 @@ Public Class Form1
         Else
             dt_rijpheid.Clear()
         End If
-        dt_rijpheid.Rows.Add(New String() {Tstr(0), "00"})
+        dt_rijpheid.Rows.Add(New String() {Tstr(0), "N.V.T"})
         dt_rijpheid.Rows.Add(New String() {Tstr(11), "11"})
         dt_rijpheid.Rows.Add(New String() {Tstr(22), "22"})
         dt_rijpheid.Rows.Add(New String() {Tstr(33), "33"})
         dt_rijpheid.Rows.Add(New String() {Tstr(44), "44"})
+        dt_rijpheid.Rows.Add(New String() {Tstr(55), "55"})
 
         dt_rijpheid.Rows.Add(New String() {Tstr(12), "12"})
         dt_rijpheid.Rows.Add(New String() {Tstr(23), "23"})
         dt_rijpheid.Rows.Add(New String() {Tstr(34), "34"})
+        dt_rijpheid.Rows.Add(New String() {Tstr(45), "45"})
 
         dt_rijpheid.Rows.Add(New String() {Tstr(13), "13"})
         dt_rijpheid.Rows.Add(New String() {Tstr(14), "14"})
@@ -145,6 +151,7 @@ Public Class Form1
         dt_rijpheid.Rows.Add(New String() {Tstr(2), "22"})
         dt_rijpheid.Rows.Add(New String() {Tstr(3), "33"})
         dt_rijpheid.Rows.Add(New String() {Tstr(4), "44"})
+        dt_rijpheid.Rows.Add(New String() {Tstr(5), "55"})
         '
         If dt_hoogte.Columns.Count = 0 Then
             dt_hoogte.Columns.Add("ID", GetType(String))
@@ -152,7 +159,7 @@ Public Class Form1
         Else
             dt_hoogte.Clear()
         End If
-        dt_hoogte.Rows.Add(New String() {Tstr(0), "0"})
+        dt_hoogte.Rows.Add(New String() {Tstr(0), "N.V.T."})
         dt_hoogte.Rows.Add(New String() {Tstr(15), "15"})
         dt_hoogte.Rows.Add(New String() {Tstr(17), "17"})
         dt_hoogte.Rows.Add(New String() {Tstr(20), "20"})
@@ -172,7 +179,11 @@ Public Class Form1
         Else
             dt_diameter.Clear()
         End If
-        dt_diameter.Rows.Add(New String() {Tstr(0), "0"})
+        dt_diameter.Rows.Add(New String() {Tstr(0), "N.V.T."})
+        dt_diameter.Rows.Add(New String() {Tstr(1), "1"})
+        dt_diameter.Rows.Add(New String() {Tstr(2), "2"})
+        dt_diameter.Rows.Add(New String() {Tstr(3), "3"})
+        dt_diameter.Rows.Add(New String() {Tstr(4), "4"})
         dt_diameter.Rows.Add(New String() {Tstr(15), "15"})
         dt_diameter.Rows.Add(New String() {Tstr(17), "17"})
         dt_diameter.Rows.Add(New String() {Tstr(20), "20"})
@@ -188,11 +199,22 @@ Public Class Form1
         Else
             dt_kwaliteit.Clear()
         End If
-        'dt_kwaliteit.Rows.Add(New String() {Tstr(0), "00"})
-        'dt_kwaliteit.Rows.Add(New String() {Tstr(11), "11"})
         dt_kwaliteit.Rows.Add(New String() {Tstr(1), "A1"})
         dt_kwaliteit.Rows.Add(New String() {Tstr(2), "A2"})
         dt_kwaliteit.Rows.Add(New String() {Tstr(3), "B"})
+
+        If dt_schermen.Columns.Count = 0 Then
+            dt_schermen.Columns.Add("ID", GetType(String))
+            dt_schermen.Columns.Add("desc", GetType(String))
+        Else
+            dt_schermen.Clear()
+        End If
+        dt_schermen.Rows.Add(New String() {Tstr(0), "N.V.T."})
+        dt_schermen.Rows.Add(New String() {Tstr(1), "1"})
+        dt_schermen.Rows.Add(New String() {Tstr(2), "2"})
+        dt_schermen.Rows.Add(New String() {Tstr(3), "3"})
+        dt_schermen.Rows.Add(New String() {Tstr(4), "4"})
+
 
         If TestSQL() = True Then
             Me.Cursor = Cursors.WaitCursor
@@ -200,8 +222,9 @@ Public Class Form1
             FormProgressBar.StartPosition = FormStartPosition.CenterScreen
             FormProgressBar.Show()
 
-            Load_DB_Datatables()
+            SetupDatabase()
 
+            Load_Database_fotoFilters()
 
             ShowAgenda(Now)
             FormProgressBar.DataProgressBar.Value = 5
@@ -252,6 +275,9 @@ Public Class Form1
             FormProgressBar.DataProgressBar.Value = 80
 
             Load_Database_lijsten()
+
+            Load_Database_TradeItems()
+
             FormProgressBar.DataProgressBar.Value = 85
             'Setup_Karindeling()
             ' Show boek
@@ -295,9 +321,64 @@ Public Class Form1
 
         End If
     End Sub
-    Private Sub Load_DB_Datatables()
-        LoadDataTable(dt_db_tables, "db_dt_tables", "label", True)
-        LoadCombo(db_database_cmb, dt_db_tables, False)
+    Private Sub SetupDatabase()
+
+        If dt_db_tables.Columns.Count = 0 Then
+            dt_db_tables.Columns.Add("ID", GetType(String))
+            dt_db_tables.Columns.Add("desc", GetType(String))
+            dt_db_tables.Columns.Add("type", GetType(Integer))
+        Else
+            dt_db_tables.Clear()
+        End If
+
+        dt_db_tables.Rows.Add(New String() {"0", "N.V.T.", 0})
+
+        Try
+
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                'Execute Query
+                Dim Cmd As New OdbcCommand("SELECT * FROM db_dt_tables ORDER BY label", Conn)
+                Dim Reader As OdbcDataReader = Cmd.ExecuteReader()
+                Do While Reader.Read
+                    Dim id As Integer = CHint(Reader("id"))
+                    Dim label As String = CHstr(Reader("label"))
+                    Dim type As Integer = CHint(Reader("oldtypedatabase"))
+                    dt_db_tables.Rows.Add(New String() {Trim(Str(id)), label, type})
+                Loop
+                Reader.Close()
+                Conn.Close()
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Database fout: laad datatabel: database -> " + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
+
+        LoadCombo(Database_Combo, dt_db_tables, False)
+
+        'add editcolor to style 
+        Dim stylefound As Boolean = False
+        For i = 0 To DatabaseFlexGridShow.Styles.Count - 1
+            If DatabaseFlexGridShow.Styles.Item(i).Name = "EDIT" Then
+                stylefound = True
+                Exit For
+            End If
+        Next
+        If stylefound = False Then
+            Dim rs As C1.Win.C1FlexGrid.CellStyle
+            rs = DatabaseFlexGridShow.Styles.Add("EDIT")
+            rs.BackColor = Color.LightBlue
+            Dim rs2 As C1.Win.C1FlexGrid.CellStyle
+            rs2 = DatabaseFlexGridShow.Styles.Add("WHITE")
+            rs2.BackColor = Color.White
+            Dim rs3 As C1.Win.C1FlexGrid.CellStyle
+            rs3 = DatabaseFlexGridShow.Styles.Add("TOTAL")
+            rs3.BackColor = Color.Beige
+            Dim rs4 As C1.Win.C1FlexGrid.CellStyle
+            rs4 = DatabaseFlexGridShow.Styles.Add("RED")
+            rs4.BackColor = Color.LightCoral
+        End If
+
 
     End Sub
     Private Function GetMaximumColumnSize(tablename As String, columnname As String) As Integer
@@ -411,8 +492,6 @@ Public Class Form1
         TestSQL = False
         Return False
     End Function
-
-    Dim fd_ordertable() As tablelayout
     Private Sub C1NavBar1_ButtonClick(ByVal sender As Object, ByVal e As System.EventArgs) Handles C1NavBar1.ButtonClick
 
         If Login_name = "" Then Exit Sub
@@ -435,7 +514,6 @@ Public Class Form1
                 C1TabVoorraad.Enabled = True
                 C1TabPrijzen.Enabled = False
                 C1TabWPS.Enabled = True
-                C1TabDatabase2.Enabled = False
                 'C1Tab.SelectedTab = C1Tab.TabPages(0)
                 SetTabPage("Order invoer")
 
@@ -452,10 +530,11 @@ Public Class Form1
                 C1TabVoorraad.Enabled = False
                 C1TabPrijzen.Enabled = False
                 C1TabWPS.Enabled = False
-                C1TabDatabase2.Enabled = False
-
-                fd_ordertable = BuildTable("floridayorders", FloridayOrders_flx)
-                SetTabPage("Floriday")
+                SetupFloridayGrid()
+                Floriday_Calendar.SelectionStart = Now.Date
+                Floriday_Calendar.SelectionEnd = Now.Date
+                Fd_nieuweOrders_rb.Checked = True
+                FloridayOrdersShow()
 
 
             Case 2
@@ -471,7 +550,6 @@ Public Class Form1
                 C1TabVoorraad.Enabled = False
                 C1TabPrijzen.Enabled = False
                 C1TabWPS.Enabled = False
-                C1TabDatabase2.Enabled = False
                 Setup_Florecom_Grid()
                 'C1Tab.SelectedTab = C1Tab.TabPages(2)
                 SetTabPage("Florecom")
@@ -484,7 +562,6 @@ Public Class Form1
                 C1TabVervoer.Enabled = False
                 C1TabOverzichten.Enabled = False
                 C1TabDatabase.Enabled = True
-                C1TabDatabase2.Enabled = False
                 C1TabInloggen.Enabled = False
                 C1TabInstellingen.Enabled = False
                 C1TabVoorraad.Enabled = False
@@ -500,13 +577,12 @@ Public Class Form1
                 C1TabVervoer.Enabled = False
                 C1TabOverzichten.Enabled = False
                 C1TabDatabase.Enabled = False
-                C1TabDatabase2.Enabled = True
                 C1TabInloggen.Enabled = False
-                C1TabInstellingen.Enabled = False
+                C1TabInstellingen.Enabled = True
                 C1TabVoorraad.Enabled = False
                 C1TabPrijzen.Enabled = False
                 C1TabWPS.Enabled = False
-                SetTabPage("Database Floriday")
+                SetTabPage("Instellingen")
 
             Case 5
                 C1TabOrderInvoer.Enabled = False
@@ -517,13 +593,12 @@ Public Class Form1
                 C1TabOverzichten.Enabled = False
                 C1TabDatabase.Enabled = False
                 C1TabInloggen.Enabled = True
-                C1TabInstellingen.Enabled = True
+                C1TabInstellingen.Enabled = False
                 C1TabVoorraad.Enabled = False
-                C1TabPrijzen.Enabled = False
+                C1TabPrijzen.Enabled = True
                 C1TabWPS.Enabled = False
-                C1TabDatabase2.Enabled = False
                 'C1Tab.SelectedTab = C1Tab.TabPages(7)
-                SetTabPage("Instellingen")
+                SetTabPage("Prijzen")
                 Me.Inst_Login1_Txt.Text = My.Settings.LoginName1
                 Me.Inst_Login2_Txt.Text = My.Settings.LoginName2
                 Me.Inst_Login3_Txt.Text = My.Settings.LoginName3
@@ -606,6 +681,35 @@ Public Class Form1
         prijzen_soort_combo.MaxDropDownItems = 12
 
         prijzen_jaar_updown.Value = Year(Now)
+    End Sub
+    Private Sub Load_Database_TradeItems()
+
+        ' initialize datastructure for dropdown menu's fusten
+        If dt_tradeitem.Columns.Count = 0 Then
+            dt_tradeitem.Columns.Add("ID", GetType(String))
+            dt_tradeitem.Columns.Add("desc", GetType(String))
+        Else
+            dt_tradeitem.Clear()
+        End If
+        Try
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                'Execute Query
+                Dim Cmd As New OdbcCommand("SELECT * FROM floriday_tradeitem WHERE length(parentId)<1 AND isDeleted=0 ORDER BY tradeItemName_nl", Conn)
+                Dim Reader As OdbcDataReader
+                Reader = Cmd.ExecuteReader()
+                Do While Reader.Read
+                    Dim naam As String = CHstr(Reader("tradeItemName_nl"))
+                    Dim id As Integer = CHint(Reader("id"))
+                    dt_tradeitem.Rows.Add(New String() {Tstr(id), naam})
+                Loop
+
+            End Using
+        Catch ex As Exception
+            ErrorLog("Database fout: (tradeitems)" + ex.Message)
+            MessageBox.Show("Database fout: (tradeitems)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
     End Sub
     Private Sub Load_Database_WpsFilters()
         Dim i As Integer
@@ -906,6 +1010,26 @@ Public Class Form1
                 Loop
                 Reader.Close()
 
+                'Friend dt_floridaywarehouses As New DataTable
+                If dt_floridaywarehouses.Columns.Count = 0 Then
+                    dt_floridaywarehouses.Columns.Add("ID", GetType(String))
+                    dt_floridaywarehouses.Columns.Add("desc", GetType(String))
+                Else
+                    dt_floridaywarehouses.Clear()
+                End If
+                query = "select * from floriday_warehouses"
+                Cmd.CommandText = query
+                Reader = Cmd.ExecuteReader
+                Do While Reader.Read
+                    Dim id As String = CHstr(Reader("warehouseId"))
+                    Dim naam As String = CHstr(Reader("name"))
+                    dt_floridaywarehouses.Rows.Add(New String() {id, naam})
+                Loop
+                Reader.Close()
+
+
+
+
                 'Friend dt_soortgroepveilgroep As New DataTable
                 If dt_soortgroepveilgroep.Columns.Count = 0 Then
                     dt_soortgroepveilgroep.Columns.Add("ID", GetType(String))
@@ -930,6 +1054,7 @@ Public Class Form1
             MessageBox.Show("Database fout:" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
         End Try
 
+        LoadDataTable(dt_labelstatus, "label_status", "labelstatus", False)
 
 
 
@@ -1103,7 +1228,7 @@ Public Class Form1
                         soorten(i).logiqs_code = CHstr(Reader("logiqs_code"))
                         soorten(i).labelnaam = CHstr(Reader("labelnaam"))
                         soorten(i).vestiging = CHstr(Reader("vestiging"))
-
+                        soorten(i).tradeitemklok = CHint(Reader("tradeitem_klok"))
                         'fill datatable combos
                         dtt_soorten.Rows.Add(New String() {Tstr(soorten(i).id), soorten(i).soortnaam})
                         If soorten(i).actief = True Then
@@ -1243,12 +1368,13 @@ Public Class Form1
                         mixen(i).potmaat = CHint(Reader("potmaat"))
                         mixen(i).vbn_code = CHint(Reader("vbn_code"))
                         mixen(i).sdf_code = CHint(Reader("sdf_code"))
-                        mixen(i).interne_code = CHint(Reader("interne_code"))
+                        mixen(i).interne_code = CHstr(Reader("interne_code"))
                         mixen(i).labelnaam = CHstr(Reader("labelnaam"))
                         mixen(i).mixlagen = CHbool(Reader("mixlaag"))
                         mixen(i).accessoire = CHint(Reader("accessoire"))
                         mixen(i).vestiging = CHint(Reader("vestiging"))
                         mixen(i).sdf_artcode = CHstr(Reader("sdf_artcode"))
+                        mixen(i).tradeitemklok = CHint(Reader("tradeitem_klok"))
                         'fill datatable combos
                         dtt_mixen.Rows.Add(New String() {Tstr(mixen(i).id), mixen(i).naam})
                         If mixen(i).mixlagen = False Then
@@ -1940,7 +2066,7 @@ Public Class Form1
                 Do While Reader.Read
                     Dim soortgroep_id As Integer = Reader("soortgroep_id")
                     Dim soortmix_id As Integer = Reader("soortmix_id")
-                    For i = 0 To UBound(soortgroepids)
+                    For i = 0 To UBound(soortgroepids) - 1
                         If soortgroep_id = soortgroepids(i).id Then
                             prijskoppelingen(count2).soort_id = soortgroepids(i).soortmixid
                             prijskoppelingen(count2).koppel_id = soortmix_id
@@ -1989,7 +2115,6 @@ Public Class Form1
         Else
             dt_soortgroepen.Clear()
         End If
-
 
         dt_soortmixlagen.Rows.Add(New String() {Tstr(0), "N.V.T."})
 
@@ -2046,6 +2171,35 @@ Public Class Form1
             End If
         Next i
 
+        'soortmix ids
+        If dt_soortmixids.Columns.Count = 0 Then
+            dt_soortmixids.Columns.Add("ID", GetType(String))
+            dt_soortmixids.Columns.Add("desc", GetType(String))
+            dt_soortmixids.Columns.Add("volgorde", GetType(Int32))
+        Else
+            dt_soortmixids.Clear()
+        End If
+
+        Dim count2 As Integer = 1
+        For j = 0 To 999
+            For i = 1 To UBound(soorten) - 1
+                If CInt(Val(soorten(i).interne_code)) = j Then
+                    dt_soortmixids.Rows.Add(New Object() {Tstr(soorten(i).id), soorten(i).interne_code + " " + soorten(i).soortnaam, count2})
+                    count2 = count2 + 1
+                End If
+            Next i
+        Next j
+        For j = 0 To 999
+            For i = 1 To UBound(mixen) - 1
+                If CInt(Val(mixen(i).interne_code)) = j Then
+                    dt_soortmixids.Rows.Add(New Object() {Tstr(10000 + mixen(i).id), mixen(i).interne_code + " " + mixen(i).naam, count2})
+                    count2 = count2 + 1
+                End If
+            Next i
+        Next j
+        dt_soortmixids.DefaultView.Sort = "volgorde"
+
+
         Dim Reader As OdbcDataReader
 
         Dim Count As Integer = GetRowCount("soortgroepen")
@@ -2077,6 +2231,9 @@ Public Class Form1
             ErrorLog("Database fout: (soortgroep)")
             MessageBox.Show("Database fout: (soortgroep)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
         End Try
+
+
+
 
     End Sub
     Private Function GetRowCount(ByVal tablename As String) As Integer
@@ -2322,6 +2479,53 @@ Public Class Form1
 
         Return currentyear
     End Function
+    Private Sub Load_Database_fotoFilters()
+
+        ' Structure FotoFilters
+        '    Dim tradeItemId As integer
+        '    Dim rijpheid As Integer
+        '    Dim diameter As Integer
+        '    Dim hoogte As Integer
+        '    Dim schermen As Integer
+        '    Dim fust As Integer
+        '    Dim keurcode As Integer
+        '    Dim fotopath As Integer
+        '    Dim hoes As Integer
+        'End Structure
+
+        Dim Count As Integer = GetRowCount("fotos_standaard")
+        ReDim fotofilters(Count + 1)
+
+        Try
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                'Execute Query
+                Dim Cmd As New OdbcCommand("SELECT * FROM fotos_standaard", Conn)
+                Dim Reader As OdbcDataReader = Cmd.ExecuteReader()
+                If Reader.HasRows Then
+                    For i = 1 To Count
+                        Reader.Read()
+                        fotofilters(i).tradeItemId = CHint(Reader("tradeItemDBId"))
+                        fotofilters(i).rijpheid = CHint(Reader("rijpheid"))
+                        fotofilters(i).diameter = CHint(Reader("diameter"))
+                        fotofilters(i).hoogte = CHint(Reader("hoogte"))
+                        fotofilters(i).schermen = CHint(Reader("schermen"))
+                        fotofilters(i).fust = CHint(Reader("fust"))
+                        fotofilters(i).keurcode = CHint(Reader("keurcode"))
+                        fotofilters(i).fotopath = CHstr(Reader("fotopath"))
+                        fotofilters(i).hoes = CHint(Reader("hoes"))
+                    Next i
+                End If
+
+            End Using
+        Catch ex As Exception
+            ErrorLog("Database fout: (fotofilters)" + ex.Message)
+            MessageBox.Show("Database fout: (fotofilters)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
+
+
+    End Sub
 
 #End Region
 
@@ -2354,6 +2558,9 @@ Public Class Form1
             Dim rs3 As C1.Win.C1FlexGrid.CellStyle
             rs3 = flexgrid.Styles.Add("TOTAL")
             rs3.BackColor = Color.Beige
+            Dim rs4 As C1.Win.C1FlexGrid.CellStyle
+            rs4 = flexgrid.Styles.Add("RED")
+            rs4.BackColor = Color.LightCoral
         End If
 
         Dim table() As tablelayout = Nothing
@@ -2491,11 +2698,23 @@ Public Class Form1
                             Case "dt_soortmixprijzen" : dtable = dtt_soortmixprijzen
                             Case "dtt_kopersXA" : dtable = dtt_kopersXA
                             Case "dt_vestiging" : dtable = dt_vestiging
-                            Case "dt_soortmix" : dtable = dt_soortmix
+                            Case "dtt_soortmix" : dtable = dtt_soortmix
                             Case "dt_kopers" : dtable = dt_kopers
                             Case "dt_soortgroepveilgroep" : dtable = dt_soortgroepveilgroep
                             Case "dt_floridayveiling" : dtable = dt_floridayveiling
                             Case "dt_kwaliteit" : dtable = dt_kwaliteit
+                            Case "dt_soortmixids" : dtable = dt_soortmixids
+                            Case "dtt_keurcode" : dtable = dtt_keurcode
+                            Case "dtt_gp" : dtable = dtt_gp
+                            Case "dt_labelstatus" : dtable = dt_labelstatus
+                            Case "dt_tradeitem" : dtable = dt_tradeitem
+                            Case "dt_floridaywarehouses" : dtable = dt_floridaywarehouses
+
+                            Case "dt_rijpheid" : dtable = dt_rijpheid
+                            Case "dt_hoogte" : dtable = dt_hoogte
+                            Case "dt_diameter" : dtable = dt_diameter
+                            Case "dt_schermen" : dtable = dt_schermen
+
 
                         End Select
                         Dim mcd As New C1.Win.C1FlexGrid.MultiColumnDictionary(dtable, "ID", cn, 0)
@@ -2514,7 +2733,7 @@ Public Class Form1
                     filter.Condition2.Operator = C1.Win.C1FlexGrid.ConditionOperator.None
 
                     flexgrid.Cols(i + 2).Filter = filter
-                    'flexgrid.Cols(i + 2).AllowFiltering = C1.Win.C1FlexGrid.AllowFiltering.ByCondition
+                    '    flexgrid.Cols(i + 2).AllowFiltering = C1.Win.C1FlexGrid.AllowFiltering.ByCondition
                 Next
 
                 'lock row 1 (id row)
@@ -2546,23 +2765,28 @@ Public Class Form1
 
     End Function
 
+    Private Sub ClearStyles(flexgrid As C1FlexGrid)
+        For i = 0 To flexgrid.Styles.Count - 1
+            Dim stylelabel As String = flexgrid.Styles.Item(i).Name
+            If stylelabel = "EDIT" Or stylelabel = "TOTAL" Or stylelabel = "WHITE" Or stylelabel = "RED" Then
+                ' skip defaults
+            Else
+                flexgrid.Styles.Item(i).Clear()
+            End If
+        Next
+    End Sub
 
-    Private Sub FlexgridAdd(flexgrid As C1FlexGrid, dbtable() As tablelayout, flexfill As Dictionary(Of String, Object))
-
-        'Dim flexfill As New Dictionary(Of String, Object)
-        'flexfill.Add("klantnaam", Name)
-        'flexfill.Add("boekdt", Now)
-        'flexfill.Add("leveringsdt", delivery_latestDeliveryDateTime)
-        'flexfill.Add("aantalfust", numberOfTrays)
-        'flexfill.Add("leveringslocatie", delivery_location_gln)
-        'FlexgridAdd(FloridayOrders_flx, flexfill)
+    Private Sub FlexgridAdd(flexgrid As C1FlexGrid, dbtable() As tablelayout, ByRef flexfill As Dictionary(Of String, Object), Optional flexwarning As Dictionary(Of String, Object) = Nothing)
 
         'add empty row
         flexgrid.Rows.Count = flexgrid.Rows.Count + 1
         Dim lastrow As Integer = flexgrid.Rows.Count - 1
         'fill row
         Dim value As Object = Nothing
-        For i = 0 To dbtable.Count - 1
+        If (flexfill.TryGetValue("Id", value)) Then 'save id column
+            flexgrid.Item(lastrow, 0) = value
+        End If
+        For i = 0 To dbtable.Count - 1  'save other columns
             Dim col As String = dbtable(i).columnname
             If col <> "" Then
                 If (flexfill.TryGetValue(col, value)) Then
@@ -2571,7 +2795,42 @@ Public Class Form1
             End If
         Next
 
+        If Not IsNothing(flexwarning) Then
+            For i = 0 To dbtable.Count - 1
+                Dim col As String = dbtable(i).columnname
+                If col <> "" Then
+                    If (flexwarning.TryGetValue(col, value)) Then
+                        If value > 0 Then
 
+                            Dim rs As C1.Win.C1FlexGrid.CellStyle
+                            Dim stylename As String = "STYLE" + Tstr(i)
+                            rs = flexgrid.Styles.Add(stylename)
+                            If value = 1 Then rs.BackColor = Color.LightCoral
+                            If value > 1 Then rs.BackColor = Color.Orange
+
+                            Dim celformat() = dbtable(i).type.Split(New Char() {";"c})
+                            If Trim(celformat(0)) <> "" Then
+                                rs.DataType = System.Type.GetType(celformat(0))
+                            End If
+                            If UBound(celformat) = 1 Then
+                                If Trim(celformat(1)) = "..." Then
+                                    rs.ComboList = "..."
+                                    rs.Format = ""
+                                Else
+                                    rs.Format = Trim(celformat(1))
+                                End If
+                            Else
+                                rs.Format = ""
+                            End If
+                            flexgrid.SetCellStyle(lastrow, i + 2, stylename)
+
+                        End If
+                    End If
+                End If
+            Next
+        End If
+
+        flexfill.Clear()
 
 
     End Sub
@@ -3005,7 +3264,6 @@ Public Class Form1
                                             Exit For
                                         End If
 
-
                                         If firstrun = True Then
                                             firstrun = False
                                             command2 = command2 + "?"
@@ -3382,222 +3640,19 @@ Public Class Form1
         For i = 2 To flexgrid.Cols.Count - 1
             If CStr(flexgrid.Item(0, i)).ToLower = colname.ToLower Then
                 returncol = i
-                Exit For
+                Return returncol
+            End If
+            If colname = "Aantal" Then
+                Dim totlabel = Mid(CStr(flexgrid.Item(0, i)).ToLower, 1, 2)
+                If totlabel = "a#" Then
+                    returncol = i
+                    Return returncol
+                End If
             End If
         Next
+        MsgBox("Column not found: " + colname)
         Return returncol
     End Function
-
-#End Region
-
-#Region "DatabaseFloriday"
-
-    Dim current_dbtable As String = ""
-    Dim dbtable() As tablelayout
-    Dim current_dbbuild As tablelayout()
-
-
-    Private Sub db_databasepreselect_cmb_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles db_databasepreselect_cmb.SelectedIndexChanged
-        db_databaseload_but_Click(sender, e)
-    End Sub
-
-    Private Sub db_database_cmb_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles db_database_cmb.SelectedIndexChanged
-
-
-        db_database_lbl.Text = db_database_cmb.Text
-        Dim table_id As Integer = -1
-        current_dbtable = "N.V.T."
-        Database_flx.Rows.Count = 1
-        Try
-            table_id = CInt(DirectCast(DirectCast(db_database_cmb.SelectedItem, System.Object), System.Data.DataRowView).Item(0))
-        Catch ex As Exception
-            table_id = -1
-        End Try
-        If table_id >= 0 Then
-
-            Try
-
-                Using Conn As New OdbcConnection(ConnString)
-                    Conn.Open()
-
-                    'Execute Query
-
-                    If table_id = 11 Then
-                        'show selection
-                        LoadCombo(db_databasepreselect_cmb, dt_favorieten_naam, False)
-                        'db_databasepreselect_cmb.SelectedIndex = 1
-                        'db_databasepreselect_cmb.Visible = True
-                    Else
-                        'hide selection
-                        db_databasepreselect_cmb.Visible = False
-                    End If
-
-                    Dim Cmd As New OdbcCommand("SELECT * FROM db_dt_tables WHERE id=?", Conn)
-                    Cmd.Parameters.Clear()
-                    Cmd.Parameters.AddWithValue("", table_id)
-                    Dim Reader As OdbcDataReader = Cmd.ExecuteReader()
-
-                    If Reader.HasRows Then
-                        Reader.Read()
-                        Dim tablename As String = CHstr(Reader("tablename"))
-                        Dim admin As Boolean = CHbool(Reader("admin"))
-
-                        If admin = True Then
-                            If user = 0 Then
-                                current_dbtable = tablename
-                                db_databaseload_but_Click(sender, e)
-                            Else
-                                MsgBox("Access to this table is restricted")
-                            End If
-                        End If
-                        If admin = False Then
-                            current_dbtable = tablename
-                            db_databaseload_but_Click(sender, e)
-                        End If
-                    End If
-
-                    Conn.Close()
-                End Using
-            Catch ex As Exception
-                MessageBox.Show("Database fout: laad databases " + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
-            End Try
-        End If
-
-
-        '
-    End Sub
-
-    Private Sub db_databaseload_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles db_databaseload_but.Click
-        Dim table As String = current_dbtable
-        If table <> "N.V.T." Then
-            Database_flx.AllowEditing = True
-            dbtable = BuildTable(table, Database_flx)
-            current_dbbuild = dbtable
-            Dim sql As String = "SELECT * FROM " + table
-
-            If table = "favorieten_naam" Then
-                db_databasenew_but.Enabled = False
-                db_databasecopy_but.Enabled = False
-            Else
-                db_databasenew_but.Enabled = True
-                db_databasecopy_but.Enabled = True
-            End If
-
-            'If table = "" Then
-            '  Dim groep As Integer = 1
-            '  try
-            '    groep = CInt(DirectCast(DirectCast(db_databasepreselect_cmb.SelectedItem, System.Object), System.Data.DataRowView).Item(0))
-            '  Catch ex As Exception
-            '  End Try
-            '  sql = "SELECT * FROM " + table + " WHERE XXX =" + CStr(groep)
-            'End If
-
-            FillTable(table, dbtable, Database_flx, sql)
-
-        End If
-    End Sub
-
-    Private Sub db_databasenew_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles db_databasenew_but.Click
-        Dim table As String = current_dbtable
-        dbtable = current_dbbuild
-        If table <> "N.V.T." Then
-
-            If table = "db_plantverdeling" Or table = "db_omzetcijfers" Then
-                Dim retailgroep As Integer = 1
-                Try
-                    retailgroep = CInt(DirectCast(DirectCast(db_databasepreselect_cmb.SelectedItem, System.Object), System.Data.DataRowView).Item(0))
-                Catch ex As Exception
-                End Try
-                NewItem(dbtable, Database_flx, "retailhoofdgroep_id", retailgroep)
-            Else
-                NewItem(dbtable, Database_flx)
-            End If
-
-        End If
-    End Sub
-
-    Private Sub db_databasecopy_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles db_databasecopy_but.Click
-        Dim table As String = current_dbtable
-        dbtable = current_dbbuild
-        If table <> "N.V.T." Then
-            CopyItem(table, dbtable, Database_flx)
-        End If
-    End Sub
-
-    Private Sub db_databasesave_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles db_databasesave_but.Click
-        Dim table As String = current_dbtable
-        dbtable = current_dbbuild
-        If table <> "N.V.T." Then
-
-            'prechecks
-
-            Select Case table
-                Case "db_kwekers" : CheckForDoubleEAN()   ' dubbele ean check
-            End Select
-
-            SaveItem(table, dbtable, Database_flx)
-
-            Select Case table
-                Case "kopers"
-                    Load_Database_kopers()
-
-                Case "db_retailergroepen"
-                    'LoadDataTable(dt_db_retailergroep, "db_retailergroepen_data", "naam", False)
-                Case "db_berekening"
-                    'LoadDataTable(dt_rekenmethode, "db_berekening_data", "rekennaam", False)
-
-            End Select
-
-            db_databaseload_but_Click(sender, e)
-
-        End If
-    End Sub
-
-    Private Sub CheckForDoubleEAN()
-        For row = 2 To Database_flx.Rows.Count - 1
-            If CType(Database_flx.Item(row, 1), Boolean) = True Then   'Row edited? 
-
-                Dim EAN As String = CType(Database_flx.Item(row, 3), String)
-
-                For rowloop = 2 To Database_flx.Rows.Count - 1
-                    Dim CheckEAN As String = CType(Database_flx.Item(rowloop, 3), String)
-                    If EAN = CheckEAN And Not (row = rowloop) Then
-                        Database_flx.Item(row, 1) = False 'remove edit check so its not saved
-                        MsgBox("De kweker " + CType(Database_flx.Item(row, 2), String) + " bestaat al onder naam '" + CType(Database_flx.Item(rowloop, 2), String) + "' en is niet opgeslagen")
-                    End If
-                Next
-
-            End If
-        Next
-    End Sub
-
-    Private Sub Database_flx_AfterEdit(ByVal sender As Object, ByVal e As C1.Win.C1FlexGrid.RowColEventArgs) Handles Database_flx.AfterEdit
-        Dim table As String = current_dbtable
-        dbtable = current_dbbuild
-        If table <> "N.V.T." Then
-            AfterEdit(Database_flx)
-        End If
-
-        If current_dbtable = "fusten2" Then
-            Dim col1 As Integer = FindCol(Database_flx, "Aantal per fust")
-            Dim col2 As Integer = FindCol(Database_flx, "plaats_string")
-            Dim onestring As String = ""
-            Dim aantalperfust As Integer = Database_flx.Item(e.Row, col1)
-            If aantalperfust > 99 Then aantalperfust = 99
-            For i = 1 To aantalperfust
-                onestring = onestring + "1"
-            Next
-            Database_flx.Item(e.Row, col2) = onestring
-        End If
-
-
-    End Sub
-
-    Private Sub Database_flx_SetupEditor(ByVal sender As System.Object, ByVal e As C1.Win.C1FlexGrid.RowColEventArgs) Handles Database_flx.SetupEditor
-        If TypeOf Database_flx.Editor Is ComboBox Then
-            DirectCast(Database_flx.Editor, ComboBox).MaxDropDownItems = 20
-        End If
-    End Sub
 
 #End Region
 
@@ -3838,15 +3893,17 @@ Public Class Form1
 
         If Not Order_zoeken_chk.Checked And user_date_change = True Then
 
-            If Weekday(Order_MonthCalendar.SelectionStart, FirstDayOfWeek.Monday) = 5 Then  'vrijdag
-                user_date_change = False
-                Order_MonthCalendar.SelectionEnd = DateAdd("d", 2, Order_MonthCalendar.SelectionStart)
-                user_date_change = True
-            End If
+            Order_MonthCalendar.SelectionEnd = Order_MonthCalendar.SelectionStart
 
-            'Tree_Datum_lbl.Text = Order_MonthCalendar.SelectionStart.ToString("dddd, dd MMMM yyyy")
-            Update_Boek()
-        End If
+            If Weekday(Order_MonthCalendar.SelectionStart, FirstDayOfWeek.Monday) = 5 Then  'vrijdag
+                    user_date_change = False
+                    Order_MonthCalendar.SelectionEnd = DateAdd("d", 2, Order_MonthCalendar.SelectionStart)
+                    user_date_change = True
+                End If
+
+                'Tree_Datum_lbl.Text = Order_MonthCalendar.SelectionStart.ToString("dddd, dd MMMM yyyy")
+                Update_Boek()
+            End If
     End Sub
 
     Public Sub Update_Boek(Optional ByVal expand_header As Integer = 0, Optional ByVal koper_ean As String = "", Optional ByVal new_order_header As Integer = 0)
@@ -3927,15 +3984,26 @@ Public Class Form1
         End If
         '** tijd
         ' Friend BoekDisplayTijd As Integer
-        If BoekDisplayTijd = 2 Then
-            cmdstring = cmdstring + "AND TIME(afleverdatum) >= '10:00' "
-        End If
-        If BoekDisplayTijd = 3 Then
-            cmdstring = cmdstring + "AND TIME(afleverdatum) >= '13:00' "
+        If Tree_BBKlok_cmb.SelectedIndex = 0 Or Tree_BBKlok_cmb.SelectedIndex = 1 Then  'totaal of BB
+            If BoekDisplayTijd = 2 Then
+                cmdstring = cmdstring + "AND TIME(afleverdatum) >= '10:00' "
+            End If
+            If BoekDisplayTijd = 3 Then
+                cmdstring = cmdstring + "AND TIME(afleverdatum) >= '13:00' "
+            End If
         End If
 
+        If Tree_BBKlok_cmb.SelectedIndex = 1 Then  'Alleen BB
+            cmdstring = cmdstring + "AND TIME(afleverdatum) <= '17:00' "
+        End If
+
+        If Tree_BBKlok_cmb.SelectedIndex = 2 Then  'Alleen Klok
+            cmdstring = cmdstring + "AND TIME(afleverdatum) > '17:00' "
+        End If
+
+
         If koper_ean <> "" And BoekStatus = 8 Then
-            cmdstring = cmdstring + "AND koper_ean ='" + koper_ean + "' AND status <49 AND NOT(status=41) "
+            cmdstring = cmdstring + " And koper_ean ='" + koper_ean + "' AND status <49 AND NOT(status=41) "
         Else
             '** Zoeken
             If Order_zoeken_chk.Checked = True Then
@@ -4229,6 +4297,11 @@ Public Class Form1
                         Case 43 : icon_index = 49   ' agenda mark
                         Case 44 : icon_index = 35   ' sdf klaar + attachment
                         Case 45 : icon_index = 37   ' sdf gedeeltelijk + scan klaar
+
+                        Case 46 : icon_index = 36    ' floriday print yellow
+                        Case 47 : icon_index = 37    ' floriday print blue
+                        Case 48 : icon_index = 55    ' floriday print red
+
                             'vervoer
 
                         Case 49 : icon_index = 19   'temp vervoer
@@ -5220,7 +5293,7 @@ nexttreeline:
                         Soort_Node.Nodes.Add(accessoire_Node)
                     End If
                     If accessoire2_id > 0 Then
-                        accessoiretext_node = accessoire(GID(accessoire, accessoire1_id)).naam
+                        accessoiretext_node = accessoire(GID(accessoire, accessoire2_id)).naam
                         accessoire_Node = New TreeNode(accessoiretext_node)
                         accessoire_Node.ImageIndex = icon_bluedot
                         accessoire_Node.SelectedImageIndex = icon_bluedot
@@ -5424,6 +5497,8 @@ nexttreeline:
         End If
     End Sub
     Private Sub Tree_Update_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Tree_Update_but.Click
+
+
         overgooier = ""
         Set_BoekInstellingen(0, 0, 6)
         Update_Boek()
@@ -5579,6 +5654,15 @@ nexttreeline:
 
 
     End Sub
+
+    Private Sub Tree_BBKlok_cmb_SelectedIndexChanged(sender As Object, e As EventArgs) Handles Tree_BBKlok_cmb.SelectedIndexChanged
+        If Not Tree_BBKlok_cmb.Tag = "system" Then
+            overgooier = ""
+            Set_BoekInstellingen(0, 0, 6)
+            Update_Boek()
+        End If
+    End Sub
+
 
 #End Region
 
@@ -6732,6 +6816,155 @@ nexttreeline:
 
 #Region "Database"
 
+    Dim current_dbtable As String = ""
+    Dim current_dbtype As Integer = 0
+    Dim current_dbselection As String = ""
+    Dim current_dbid As Integer = 0
+    Dim dbtable() As tablelayout
+    Dim current_dbbuild As tablelayout()
+
+    Private Sub SetupNewDatabase(table_id As Integer)
+        Try
+
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                'Execute Query
+                If table_id = 13 Then  'update floriday_tradeitem_boek tabel -> insert new ids uit tradeitem
+                    Dim query As String = ""
+                    Dim Cmd2 As New OdbcCommand(query, Conn)
+                    Dim Reader2 As OdbcDataReader
+                    Dim Cmd3 As New OdbcCommand(query, Conn)
+                    Dim Reader3 As OdbcDataReader
+                    Dim Cmd4 As New OdbcCommand(query, Conn)
+                    '2 tabellen vergelijken, en daarna synchoriseren
+                    query = "SELECT tradeItemId FROM (SELECT tradeItemId FROM floriday_tradeitem UNION ALL SELECT tradeItemId FROM floriday_tradeitem_boek)utable GROUP BY tradeItemId HAVING COUNT(*) = 1"
+                    Cmd2.CommandText = query
+                    Reader2 = Cmd2.ExecuteReader()
+                    Do While Reader2.Read
+                        Dim tradeItemId As String = CHstr(Reader2("tradeItemId"))
+                        query = "SELECT tradeItemId,tradeItemName_nl FROM floriday_tradeitem WHERE isDeleted=0 AND parentId='' AND tradeItemId='" + tradeItemId + "'"
+                        Cmd3.CommandText = query
+                        Reader3 = Cmd3.ExecuteReader()
+                        If Reader3.HasRows Then
+                            Dim tradeItemName As String = CHstr(Reader3("tradeItemName_nl"))
+                            query = "INSERT INTO floriday_tradeitem_boek SET tradeItemId=?,tradeItemName=?,boek_soortcode=0,boek_hoes=0,boek_accessoire1=0,boek_accessoire2=0,boek_accessoire3=0,boek_accessoire4=0"
+                            Cmd4.CommandText = query
+                            Cmd4.Parameters.Clear()
+                            Cmd4.Parameters.AddWithValue("", tradeItemId)
+                            Cmd4.Parameters.AddWithValue("", tradeItemName)
+                            Cmd4.ExecuteNonQuery()
+                        End If
+                        Reader3.Close()
+                    Loop
+                    Reader2.Close()
+                End If
+
+                If table_id = 14 Then  'update floriday_addservices_boek tabel -> insert new ids 
+                    Dim query As String = ""
+                    Dim Cmd2 As New OdbcCommand(query, Conn)
+                    Dim Reader2 As OdbcDataReader
+                    Dim Cmd3 As New OdbcCommand(query, Conn)
+                    Dim Reader3 As OdbcDataReader
+                    Dim Cmd4 As New OdbcCommand(query, Conn)
+                    '2 tabellen vergelijken, en daarna synchoriseren
+                    query = "SELECT additionalServiceId FROM (SELECT additionalServiceId FROM floriday_additionalservices UNION ALL SELECT additionalServiceId FROM floriday_additionalservices_boek)utable GROUP BY additionalServiceId HAVING COUNT(*) = 1"
+                    Cmd2.CommandText = query
+                    Reader2 = Cmd2.ExecuteReader()
+                    Do While Reader2.Read
+                        Dim additionalServiceId As String = CHstr(Reader2("additionalServiceId"))
+                        query = "SELECT additionalServiceId,name FROM floriday_additionalservices WHERE additionalServiceId='" + additionalServiceId + "'"
+                        Cmd3.CommandText = query
+                        Reader3 = Cmd3.ExecuteReader()
+                        If Reader3.HasRows Then
+                            Dim name As String = CHstr(Reader3("name"))
+                            query = "INSERT INTO floriday_additionalservices_boek SET additionalServiceId=?,name=?,boek_accessoire1=0,boek_accessoire2=0,ordernietverwerken=0"
+                            Cmd4.CommandText = query
+                            Cmd4.Parameters.Clear()
+                            Cmd4.Parameters.AddWithValue("", additionalServiceId)
+                            Cmd4.Parameters.AddWithValue("", name)
+                            Cmd4.ExecuteNonQuery()
+                        End If
+                        Reader3.Close()
+                    Loop
+                    Reader2.Close()
+                End If
+
+
+
+                If table_id = 11 Then
+                    'show selection
+                    'LoadCombo(Database_preselect_cmb, dt_favorieten_naam, False)
+                    'Database_preselect_cmb.Visible = True
+                Else
+                    'hide selection
+                    Database_preselect_cmb.Visible = False
+                End If
+
+                Dim Cmd As New OdbcCommand("SELECT * FROM db_dt_tables WHERE id=?", Conn)
+                Cmd.Parameters.Clear()
+                Cmd.Parameters.AddWithValue("", table_id)
+                Dim Reader As OdbcDataReader = Cmd.ExecuteReader()
+
+                If Reader.HasRows Then
+                    Reader.Read()
+                    Dim tablename As String = CHstr(Reader("tablename"))
+                    Dim admin As Boolean = CHbool(Reader("admin"))
+
+                    If admin = True Then
+                        If user = 0 Then
+                            current_dbtable = tablename
+                            LoadNewDatabase()
+                        Else
+                            MsgBox("Access to this table is restricted")
+                        End If
+                    End If
+                    If admin = False Then
+                        current_dbtable = tablename
+                        LoadNewDatabase()
+                    End If
+                End If
+
+                Conn.Close()
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Database fout: laad databases " + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
+
+        '
+    End Sub
+
+    Private Sub LoadNewDatabase()
+
+        Dim table As String = current_dbtable
+        If table <> "N.V.T." Then
+            DatabaseFlexGridShow.AllowEditing = True
+            dbtable = BuildTable(table, DatabaseFlexGridShow)
+            current_dbbuild = dbtable
+            Dim sql As String = "SELECT * FROM " + table
+
+            FillTable(table, dbtable, DatabaseFlexGridShow, sql)
+
+        End If
+    End Sub
+
+    Private Sub CheckForDoubleEAN()
+        For row = 2 To DatabaseFlexGridShow.Rows.Count - 1
+            If CType(DatabaseFlexGridShow.Item(row, 1), Boolean) = True Then   'Row edited? 
+
+                Dim EAN As String = CType(DatabaseFlexGridShow.Item(row, 3), String)
+
+                For rowloop = 2 To DatabaseFlexGridShow.Rows.Count - 1
+                    Dim CheckEAN As String = CType(DatabaseFlexGridShow.Item(rowloop, 3), String)
+                    If EAN = CheckEAN And Not (row = rowloop) Then
+                        DatabaseFlexGridShow.Item(row, 1) = False 'remove edit check so its not saved
+                        MsgBox("De kweker " + CType(DatabaseFlexGridShow.Item(row, 2), String) + " bestaat al onder naam '" + CType(DatabaseFlexGridShow.Item(rowloop, 2), String) + "' en is niet opgeslagen")
+                    End If
+                Next
+
+            End If
+        Next
+    End Sub
     Private Sub DatabaseFlexGridEdit_SetupEditor(ByVal sender As System.Object, ByVal e As C1.Win.C1FlexGrid.RowColEventArgs) Handles DatabaseFlexGridEdit.SetupEditor
         If TypeOf DatabaseFlexGridEdit.Editor Is ComboBox Then
             DirectCast(DatabaseFlexGridEdit.Editor, ComboBox).MaxDropDownItems = 30
@@ -6742,10 +6975,56 @@ nexttreeline:
             DirectCast(DatabaseFlexGridShow.Editor, ComboBox).MaxDropDownItems = 20
         End If
     End Sub
-
     Private Sub Database_Combo_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Database_Combo.SelectedIndexChanged
 
-        Dim selecteditem As String = Database_Combo.SelectedItem.ToString
+        Dim table_id As Integer = -1
+        Dim dbtype As Integer = -1
+        current_dbtable = "N.V.T."
+        Dim selecteditem As String = ""
+        DatabaseFlexGridShow.Rows.Count = 1
+        DatabaseFlexGridEdit.Visible = False
+
+        Try
+            table_id = CInt(DirectCast(DirectCast(Database_Combo.SelectedItem, System.Object), System.Data.DataRowView).Item(0))
+            selecteditem = CStr(DirectCast(DirectCast(Database_Combo.SelectedItem, System.Object), System.Data.DataRowView).Item(1))
+            dbtype = CInt(DirectCast(DirectCast(Database_Combo.SelectedItem, System.Object), System.Data.DataRowView).Item(2))
+            current_dbselection = selecteditem
+            current_dbtype = dbtype
+            current_dbtable = table_id
+        Catch ex As Exception
+            table_id = -1
+            dbtype = -1
+            current_dbselection = ""
+            current_dbtype = -1
+            current_dbtable = -1
+        End Try
+        If table_id > 0 And dbtype >= 0 Then
+
+            current_dbid = table_id
+
+            If dbtype = 0 Then  'nieuw type database
+                DatabaseMenuHerladen_but.Visible = True
+                DatabaseMenuNieuw.Visible = True
+                DatabaseMenuAanpassen.Visible = False
+                DatabaseMenuCopy_but.Visible = True
+                DatabaseMenuOpslaan.Visible = True
+                DatabaseFlexGridShow.AllowFiltering = True
+
+            End If
+
+            If dbtype = 1 Then  'oud type database
+
+                DatabaseFlexGridShow.AllowFiltering = False
+
+                DatabaseFlexGridEdit.Visible = True
+                DatabaseMenuHerladen_but.Visible = False
+                DatabaseMenuNieuw.Visible = True
+                DatabaseMenuAanpassen.Visible = True
+                DatabaseMenuCopy_but.Visible = False
+                DatabaseMenuOpslaan.Visible = True
+            End If
+
+        End If
 
         DatabaseFlexGridShow.AllowEditing = False
         DatabaseFlexGridShow.SelectionMode = SelectionModeEnum.ListBox
@@ -6757,166 +7036,198 @@ nexttreeline:
         DatabaseMenuOpslaan.Enabled = True
         DatabaseMenuSDFPL_but.Visible = False
 
-        Select Case selecteditem
-            Case "Kopers"
-                Set_FlexIndeling_kopers()
-                LoadDB_FlexIndeling_kopers()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Kopers"
-            Case "Koper alias"
-                Set_Flexindeling_koper_alias()
-                LoadDB_FlexIndeling_koper_alias()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Koper alias"
-            Case "Fusten"
-                Set_Flexindeling_fusten()
-                LoadDB_Flexindeling_fusten()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Fusten"
-            Case "Soorten"
-                Set_Flexindeling_soorten()
-                LoadDB_Flexindeling_soorten()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Soorten"
-            Case "Soortgroepen"
-                Set_Flexindeling_soortgroep()
-                LoadDB_Flexindeling_soortgroepen()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Soortgroepen"
-            Case "Accessoires"
-                Set_Flexindeling_accessoires()
-                LoadDB_Flexindeling_accessoires()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Accessoires"
-            Case "Accessoire prijzen"
-                Set_Flexindeling_accessoire_prijzen()
-                LoadDB_Flexindeling_accessoire_prijzen()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Accessoire prijzen"
-            Case "Mixen naam"
-                Set_Flexindeling_mixen()
-                LoadDB_Flexindeling_mixen()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Mixen naam"
-            Case "Mixen vullen"
-                Set_Flexindeling_mixenvullen()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Mixen vullen"
-            Case "Kopersgroepen"
-                Set_Flexindeling_kopersgroep()
-                LoadDB_Flexindeling_kopersgroepen()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Kopersgroepen"
-            Case "Eindklanten"
-                Set_Flexindeling_eindklanten()
-                ' LoadDB_Flexindeling_eindklanten()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Eindklanten"
+        If dbtype = 0 Then
+            database_lbl.Text = current_dbselection
+            SetupNewDatabase(table_id)
+        End If
 
-            Case "Agenda"
-                Set_Flexindeling_agenda()
-                LoadDB_Flexindeling_agenda()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Agenda"
-            Case "Soort volgorde"
-                DatabaseMenuNieuw.Enabled = False
-                DatabaseMenuAanpassen.Enabled = False
-                LoadDB_Flexindeling_soortvolgorde()
-                DatabaseFlexGridShow.Focus()
-                database_lbl.Text = "Soort volgorde"
-            Case "Favorieten"
-                DatabaseMenuNieuw.Enabled = False
-                DatabaseMenuAanpassen.Enabled = False
-                Set_Flexindeling_favorieten()
-                LoadDB_Flexindeling_favorieten()
-                DatabaseFlexGridShow.Focus()
-                database_lbl.Text = "Favorieten"
-            Case "Mix lagen"
-                Set_Flexindeling_mixlagenvullen()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Mix lagen"
-            Case "Florecom soortmatch opm"
-                Set_FlexIndeling_soortmatch1()
-                loadDB_FlexIndeling_soortmatch1()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Florecom soortmatch opm"
-            Case "Florecom soortmatch -"
-                Set_FlexIndeling_soortmatch2()
-                loadDB_FlexIndeling_soortmatch2()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Florecom soortmatch -"
-            Case "Kwekerscode"
-                Set_FlexIndeling_kwekerscode()
-                loadDB_FlexIndeling_kwekerscode()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Kwekerscode"
-            Case "Fust categorie vullen"
-                Set_Flexindeling_fustcategorie()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Fust categorie vullen"
-            Case "Hoes categorie vullen"
-                Set_Flexindeling_hoescategorie()
-                DatabaseFlexGridEdit.Focus()
-                database_lbl.Text = "Hoes categorie vullen"
-            Case "Prijslijst J&P importeren"
-                If jenptenhave = True Then
-                    Set_Flexindeling_prijslijstJenPimport()
-                    DatabaseFlexGridEdit.Focus()
-                    database_lbl.Text = "Prijslijst J en P importeren"
-                    DatabaseMenuSDFPL_but.Visible = True
-                End If
-            Case "Prijslijst kortingtabel"
-                If jenptenhave = True Then
-                    Set_Flexindeling_prijslijstkortingtabel()
-                    DatabaseFlexGridEdit.Focus()
-                    loadDB_FlexIndeling_prijslijstkortingtabel()
-                    database_lbl.Text = "Prijslijst kortingtabel"
-                End If
+        If dbtype = 1 Then
 
-            Case "Prijslijst koppelingen"
-                If jenptenhave = True Then
-                    Set_Flexindeling_prijslijstkoppelingen()
+
+            Select Case selecteditem
+                Case "Kopers"
+                    Set_FlexIndeling_kopers()
+                    LoadDB_FlexIndeling_kopers()
                     DatabaseFlexGridEdit.Focus()
-                    loadDB_FlexIndeling_prijslijstkoppelingen()
-                    database_lbl.Text = "Prijslijst koppelingen"
-                End If
-        End Select
+                    database_lbl.Text = "Kopers"
+                Case "Koper alias"
+                    Set_Flexindeling_koper_alias()
+                    LoadDB_FlexIndeling_koper_alias()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Koper alias"
+                Case "Fusten"
+                    Set_Flexindeling_fusten()
+                    LoadDB_Flexindeling_fusten()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Fusten"
+                Case "Soorten"
+                    Set_Flexindeling_soorten()
+                    LoadDB_Flexindeling_soorten()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Soorten"
+                Case "Soortgroepen"
+                    Set_Flexindeling_soortgroep()
+                    LoadDB_Flexindeling_soortgroepen()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Soortgroepen"
+                Case "Accessoires"
+                    Set_Flexindeling_accessoires()
+                    LoadDB_Flexindeling_accessoires()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Accessoires"
+                Case "Accessoire prijzen"
+                    Set_Flexindeling_accessoire_prijzen()
+                    LoadDB_Flexindeling_accessoire_prijzen()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Accessoire prijzen"
+                Case "Mixen naam"
+                    Set_Flexindeling_mixen()
+                    LoadDB_Flexindeling_mixen()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Mixen naam"
+                Case "Mixen vullen"
+                    Set_Flexindeling_mixenvullen()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Mixen vullen"
+                Case "Kopersgroepen"
+                    Set_Flexindeling_kopersgroep()
+                    LoadDB_Flexindeling_kopersgroepen()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Kopersgroepen"
+                Case "Eindklanten"
+                    Set_flexindeling_eindklanten()
+                    ' LoadDB_Flexindeling_eindklanten()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Eindklanten"
+
+                Case "Agenda"
+                    Set_Flexindeling_agenda()
+                    LoadDB_Flexindeling_agenda()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Agenda"
+                Case "Soort volgorde"
+                    DatabaseMenuNieuw.Enabled = False
+                    DatabaseMenuAanpassen.Enabled = False
+                    LoadDB_Flexindeling_soortvolgorde()
+                    DatabaseFlexGridShow.Focus()
+                    database_lbl.Text = "Soort volgorde"
+                Case "Favorieten"
+                    DatabaseMenuNieuw.Enabled = False
+                    DatabaseMenuAanpassen.Enabled = False
+                    Set_Flexindeling_favorieten()
+                    LoadDB_Flexindeling_favorieten()
+                    DatabaseFlexGridShow.Focus()
+                    database_lbl.Text = "Favorieten"
+                Case "Mix lagen"
+                    Set_Flexindeling_mixlagenvullen()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Mix lagen"
+                Case "Florecom soortmatch opm"
+                    Set_FlexIndeling_soortmatch1()
+                    loadDB_FlexIndeling_soortmatch1()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Florecom soortmatch opm"
+                Case "Florecom soortmatch -"
+                    Set_FlexIndeling_soortmatch2()
+                    loadDB_FlexIndeling_soortmatch2()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Florecom soortmatch -"
+                Case "Kwekerscode"
+                    Set_FlexIndeling_kwekerscode()
+                    loadDB_FlexIndeling_kwekerscode()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Kwekerscode"
+                Case "Fust categorie vullen"
+                    Set_Flexindeling_fustcategorie()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Fust categorie vullen"
+                Case "Hoes categorie vullen"
+                    Set_Flexindeling_hoescategorie()
+                    DatabaseFlexGridEdit.Focus()
+                    database_lbl.Text = "Hoes categorie vullen"
+                Case "Prijslijst J&P importeren"
+                    If jenptenhave = True Then
+                        Set_Flexindeling_prijslijstJenPimport()
+                        DatabaseFlexGridEdit.Focus()
+                        database_lbl.Text = "Prijslijst J en P importeren"
+                        DatabaseMenuSDFPL_but.Visible = True
+                    End If
+                Case "Prijslijst kortingtabel"
+                    If jenptenhave = True Then
+                        Set_Flexindeling_prijslijstkortingtabel()
+                        DatabaseFlexGridEdit.Focus()
+                        loadDB_FlexIndeling_prijslijstkortingtabel()
+                        database_lbl.Text = "Prijslijst kortingtabel"
+                    End If
+
+                Case "Prijslijst koppelingen"
+                    If jenptenhave = True Then
+                        Set_Flexindeling_prijslijstkoppelingen()
+                        DatabaseFlexGridEdit.Focus()
+                        loadDB_FlexIndeling_prijslijstkoppelingen()
+                        database_lbl.Text = "Prijslijst koppelingen"
+                    End If
+            End Select
+
+        End If
     End Sub
     Private Sub DatabaseFlexGridEdit_BeforeEdit(ByVal sender As Object, ByVal e As C1.Win.C1FlexGrid.RowColEventArgs) Handles DatabaseFlexGridEdit.BeforeEdit
-        If DatabaseFlexGridEdit.Cols(e.Col).DataType = System.Type.GetType("System.int32") Then
-            DatabaseFlexGridEdit.Item(e.Row, e.Col) = Int(Val(DatabaseFlexGridEdit.Item(e.Row, e.Col)))
-        End If
-
-        If database_lbl.Text = "Mixen vullen" Then   'load mixen vullen on combo_change
-            Static old_selected_mix As Integer
-            If DatabaseFlexGridEdit.GetData(1, 0) <> old_selected_mix Then
-                old_selected_mix = DatabaseFlexGridEdit.GetData(1, 0)
-                Set_Flexindeling_mixenvullengrid2()
-                LoadDB_Flexindeling_mixenvullen()
+        If current_dbtype = 1 Then
+            If DatabaseFlexGridEdit.Cols(e.Col).DataType = System.Type.GetType("System.int32") Then
+                DatabaseFlexGridEdit.Item(e.Row, e.Col) = Int(Val(DatabaseFlexGridEdit.Item(e.Row, e.Col)))
             End If
 
-        End If
+            If database_lbl.Text = "Mixen vullen" Then   'load mixen vullen on combo_change
+                Static old_selected_mix As Integer
+                If DatabaseFlexGridEdit.GetData(1, 0) <> old_selected_mix Then
+                    old_selected_mix = DatabaseFlexGridEdit.GetData(1, 0)
+                    Set_Flexindeling_mixenvullengrid2()
+                    LoadDB_Flexindeling_mixenvullen()
+                End If
 
-        If database_lbl.Text = "Mix lagen" Then   'load mix lagen on combo_change
-            Static old_selected_mixlaag As Integer
-            If DatabaseFlexGridEdit.GetData(1, 0) <> old_selected_mixlaag Then
-                old_selected_mixlaag = DatabaseFlexGridEdit.GetData(1, 0)
-                Set_Flexindeling_mixlagenvullenGrid2()
-                LoadDB_Flexindeling_mixlagenvullen()
             End If
 
+            If database_lbl.Text = "Mix lagen" Then   'load mix lagen on combo_change
+                Static old_selected_mixlaag As Integer
+                If DatabaseFlexGridEdit.GetData(1, 0) <> old_selected_mixlaag Then
+                    old_selected_mixlaag = DatabaseFlexGridEdit.GetData(1, 0)
+                    Set_Flexindeling_mixlagenvullenGrid2()
+                    LoadDB_Flexindeling_mixlagenvullen()
+                End If
+
+            End If
+
+            '   If database_lbl.Text = "Hoes categorie vullen" Then   'load hoescategorie on combo_change
+            ' Static old_selected_hoescat As Integer
+            ' If DatabaseFlexGridEdit.GetData(1, 0) <> old_selected_hoescat Then
+            ' old_selected_hoescat = DatabaseFlexGridEdit.GetData(1, 0)
+            ' Set_Flexindeling_hoescategorievullengrid2()
+            ' LoadDB_Flexindeling_hoescategorievullen()
+            ' End If
+
+            'End If
         End If
+    End Sub
+    Private Sub DatabaseFlexGridShow_AfterEdit(sender As Object, e As RowColEventArgs) Handles DatabaseFlexGridShow.AfterEdit
+        If current_dbtype = 0 Then
+            Dim table As String = current_dbtable
+            dbtable = current_dbbuild
+            If table <> "N.V.T." Then
+                AfterEdit(DatabaseFlexGridShow)
+            End If
 
-        '   If database_lbl.Text = "Hoes categorie vullen" Then   'load hoescategorie on combo_change
-        ' Static old_selected_hoescat As Integer
-        ' If DatabaseFlexGridEdit.GetData(1, 0) <> old_selected_hoescat Then
-        ' old_selected_hoescat = DatabaseFlexGridEdit.GetData(1, 0)
-        ' Set_Flexindeling_hoescategorievullengrid2()
-        ' LoadDB_Flexindeling_hoescategorievullen()
-        ' End If
-
-        'End If
-
+            If current_dbtable = "fusten2" Then
+                Dim col1 As Integer = FindCol(DatabaseFlexGridShow, "Aantal per fust")
+                Dim col2 As Integer = FindCol(DatabaseFlexGridShow, "plaats_string")
+                Dim onestring As String = ""
+                Dim aantalperfust As Integer = DatabaseFlexGridShow.Item(e.Row, col1)
+                If aantalperfust > 99 Then aantalperfust = 99
+                For i = 1 To aantalperfust
+                    onestring = onestring + "1"
+                Next
+                DatabaseFlexGridShow.Item(e.Row, col2) = onestring
+            End If
+        End If
     End Sub
     Private Sub Set_Flexindeling_agenda()
         With DatabaseFlexGridEdit
@@ -7365,7 +7676,6 @@ nexttreeline:
 
         Return koper_ean
     End Function
-
     Private Sub Set_Flexindeling_soortgroep()
 
 
@@ -7968,7 +8278,6 @@ nexttreeline:
             End Try
         Next i
     End Sub
-
     Private Sub Set_Flexindeling_mixen()
 
         Dim cn() As String = New String() {"desc"}
@@ -8439,7 +8748,6 @@ nexttreeline:
             MessageBox.Show("Database fout: (accessoires)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
         End Try
     End Sub
-
     Private Sub Set_Flexindeling_soorten()
 
         Dim cn() As String = New String() {"desc"}
@@ -9435,578 +9743,650 @@ nexttreeline:
         End Try
     End Sub
     Private Sub DatabaseFlexGridShow_CellButtonClick(ByVal sender As Object, ByVal e As C1.Win.C1FlexGrid.RowColEventArgs) Handles DatabaseFlexGridShow.CellButtonClick
+        If current_dbid = 20 Then
+            If e.Col = 3 And e.Row > 1 Then
+                DatabaseFlexGridShow.Rows.Move(e.Row, e.Row - 1)
 
-        If e.Col = 3 And e.Row > 1 Then
-            DatabaseFlexGridShow.Rows.Move(e.Row, e.Row - 1)
+                Dim saveval3 As Integer = DatabaseFlexGridShow.GetData(e.Row, 2)   ' swap volgorde
+                DatabaseFlexGridShow.SetData(e.Row, 2, DatabaseFlexGridShow.GetData(e.Row - 1, 2))
+                DatabaseFlexGridShow.SetData(e.Row - 1, 2, saveval3)
 
-            Dim saveval3 As Integer = DatabaseFlexGridShow.GetData(e.Row, 2)   ' swap volgorde
-            DatabaseFlexGridShow.SetData(e.Row, 2, DatabaseFlexGridShow.GetData(e.Row - 1, 2))
-            DatabaseFlexGridShow.SetData(e.Row - 1, 2, saveval3)
+            End If
+            If e.Col = 4 And e.Row < DatabaseFlexGridShow.Rows.Count - 1 Then
+                DatabaseFlexGridShow.Rows.Move(e.Row, e.Row + 1)
 
+                Dim saveval3 As Integer = DatabaseFlexGridShow.GetData(e.Row, 2)   ' swap volgorde
+                DatabaseFlexGridShow.SetData(e.Row, 2, DatabaseFlexGridShow.GetData(e.Row + 1, 2))
+                DatabaseFlexGridShow.SetData(e.Row + 1, 2, saveval3)
+
+            End If
         End If
-        If e.Col = 4 And e.Row < DatabaseFlexGridShow.Rows.Count - 1 Then
-            DatabaseFlexGridShow.Rows.Move(e.Row, e.Row + 1)
 
-            Dim saveval3 As Integer = DatabaseFlexGridShow.GetData(e.Row, 2)   ' swap volgorde
-            DatabaseFlexGridShow.SetData(e.Row, 2, DatabaseFlexGridShow.GetData(e.Row + 1, 2))
-            DatabaseFlexGridShow.SetData(e.Row + 1, 2, saveval3)
+        If current_dbid = 30 Then
 
+            Dim FotoTradeItemId As String = DatabaseFlexGridShow.GetData(e.Row, FindCol(DatabaseFlexGridShow, "Trade item"))
+            If FotoTradeItemId <> "" Then
+                Dim FotoTradeItemDBId As Integer = CInt(Val(FotoTradeItemId))
+                If FotoTradeItemDBId > 0 Then
+                    Form15.FotoTradeItemDBId = FotoTradeItemDBId
+
+                    Dim rijpheid As Integer = 0
+                    Dim fustid As Integer = 0
+                    Dim Hoes As Integer = 0
+                    Dim Hoogte As Integer = 0
+                    Dim Diameter As Integer = 0
+                    Dim Schermen As Integer = 0
+                    Dim Keurcode As Integer = 0
+                    Dim fotopath As String = ""
+                    Try
+                        rijpheid = CInt(DatabaseFlexGridShow.GetData(e.Row, FindCol(DatabaseFlexGridShow, "Rijpheid")))
+                        fustid = CInt(DatabaseFlexGridShow.GetData(e.Row, FindCol(DatabaseFlexGridShow, "Fust")))
+                        Hoes = CInt(DatabaseFlexGridShow.GetData(e.Row, FindCol(DatabaseFlexGridShow, "Hoes")))
+                        Hoogte = CInt(DatabaseFlexGridShow.GetData(e.Row, FindCol(DatabaseFlexGridShow, "Hoogte")))
+                        Diameter = CInt(DatabaseFlexGridShow.GetData(e.Row, FindCol(DatabaseFlexGridShow, "Diameter")))
+                        Schermen = CInt(DatabaseFlexGridShow.GetData(e.Row, FindCol(DatabaseFlexGridShow, "Schermen")))
+                        Keurcode = CInt(DatabaseFlexGridShow.GetData(e.Row, FindCol(DatabaseFlexGridShow, "Keurcode")))
+                        fotopath = CStr(DatabaseFlexGridShow.GetData(e.Row, FindCol(DatabaseFlexGridShow, "Path")))
+                    Catch ex As Exception
+
+                    End Try
+
+                    Form15.rijpheid = rijpheid
+                    Form15.fustcode = fust(GID(fust, fustid)).fustcode
+                    Form15.hoogte = Hoogte
+                    Form15.diameter = Diameter
+                    Form15.schermen = Schermen
+                    Form15.keurcode = Keurcode
+                    Form15.flexgridrow = e.Row
+                    Form15.flexgridcol = FindCol(DatabaseFlexGridShow, "Path")
+                    Form15.exportgrid = 1
+                    Form15.fotopath = fotopath
+
+                    Form15.StartPosition = FormStartPosition.CenterScreen
+                    Form15.Show()
+                End If
+            Else
+                MsgBox("Selecteer eerst een trade-item")
+            End If
         End If
 
+
+    End Sub
+
+    Private Sub DatabaseMenuCopy_but_Click(sender As Object, e As EventArgs) Handles DatabaseMenuCopy_but.Click
+        If current_dbtype = 0 Then
+            Dim table As String = current_dbtable
+            dbtable = current_dbbuild
+            If table <> "N.V.T." Then
+                CopyItem(table, dbtable, DatabaseFlexGridShow)
+            End If
+        End If
+    End Sub
+
+    Private Sub DatabaseMenuHerladen_but_Click(sender As Object, e As EventArgs) Handles DatabaseMenuHerladen_but.Click
+
+        If current_dbid = 13 Or current_dbid = 14 Then
+            SetupNewDatabase(current_dbid)
+        End If
+
+        If current_dbtype = 0 Then
+            LoadNewDatabase()
+        End If
+    End Sub
+
+    Private Sub Database_preselect_cmb_SelectedIndexChanged(sender As Object, e As EventArgs) Handles Database_preselect_cmb.SelectedIndexChanged
+        LoadNewDatabase()
     End Sub
 
     Private Sub DatabaseMenuNieuw_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles DatabaseMenuNieuw.Click
-        Dim selecteditem As String = database_lbl.Text
-        Select Case selecteditem
-            Case "Kopers"
-                Dim flexgridfill(20) As String
-                flexgridfill(0) = 1
-                flexgridfill(1) = ""
-                flexgridfill(2) = ""
-                flexgridfill(3) = 0
-                flexgridfill(4) = 0
-                flexgridfill(5) = Tstr(1)
-                flexgridfill(6) = Tstr(1)
-                flexgridfill(7) = Tstr(1)
-                flexgridfill(8) = Tstr(0)
-                flexgridfill(9) = 0
-                flexgridfill(10) = 0
-                flexgridfill(11) = 0
-                flexgridfill(12) = "0,00"
-                flexgridfill(13) = ""
-                flexgridfill(14) = ""
-                flexgridfill(15) = 0
-                flexgridfill(16) = 0
-                flexgridfill(17) = 0
-                flexgridfill(18) = 0
-                flexgridfill(19) = 0
 
+        If current_dbtype = 0 Then
+            Dim table As String = current_dbtable
+            dbtable = current_dbbuild
+            If table <> "N.V.T." Then
 
-                DatabaseFlexGridEdit.Rows.Count = 1
-                DatabaseFlexGridEdit.AddItem(flexgridfill)
-                DatabaseFlexGridEdit.Rows(1).AllowEditing = True
-
-            Case "Fusten"
-                Dim flexgridfill(16) As String
-                flexgridfill(0) = 1
-                flexgridfill(1) = ""
-                flexgridfill(2) = 0
-                flexgridfill(3) = "111111"
-                flexgridfill(4) = 1
-                flexgridfill(5) = 1
-                flexgridfill(6) = 0
-                flexgridfill(7) = 0
-                flexgridfill(8) = 0
-                flexgridfill(9) = 1
-                flexgridfill(10) = 1
-                flexgridfill(11) = 1
-                flexgridfill(12) = 1
-                flexgridfill(13) = 1
-                flexgridfill(14) = 999
-                flexgridfill(15) = 0 'id 
-                DatabaseFlexGridEdit.Rows.Count = 1
-                DatabaseFlexGridEdit.AddItem(flexgridfill)
-                DatabaseFlexGridEdit.Rows(1).AllowEditing = True
-
-            Case "Soorten"
-                Dim flexgridfill(18) As String
-                flexgridfill(0) = 1
-                flexgridfill(1) = ""
-                flexgridfill(2) = Tstr(0)
-                flexgridfill(3) = 1
-                flexgridfill(4) = ""
-                flexgridfill(5) = ""
-                flexgridfill(6) = ""
-                flexgridfill(7) = 1
-                flexgridfill(8) = 17
-                flexgridfill(9) = 0
-                flexgridfill(10) = 1
-                flexgridfill(11) = 17
-                flexgridfill(12) = 0
-                flexgridfill(13) = 30
-                flexgridfill(14) = 11
-                flexgridfill(15) = 1
-                flexgridfill(16) = ""
-                flexgridfill(17) = ""
-                flexgridfill(18) = 0
-                DatabaseFlexGridEdit.Rows.Count = 1
-                DatabaseFlexGridEdit.AddItem(flexgridfill)
-                DatabaseFlexGridEdit.Rows(1).AllowEditing = True
-
-            Case "Accessoires"
-                Dim flexgridfill(15) As String
-                flexgridfill(0) = 1
-                flexgridfill(1) = ""
-                flexgridfill(2) = ""
-                flexgridfill(3) = 0
-                flexgridfill(4) = 0
-                flexgridfill(5) = 0
-                flexgridfill(6) = 999
-                flexgridfill(7) = 0
-                flexgridfill(8) = 0
-                flexgridfill(9) = ""
-                flexgridfill(10) = ""
-                flexgridfill(11) = 0
-                flexgridfill(12) = 0
-                flexgridfill(13) = 0
-                flexgridfill(14) = 0
-                DatabaseFlexGridEdit.Rows.Count = 1
-                DatabaseFlexGridEdit.AddItem(flexgridfill)
-                DatabaseFlexGridEdit.Rows(1).AllowEditing = True
-
-            Case "Accessoire prijzen"
-                Dim flexgridfill(7) As String
-                flexgridfill(0) = Tstr(0)
-                flexgridfill(1) = Tstr(0)
-                flexgridfill(2) = Tstr(0)
-                flexgridfill(3) = 0
-                flexgridfill(4) = 0
-                flexgridfill(5) = 0
-                flexgridfill(6) = Tstr(0)
-                DatabaseFlexGridEdit.Rows.Count = 1
-                DatabaseFlexGridEdit.AddItem(flexgridfill)
-                DatabaseFlexGridEdit.Rows(1).AllowEditing = True
-
-            Case "Koper alias"
-                Dim flexgridfill(2) As String
-                flexgridfill(0) = ""
-                flexgridfill(1) = "0000000000000"
-                DatabaseFlexGridEdit.Rows.Count = 1
-                DatabaseFlexGridEdit.AddItem(flexgridfill)
-                DatabaseFlexGridEdit.Rows(1).AllowEditing = True
-
-            Case "Mixen naam"
-                Dim flexgridfill(19) As String
-                flexgridfill(0) = 1
-                flexgridfill(1) = ""
-                flexgridfill(2) = 1
-                flexgridfill(3) = "0000000000000"
-                flexgridfill(4) = Tstr(0)
-                flexgridfill(5) = 1
-                flexgridfill(6) = 20
-                flexgridfill(7) = 0
-                flexgridfill(8) = 30
-                flexgridfill(9) = 11
-                flexgridfill(10) = 0
-                flexgridfill(11) = 0
-                flexgridfill(12) = ""
-                flexgridfill(13) = 0
-                flexgridfill(14) = ""
-                flexgridfill(15) = 0
-                flexgridfill(16) = 1
-                flexgridfill(17) = ""
-                flexgridfill(18) = ""
-                flexgridfill(19) = 0
-
-                DatabaseFlexGridEdit.Rows.Count = 1
-                DatabaseFlexGridEdit.AddItem(flexgridfill)
-                DatabaseFlexGridEdit.Rows(1).AllowEditing = True
-
-            Case "Mixen vullen"
-                Dim answer As Integer
-                answer = MessageBox.Show("Wilt u deze mix wissen en opnieuw invullen?", "Mix wissen?", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-                If answer = vbYes Then
-                    Set_Flexindeling_mixenvullengrid2()
+                If table = "db_plantverdeling" Or table = "db_omzetcijfers" Then
+                    'Dim retailgroep As Integer = 1
+                    'Try
+                    ' retailgroep = CInt(DirectCast(DirectCast(db_databasepreselect_cmb.SelectedItem, System.Object), System.Data.DataRowView).Item(0))
+                    'Catch ex As Exception
+                    ' End Try
+                    ' NewItem(dbtable,DatabaseFlexGridShow, "retailhoofdgroep_id", retailgroep)
+                Else
+                    NewItem(dbtable, DatabaseFlexGridShow)
                 End If
 
-            Case "Kopersgroepen"
-                LoadDB_Flexindeling_kopersgroeplist()
-                Dim flexgridfill(2) As String
-                flexgridfill(0) = 0
-                flexgridfill(1) = ""
-                DatabaseFlexGridEdit.Rows.Count = 1
-                DatabaseFlexGridEdit.AddItem(flexgridfill)
-                DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+            End If
+        Else
 
-            Case "Soortgroepen"
-                LoadDB_Flexindeling_soortgroeplist()
-                Dim flexgridfill(2) As String
-                flexgridfill(0) = 0
-                flexgridfill(1) = ""
-                DatabaseFlexGridEdit.Rows.Count = 1
-                DatabaseFlexGridEdit.AddItem(flexgridfill)
-                DatabaseFlexGridEdit.Rows(1).AllowEditing = True
-
-            Case "Fust categorie vullen"
-                Set_Flexindeling_fustcategorie_vullen2(True)
-
-            Case "Hoes categorie vullen"
-                Set_Flexindeling_hoescategorie_vullen2(True)
-
-            Case "Agenda"
-                Dim flexgridfill(8) As String
-                flexgridfill(0) = Format(Now, "dd-MM-yyyy")
-                flexgridfill(1) = Format(Now, "dd-MM-yyyy")
-                flexgridfill(2) = Tstr(0)
-                flexgridfill(3) = Tstr(0)
-                flexgridfill(4) = Tstr(0)
-                flexgridfill(5) = ""
-                flexgridfill(6) = 0
-                flexgridfill(7) = Str(0)
-                DatabaseFlexGridEdit.Rows.Count = 1
-                DatabaseFlexGridEdit.AddItem(flexgridfill)
-                DatabaseFlexGridEdit.Rows(1).AllowEditing = True
-
-            Case "Kwekerscode"
-                Dim flexgridfill(12) As String
-                flexgridfill(0) = 0
-                flexgridfill(1) = ""
-                flexgridfill(2) = ""
-                flexgridfill(3) = Tstr(1)
-                flexgridfill(4) = Tstr(0)
-                flexgridfill(5) = Tstr(0)
-                flexgridfill(6) = Tstr(1)
-                flexgridfill(7) = Tstr(0)
-                flexgridfill(8) = "0,00"
-                flexgridfill(9) = Tstr(0)
-                flexgridfill(10) = Tstr(0)
-                flexgridfill(11) = Tstr(0)
-                DatabaseFlexGridEdit.Rows.Count = 1
-                DatabaseFlexGridEdit.AddItem(flexgridfill)
-                DatabaseFlexGridEdit.Rows(1).AllowEditing = True
-
-            Case "Prijslijst kortingtabel"
-                Dim flexgridfill(4) As String
-                flexgridfill(0) = 0
-                flexgridfill(1) = Tstr(0)
-                flexgridfill(2) = "0,05"
-                flexgridfill(3) = 99
-                flexgridfill(4) = 0
-                DatabaseFlexGridEdit.Rows.Count = 1
-                DatabaseFlexGridEdit.AddItem(flexgridfill)
-                DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+            Select Case current_dbselection
+                Case "Kopers"
+                    Dim flexgridfill(20) As String
+                    flexgridfill(0) = 1
+                    flexgridfill(1) = ""
+                    flexgridfill(2) = ""
+                    flexgridfill(3) = 0
+                    flexgridfill(4) = 0
+                    flexgridfill(5) = Tstr(1)
+                    flexgridfill(6) = Tstr(1)
+                    flexgridfill(7) = Tstr(1)
+                    flexgridfill(8) = Tstr(0)
+                    flexgridfill(9) = 0
+                    flexgridfill(10) = 0
+                    flexgridfill(11) = 0
+                    flexgridfill(12) = "0,00"
+                    flexgridfill(13) = ""
+                    flexgridfill(14) = ""
+                    flexgridfill(15) = 0
+                    flexgridfill(16) = 0
+                    flexgridfill(17) = 0
+                    flexgridfill(18) = 0
+                    flexgridfill(19) = 0
 
 
-            Case "Prijslijst koppelingen"
-                Dim flexgridfill(3) As String
-                flexgridfill(0) = 0
-                flexgridfill(1) = Tstr(0)
-                flexgridfill(2) = Tstr(0)
-                flexgridfill(3) = 0
-                DatabaseFlexGridEdit.Rows.Count = 1
-                DatabaseFlexGridEdit.AddItem(flexgridfill)
-                DatabaseFlexGridEdit.Rows(1).AllowEditing = True
-        End Select
+                    DatabaseFlexGridEdit.Rows.Count = 1
+                    DatabaseFlexGridEdit.AddItem(flexgridfill)
+                    DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+
+                Case "Fusten"
+                    Dim flexgridfill(16) As String
+                    flexgridfill(0) = 1
+                    flexgridfill(1) = ""
+                    flexgridfill(2) = 0
+                    flexgridfill(3) = "111111"
+                    flexgridfill(4) = 1
+                    flexgridfill(5) = 1
+                    flexgridfill(6) = 0
+                    flexgridfill(7) = 0
+                    flexgridfill(8) = 0
+                    flexgridfill(9) = 1
+                    flexgridfill(10) = 1
+                    flexgridfill(11) = 1
+                    flexgridfill(12) = 1
+                    flexgridfill(13) = 1
+                    flexgridfill(14) = 999
+                    flexgridfill(15) = 0 'id 
+                    DatabaseFlexGridEdit.Rows.Count = 1
+                    DatabaseFlexGridEdit.AddItem(flexgridfill)
+                    DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+
+                Case "Soorten"
+                    Dim flexgridfill(18) As String
+                    flexgridfill(0) = 1
+                    flexgridfill(1) = ""
+                    flexgridfill(2) = Tstr(0)
+                    flexgridfill(3) = 1
+                    flexgridfill(4) = ""
+                    flexgridfill(5) = ""
+                    flexgridfill(6) = ""
+                    flexgridfill(7) = 1
+                    flexgridfill(8) = 17
+                    flexgridfill(9) = 0
+                    flexgridfill(10) = 1
+                    flexgridfill(11) = 17
+                    flexgridfill(12) = 0
+                    flexgridfill(13) = 30
+                    flexgridfill(14) = 11
+                    flexgridfill(15) = 1
+                    flexgridfill(16) = ""
+                    flexgridfill(17) = ""
+                    flexgridfill(18) = 0
+                    DatabaseFlexGridEdit.Rows.Count = 1
+                    DatabaseFlexGridEdit.AddItem(flexgridfill)
+                    DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+
+                Case "Accessoires"
+                    Dim flexgridfill(15) As String
+                    flexgridfill(0) = 1
+                    flexgridfill(1) = ""
+                    flexgridfill(2) = ""
+                    flexgridfill(3) = 0
+                    flexgridfill(4) = 0
+                    flexgridfill(5) = 0
+                    flexgridfill(6) = 999
+                    flexgridfill(7) = 0
+                    flexgridfill(8) = 0
+                    flexgridfill(9) = ""
+                    flexgridfill(10) = ""
+                    flexgridfill(11) = 0
+                    flexgridfill(12) = 0
+                    flexgridfill(13) = 0
+                    flexgridfill(14) = 0
+                    DatabaseFlexGridEdit.Rows.Count = 1
+                    DatabaseFlexGridEdit.AddItem(flexgridfill)
+                    DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+
+                Case "Accessoire prijzen"
+                    Dim flexgridfill(7) As String
+                    flexgridfill(0) = Tstr(0)
+                    flexgridfill(1) = Tstr(0)
+                    flexgridfill(2) = Tstr(0)
+                    flexgridfill(3) = 0
+                    flexgridfill(4) = 0
+                    flexgridfill(5) = 0
+                    flexgridfill(6) = Tstr(0)
+                    DatabaseFlexGridEdit.Rows.Count = 1
+                    DatabaseFlexGridEdit.AddItem(flexgridfill)
+                    DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+
+                Case "Koper alias"
+                    Dim flexgridfill(2) As String
+                    flexgridfill(0) = ""
+                    flexgridfill(1) = "0000000000000"
+                    DatabaseFlexGridEdit.Rows.Count = 1
+                    DatabaseFlexGridEdit.AddItem(flexgridfill)
+                    DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+
+                Case "Mixen naam"
+                    Dim flexgridfill(19) As String
+                    flexgridfill(0) = 1
+                    flexgridfill(1) = ""
+                    flexgridfill(2) = 1
+                    flexgridfill(3) = "0000000000000"
+                    flexgridfill(4) = Tstr(0)
+                    flexgridfill(5) = 1
+                    flexgridfill(6) = 20
+                    flexgridfill(7) = 0
+                    flexgridfill(8) = 30
+                    flexgridfill(9) = 11
+                    flexgridfill(10) = 0
+                    flexgridfill(11) = 0
+                    flexgridfill(12) = ""
+                    flexgridfill(13) = 0
+                    flexgridfill(14) = ""
+                    flexgridfill(15) = 0
+                    flexgridfill(16) = 1
+                    flexgridfill(17) = ""
+                    flexgridfill(18) = ""
+                    flexgridfill(19) = 0
+
+                    DatabaseFlexGridEdit.Rows.Count = 1
+                    DatabaseFlexGridEdit.AddItem(flexgridfill)
+                    DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+
+                Case "Mixen vullen"
+                    Dim answer As Integer
+                    answer = MessageBox.Show("Wilt u deze mix wissen en opnieuw invullen?", "Mix wissen?", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                    If answer = vbYes Then
+                        Set_Flexindeling_mixenvullengrid2()
+                    End If
+
+                Case "Kopersgroepen"
+                    LoadDB_Flexindeling_kopersgroeplist()
+                    Dim flexgridfill(2) As String
+                    flexgridfill(0) = 0
+                    flexgridfill(1) = ""
+                    DatabaseFlexGridEdit.Rows.Count = 1
+                    DatabaseFlexGridEdit.AddItem(flexgridfill)
+                    DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+
+                Case "Soortgroepen"
+                    LoadDB_Flexindeling_soortgroeplist()
+                    Dim flexgridfill(2) As String
+                    flexgridfill(0) = 0
+                    flexgridfill(1) = ""
+                    DatabaseFlexGridEdit.Rows.Count = 1
+                    DatabaseFlexGridEdit.AddItem(flexgridfill)
+                    DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+
+                Case "Fust categorie vullen"
+                    Set_Flexindeling_fustcategorie_vullen2(True)
+
+                Case "Hoes categorie vullen"
+                    Set_Flexindeling_hoescategorie_vullen2(True)
+
+                Case "Agenda"
+                    Dim flexgridfill(8) As String
+                    flexgridfill(0) = Format(Now, "dd-MM-yyyy")
+                    flexgridfill(1) = Format(Now, "dd-MM-yyyy")
+                    flexgridfill(2) = Tstr(0)
+                    flexgridfill(3) = Tstr(0)
+                    flexgridfill(4) = Tstr(0)
+                    flexgridfill(5) = ""
+                    flexgridfill(6) = 0
+                    flexgridfill(7) = Str(0)
+                    DatabaseFlexGridEdit.Rows.Count = 1
+                    DatabaseFlexGridEdit.AddItem(flexgridfill)
+                    DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+
+                Case "Kwekerscode"
+                    Dim flexgridfill(12) As String
+                    flexgridfill(0) = 0
+                    flexgridfill(1) = ""
+                    flexgridfill(2) = ""
+                    flexgridfill(3) = Tstr(1)
+                    flexgridfill(4) = Tstr(0)
+                    flexgridfill(5) = Tstr(0)
+                    flexgridfill(6) = Tstr(1)
+                    flexgridfill(7) = Tstr(0)
+                    flexgridfill(8) = "0,00"
+                    flexgridfill(9) = Tstr(0)
+                    flexgridfill(10) = Tstr(0)
+                    flexgridfill(11) = Tstr(0)
+                    DatabaseFlexGridEdit.Rows.Count = 1
+                    DatabaseFlexGridEdit.AddItem(flexgridfill)
+                    DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+
+                Case "Prijslijst kortingtabel"
+                    Dim flexgridfill(4) As String
+                    flexgridfill(0) = 0
+                    flexgridfill(1) = Tstr(0)
+                    flexgridfill(2) = "0,05"
+                    flexgridfill(3) = 99
+                    flexgridfill(4) = 0
+                    DatabaseFlexGridEdit.Rows.Count = 1
+                    DatabaseFlexGridEdit.AddItem(flexgridfill)
+                    DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+
+
+                Case "Prijslijst koppelingen"
+                    Dim flexgridfill(3) As String
+                    flexgridfill(0) = 0
+                    flexgridfill(1) = Tstr(0)
+                    flexgridfill(2) = Tstr(0)
+                    flexgridfill(3) = 0
+                    DatabaseFlexGridEdit.Rows.Count = 1
+                    DatabaseFlexGridEdit.AddItem(flexgridfill)
+                    DatabaseFlexGridEdit.Rows(1).AllowEditing = True
+            End Select
+        End If
     End Sub
     Private Sub DatabaseMenuOpslaan_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles DatabaseMenuOpslaan.Click
 
-        If DatabaseFlexGridEdit.Rows.Count = 2 Then    'save only in edit mode
+        If current_dbtype = 0 Then
 
-            Dim selecteditem As String = database_lbl.Text
-            Select Case selecteditem
-                Case "Kopers"
-                    Dim ean As String
-                    Dim nieuwe_koper As Boolean
-                    Dim antwoord As Integer
+            Dim table As String = current_dbtable
+            dbtable = current_dbbuild
+            If table <> "N.V.T." Then
+
+                'prechecks
+
+                Select Case table
+                    'Case "db_kwekers" : CheckForDoubleEAN()   ' dubbele ean check
+                End Select
+
+                SaveItem(table, dbtable, DatabaseFlexGridShow)
+
+                Select Case table
+                    Case "kopers"
+                        Load_Database_kopers()
+                    Case "Foto's Standaard"
+                        Load_Database_fotoFilters()
 
 
-                    'check voor nieuwe of bestaande koper
-                    ean = DatabaseFlexGridEdit.GetData(1, 1)
-                    Dim Reader As OdbcDataReader
-                    Dim CmdString As String = "select * from klanten where ean='" + ean + "'"
-                    Try
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            Dim Cmd As New OdbcCommand(CmdString, Conn)
-                            Reader = Cmd.ExecuteReader()
-                            If Reader.HasRows Then
-                                antwoord = MsgBox("Deze koper bestaat al, instellingen veranderen?", MsgBoxStyle.YesNo)
-                                If antwoord = vbNo Then Exit Sub
-                                nieuwe_koper = False
-                            Else
-                                nieuwe_koper = True
-                            End If
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Database fout: (kopers/menuopslaan)" + ex.Message)
-                        MessageBox.Show("Database fout: (kopers/menuopslaan)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
-                    End Try
+                End Select
 
-                    CmdString = ""
-                    Try
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
+                LoadNewDatabase()
 
-                            'Execute Query
-                            Dim Cmd As New OdbcCommand(CmdString, Conn)
-                            With Cmd
+            End If
 
-                                If nieuwe_koper = True Then   'nieuw koper
-                                    .CommandText = "INSERT INTO klanten(actief,ean,klantnaam,veilingnr_westland,veilingnr_von,veiling_voorkeur,kar_voorkeur,fust_voorkeur," _
+        End If
+
+        If current_dbtype = 1 Then
+            If DatabaseFlexGridEdit.Rows.Count = 2 Then    'save only in edit mode
+
+                Dim selecteditem As String = database_lbl.Text
+                Select Case selecteditem
+                    Case "Kopers"
+                        Dim ean As String
+                        Dim nieuwe_koper As Boolean
+                        Dim antwoord As Integer
+
+
+                        'check voor nieuwe of bestaande koper
+                        ean = DatabaseFlexGridEdit.GetData(1, 1)
+                        Dim Reader As OdbcDataReader
+                        Dim CmdString As String = "select * from klanten where ean='" + ean + "'"
+                        Try
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+                                Dim Cmd As New OdbcCommand(CmdString, Conn)
+                                Reader = Cmd.ExecuteReader()
+                                If Reader.HasRows Then
+                                    antwoord = MsgBox("Deze koper bestaat al, instellingen veranderen?", MsgBoxStyle.YesNo)
+                                    If antwoord = vbNo Then Exit Sub
+                                    nieuwe_koper = False
+                                Else
+                                    nieuwe_koper = True
+                                End If
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Database fout: (kopers/menuopslaan)" + ex.Message)
+                            MessageBox.Show("Database fout: (kopers/menuopslaan)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+                        End Try
+
+                        CmdString = ""
+                        Try
+                            'Open Connection
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+
+                                'Execute Query
+                                Dim Cmd As New OdbcCommand(CmdString, Conn)
+                                With Cmd
+
+                                    If nieuwe_koper = True Then   'nieuw koper
+                                        .CommandText = "INSERT INTO klanten(actief,ean,klantnaam,veilingnr_westland,veilingnr_von,veiling_voorkeur,kar_voorkeur,fust_voorkeur," _
                                                     & "vervoerder,bdo,decorum,stikker,stikkeropslag,opmerking,contact,prijsopslag,foto,fustcategorie,hoescategorie,bakstikker,veilingnr_vba, mixen ) " _
                                                     & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-                                Else   'veranderde koper 
-                                    .CommandText = "UPDATE klanten SET actief=?,ean=?,klantnaam=?,veilingnr_westland=?,veilingnr_von=?, veiling_voorkeur=?,kar_voorkeur=?,fust_voorkeur=?," _
+                                    Else   'veranderde koper 
+                                        .CommandText = "UPDATE klanten SET actief=?,ean=?,klantnaam=?,veilingnr_westland=?,veilingnr_von=?, veiling_voorkeur=?,kar_voorkeur=?,fust_voorkeur=?," _
                                                     & "vervoerder=?,bdo=?,decorum=?,stikker=?,stikkeropslag=?,opmerking=?,contact=?,prijsopslag=?,foto=?,fustcategorie=?,hoescategorie=?,bakstikker=?,veilingnr_vba=?,mixen=? " _
                                                     & "WHERE ean = '" + ean + "'"
-                                End If
-                                .Parameters.Clear()
-                                Dim label As String
-                                Dim test As Object
-                                Dim i As Integer
-                                For i = 0 To 19
-                                    label = DatabaseFlexGridEdit.GetData(0, i)
-                                    test = DatabaseFlexGridEdit.GetData(1, i)
-                                    If test = Nothing Then
-                                        If DatabaseFlexGridEdit.Cols(i).DataType = System.Type.GetType("System.String") Then
-                                            test = ""
-                                        Else
-                                            test = 0
-                                        End If
                                     End If
+                                    .Parameters.Clear()
+                                    Dim label As String
+                                    Dim test As Object
+                                    Dim i As Integer
+                                    For i = 0 To 19
+                                        label = DatabaseFlexGridEdit.GetData(0, i)
+                                        test = DatabaseFlexGridEdit.GetData(1, i)
+                                        If test = Nothing Then
+                                            If DatabaseFlexGridEdit.Cols(i).DataType = System.Type.GetType("System.String") Then
+                                                test = ""
+                                            Else
+                                                test = 0
+                                            End If
+                                        End If
 
-                                    .Parameters.AddWithValue("", test)
-                                Next i
-                                .Parameters.AddWithValue("", 0) ' vbanr(oud)
-                                .Parameters.AddWithValue("", "") 'mixen(oud)
-
-
-                                .ExecuteNonQuery()
-                            End With
-                            DatabaseFlexGridEdit.Rows.Count = 1
-                            LoadDB_FlexIndeling_kopers()
-                            Load_Database_kopers()
-                            MsgBox("Koper opgeslagen!", MsgBoxStyle.OkOnly)
-
-                            Dim CmdString8 As String = "SELECT koper_reload from instellingen"
-                            Dim Cmd8 As New OdbcCommand(CmdString, Conn)
-                            Cmd8.CommandText = "UPDATE instellingen SET koper_reload = TRUE"
-                            Cmd8.ExecuteNonQuery()
-
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Database fout: (menu opslaan)" + ex.Message)
-                        MsgBox("Database fout: (menu opslaan)" + ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
+                                        .Parameters.AddWithValue("", test)
+                                    Next i
+                                    .Parameters.AddWithValue("", 0) ' vbanr(oud)
+                                    .Parameters.AddWithValue("", "") 'mixen(oud)
 
 
-                Case "Fusten"
-                    Dim CmdString As String = "SELECT * FROM fusten2 WHERE 1=0"
-                    Try
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            'Execute Query
-                            Dim Cmd As New OdbcCommand(CmdString, Conn)
-                            With Cmd
+                                    .ExecuteNonQuery()
+                                End With
+                                DatabaseFlexGridEdit.Rows.Count = 1
+                                LoadDB_FlexIndeling_kopers()
+                                Load_Database_kopers()
+                                MsgBox("Koper opgeslagen!", MsgBoxStyle.OkOnly)
 
-                                If DatabaseFlexGridEdit.Item(1, 16) = 0 Then   'nieuw fust
-                                    .CommandText = "INSERT INTO fusten2(actief,fustnaam,fustcode,plaats_string,decorum, aantal_per_fust," _
+                                Dim CmdString8 As String = "SELECT koper_reload from instellingen"
+                                Dim Cmd8 As New OdbcCommand(CmdString, Conn)
+                                Cmd8.CommandText = "UPDATE instellingen SET koper_reload = TRUE"
+                                Cmd8.ExecuteNonQuery()
+
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Database fout: (menu opslaan)" + ex.Message)
+                            MsgBox("Database fout: (menu opslaan)" + ex.Message, MsgBoxStyle.OkOnly)
+                        End Try
+
+
+                    Case "Fusten"
+                        Dim CmdString As String = "SELECT * FROM fusten2 WHERE 1=0"
+                        Try
+                            'Open Connection
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+                                'Execute Query
+                                Dim Cmd As New OdbcCommand(CmdString, Conn)
+                                With Cmd
+
+                                    If DatabaseFlexGridEdit.Item(1, 16) = 0 Then   'nieuw fust
+                                        .CommandText = "INSERT INTO fusten2(actief,fustnaam,fustcode,plaats_string,decorum, aantal_per_fust," _
                                                     & "fustcode_florecom,fustcode_wps,fustcode_sdf,fpl_deen,fpl_veilingkar,fpl_overig,fpl_reserve1, fpl_reserve2,volgorde,kleur) " _
                                                     & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-                                Else   'veranderd fust 
-                                    .CommandText = "UPDATE fusten2 SET actief=?,fustnaam=?,fustcode=?,plaats_string=?,decorum=?, aantal_per_fust=?," _
+                                    Else   'veranderd fust 
+                                        .CommandText = "UPDATE fusten2 SET actief=?,fustnaam=?,fustcode=?,plaats_string=?,decorum=?, aantal_per_fust=?," _
                                                     & "fustcode_florecom=?,fustcode_wps=?,fustcode_sdf=?,fpl_deen=?,fpl_veilingkar=?,fpl_overig=?,fpl_reserve1=?, fpl_reserve2=?, volgorde=?, kleur=? " _
                                                     & "WHERE id = " + Str$(DatabaseFlexGridEdit.Item(1, 16))
-                                End If
+                                    End If
 
-                                Dim i As Integer
-                                For i = 0 To 15
-                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i))
-                                Next i
+                                    Dim i As Integer
+                                    For i = 0 To 15
+                                        .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i))
+                                    Next i
 
-                                .ExecuteNonQuery()
-                            End With
-                            LoadDB_Flexindeling_fusten()
-                            Load_Database_fusten()
-                            DatabaseFlexGridEdit.Rows.Count = 1
-                            MsgBox("Fust opgeslagen!", MsgBoxStyle.OkOnly)
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Database opslaan: (fust)" + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
+                                    .ExecuteNonQuery()
+                                End With
+                                LoadDB_Flexindeling_fusten()
+                                Load_Database_fusten()
+                                DatabaseFlexGridEdit.Rows.Count = 1
+                                MsgBox("Fust opgeslagen!", MsgBoxStyle.OkOnly)
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Database opslaan: (fust)" + ex.Message)
+                            MsgBox(ex.Message, MsgBoxStyle.OkOnly)
+                        End Try
 
-                Case "Soorten"
-                    Dim CmdString As String = "SELECT * FROM soorten3 WHERE 1=0"
-                    Try
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            'Execute Query
-                            Dim Cmd As New OdbcCommand(CmdString, Conn)
-                            With Cmd
+                    Case "Soorten"
+                        Dim CmdString As String = "SELECT * FROM soorten3 WHERE 1=0"
+                        Try
+                            'Open Connection
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+                                'Execute Query
+                                Dim Cmd As New OdbcCommand(CmdString, Conn)
+                                With Cmd
 
-                                If DatabaseFlexGridEdit.Item(1, 18) = 0 Then   'nieuwe soort
-                                    .CommandText = "INSERT INTO soorten3(actief,soortnaam,vastefustcode,vbn_code,wps_code,sdf_code,interne_code," _
+                                    If DatabaseFlexGridEdit.Item(1, 18) = 0 Then   'nieuwe soort
+                                        .CommandText = "INSERT INTO soorten3(actief,soortnaam,vastefustcode,vbn_code,wps_code,sdf_code,interne_code," _
                                                     & "bbrijpheid,bbhoogte,bbdiameter,klokrijpheid,klokhoogte,klokdiameter,transporthoogte,potmaat,vestiging,logiqs_code,labelnaam)" _
                                                     & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-                                Else   'veranderd soort
-                                    .CommandText = "UPDATE soorten3 SET actief=?,soortnaam=?,vastefustcode=?,vbn_code=?,wps_code=?,sdf_code=?, interne_code=?," _
+                                    Else   'veranderd soort
+                                        .CommandText = "UPDATE soorten3 SET actief=?,soortnaam=?,vastefustcode=?,vbn_code=?,wps_code=?,sdf_code=?, interne_code=?," _
                                                     & "bbrijpheid=?,bbhoogte=?,bbdiameter=?,klokrijpheid=?,klokhoogte=?,klokdiameter=?,transporthoogte=?,potmaat=?,vestiging=?,logiqs_code=?,labelnaam=? " _
                                                     & "WHERE id = " + Str$(DatabaseFlexGridEdit.Item(1, 18))
+                                    End If
+
+                                    Dim i As Integer
+                                    .Parameters.Clear()
+                                    For i = 0 To 13
+                                        .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i))
+                                    Next i
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 14) * 10)
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 15))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 16))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 17))
+                                    .ExecuteNonQuery()
+                                End With
+
+                                If DatabaseFlexGridEdit.Item(1, 18) = 0 Then
+                                    If postgress = True Then
+                                        Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('soorten3','id'))", Conn)
+                                        Dim soort_id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                        SetSoortVolgorde(soort_id)
+                                    Else
+                                        Dim Cmd5 As New OdbcCommand("SELECT LAST_INSERT_ID()", Conn)
+                                        Dim soort_id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                        SetSoortVolgorde(soort_id)
+                                    End If
+
                                 End If
 
-                                Dim i As Integer
-                                .Parameters.Clear()
-                                For i = 0 To 13
-                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i))
-                                Next i
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 14) * 10)
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 15))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 16))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 17))
-                                .ExecuteNonQuery()
-                            End With
+                                Load_Database_soorten()
+                                LoadDB_Flexindeling_soorten()
+                                DatabaseFlexGridEdit.Rows.Count = 1
+                                MsgBox("Soort opgeslagen!", MsgBoxStyle.OkOnly)
+                                Create_SoortMixTable()
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Database opslaan: (soorten)" + ex.Message)
+                            MsgBox(ex.Message, MsgBoxStyle.OkOnly)
+                        End Try
 
-                            If DatabaseFlexGridEdit.Item(1, 18) = 0 Then
-                                If postgress = True Then
-                                    Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('soorten3','id'))", Conn)
-                                    Dim soort_id = Convert.ToInt32(Cmd5.ExecuteScalar())
-                                    SetSoortVolgorde(soort_id)
-                                Else
-                                    Dim Cmd5 As New OdbcCommand("SELECT LAST_INSERT_ID()", Conn)
-                                    Dim soort_id = Convert.ToInt32(Cmd5.ExecuteScalar())
-                                    SetSoortVolgorde(soort_id)
+                    Case "Koper alias"
+                        Dim nieuw_alias As Boolean = True
+                        Dim ean As String = DatabaseFlexGridEdit.GetData(1, 1)
+                        Dim Reader As OdbcDataReader
+                        Dim CmdString As String = "select * from klant_alias where ean='" + ean + "'"
+                        Try
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+                                Dim Cmd As New OdbcCommand(CmdString, Conn)
+                                Reader = Cmd.ExecuteReader()
+                                If Reader.HasRows Then
+                                    Dim antwoord As Integer = MsgBox("Deze alias bestaat al, 2de alias maken?", MsgBoxStyle.YesNo)
+                                    If antwoord = vbNo Then
+                                        nieuw_alias = False
+                                    Else
+                                        nieuw_alias = True
+                                    End If
                                 End If
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Database fout: (alias/menuopslaan)" + ex.Message)
+                            MessageBox.Show("Database fout: (alias/menuopslaan)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+                        End Try
 
-                            End If
+                        Dim CmdString2 As String = "SELECT * FROM klant_alias WHERE 1=0"
+                        Try
 
-                            Load_Database_soorten()
-                            LoadDB_Flexindeling_soorten()
-                            DatabaseFlexGridEdit.Rows.Count = 1
-                            MsgBox("Soort opgeslagen!", MsgBoxStyle.OkOnly)
-                            Create_SoortMixTable()
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Database opslaan: (soorten)" + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
+                            'Open Connection
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+                                'Execute Query
+                                Dim Cmd2 As New OdbcCommand(CmdString2, Conn)
+                                With Cmd2
 
-                Case "Koper alias"
-                    Dim nieuw_alias As Boolean = True
-                    Dim ean As String = DatabaseFlexGridEdit.GetData(1, 1)
-                    Dim Reader As OdbcDataReader
-                    Dim CmdString As String = "select * from klant_alias where ean='" + ean + "'"
-                    Try
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            Dim Cmd As New OdbcCommand(CmdString, Conn)
-                            Reader = Cmd.ExecuteReader()
-                            If Reader.HasRows Then
-                                Dim antwoord As Integer = MsgBox("Deze alias bestaat al, 2de alias maken?", MsgBoxStyle.YesNo)
-                                If antwoord = vbNo Then
-                                    nieuw_alias = False
-                                Else
-                                    nieuw_alias = True
-                                End If
-                            End If
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Database fout: (alias/menuopslaan)" + ex.Message)
-                        MessageBox.Show("Database fout: (alias/menuopslaan)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
-                    End Try
-
-                    Dim CmdString2 As String = "SELECT * FROM klant_alias WHERE 1=0"
-                    Try
-
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            'Execute Query
-                            Dim Cmd2 As New OdbcCommand(CmdString2, Conn)
-                            With Cmd2
-
-                                If nieuw_alias = True Then   'nieuw asse
-                                    .CommandText = "INSERT INTO klant_alias(klantnaam,ean) VALUES(?,?)"
-                                Else   'veranderd asse
-                                    .CommandText = "UPDATE klant_alias SET klantnaam=?,ean=? WHERE ean = '" + ean + "'"
-                                End If
-                                .Parameters.Clear()
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 0))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 1))
-
-                                .ExecuteNonQuery()
-                            End With
-                            LoadDB_FlexIndeling_koper_alias()
-                            DatabaseFlexGridEdit.Rows.Count = 1
-                            MsgBox("Alias opgeslagen!", MsgBoxStyle.OkOnly)
-
-                            Dim CmdString8 As String = "SELECT koper_reload from instellingen"
-                            Dim Cmd8 As New OdbcCommand(CmdString, Conn)
-                            Cmd8.CommandText = "UPDATE instellingen SET koper_reload = TRUE"
-                            Cmd8.ExecuteNonQuery()
-
-
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Database opslaan: (alias)" + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
-
-
-
-                Case "Accessoires"
-
-                    Dim CmdString As String = "SELECT * FROM accessoire WHERE 1=0"
-                    Try
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            'Execute Query
-                            Dim Cmd As New OdbcCommand(CmdString, Conn)
-                            With Cmd
-
-                                If DatabaseFlexGridEdit.Item(1, 14) = 0 Then   'nieuw asse
-                                    .CommandText = "INSERT INTO accessoire(actief,naam,code,prijslijst,fust,potmaat,volgorde,sdf_code,decorum,keten_ean,hoes,stikkercode,minprijs,bakstikker)" _
-                                                    & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-                                Else   'veranderd asse
-                                    .CommandText = "UPDATE accessoire SET actief=?,naam=?,code=?,prijslijst=?,fust=?,potmaat=?,volgorde=?,sdf_code=?,decorum=?,keten_ean=?,hoes=?,stikkercode=?,minprijs=?,bakstikker=? " _
-                                                    & "WHERE id = " + Str$(DatabaseFlexGridEdit.Item(1, 14))
-                                End If
-
-                                Dim i As Integer
-                                .Parameters.Clear()
-                                For i = 0 To 4
-                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i))
-                                Next i
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i) * 10)
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 1))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 2))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 3))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 4))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 5))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 6))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 7))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 8))
-                                .ExecuteNonQuery()
-                            End With
-                            Load_Database_accessoires()
-                            LoadDB_Flexindeling_accessoires()
-                            DatabaseFlexGridEdit.Rows.Count = 1
-                            MsgBox("Accessoire opgeslagen!", MsgBoxStyle.OkOnly)
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Database opslaan: (accessoires)" + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
-
-                Case "Accessoire prijzen"
-
-                    Dim CmdString As String = "SELECT * FROM accessoire_prijzen WHERE 1=0"
-                    Try
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            'Execute Query
-                            Dim Cmd As New OdbcCommand(CmdString, Conn)
-                            With Cmd
-
-                                Dim id = DatabaseFlexGridEdit.Item(1, 5)
-
-                                If id > 0 And DatabaseFlexGridEdit.Item(1, 6) = True Then
-                                    CmdString = "DELETE FROM accessoire_prijzen WHERE id = " + Str(id)
-                                    Dim Cmd2 As New OdbcCommand(CmdString, Conn)
-                                    Cmd2.ExecuteNonQuery()
-                                Else
-
-                                    If DatabaseFlexGridEdit.Item(1, 5) = 0 Then   'nieuwe prijs
-                                        .CommandText = "INSERT INTO accessoire_prijzen(accessoire,soort,prijslijst,plus_prijs,wps_filtergroep)" _
-                                                        & "VALUES(?,?,?,?,?)"
+                                    If nieuw_alias = True Then   'nieuw asse
+                                        .CommandText = "INSERT INTO klant_alias(klantnaam,ean) VALUES(?,?)"
                                     Else   'veranderd asse
-                                        .CommandText = "UPDATE accessoire_prijzen SET accessoire=?,soort=?,prijslijst=?,plus_prijs=?,wps_filtergroep=? " _
-                                                        & "WHERE id = " + Str$(DatabaseFlexGridEdit.Item(1, 5))
+                                        .CommandText = "UPDATE klant_alias SET klantnaam=?,ean=? WHERE ean = '" + ean + "'"
+                                    End If
+                                    .Parameters.Clear()
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 0))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 1))
+
+                                    .ExecuteNonQuery()
+                                End With
+                                LoadDB_FlexIndeling_koper_alias()
+                                DatabaseFlexGridEdit.Rows.Count = 1
+                                MsgBox("Alias opgeslagen!", MsgBoxStyle.OkOnly)
+
+                                Dim CmdString8 As String = "SELECT koper_reload from instellingen"
+                                Dim Cmd8 As New OdbcCommand(CmdString, Conn)
+                                Cmd8.CommandText = "UPDATE instellingen SET koper_reload = TRUE"
+                                Cmd8.ExecuteNonQuery()
+
+
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Database opslaan: (alias)" + ex.Message)
+                            MsgBox(ex.Message, MsgBoxStyle.OkOnly)
+                        End Try
+
+
+
+                    Case "Accessoires"
+
+                        Dim CmdString As String = "SELECT * FROM accessoire WHERE 1=0"
+                        Try
+                            'Open Connection
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+                                'Execute Query
+                                Dim Cmd As New OdbcCommand(CmdString, Conn)
+                                With Cmd
+
+                                    If DatabaseFlexGridEdit.Item(1, 14) = 0 Then   'nieuw asse
+                                        .CommandText = "INSERT INTO accessoire(actief,naam,code,prijslijst,fust,potmaat,volgorde,sdf_code,decorum,keten_ean,hoes,stikkercode,minprijs,bakstikker)" _
+                                                    & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                                    Else   'veranderd asse
+                                        .CommandText = "UPDATE accessoire SET actief=?,naam=?,code=?,prijslijst=?,fust=?,potmaat=?,volgorde=?,sdf_code=?,decorum=?,keten_ean=?,hoes=?,stikkercode=?,minprijs=?,bakstikker=? " _
+                                                    & "WHERE id = " + Str$(DatabaseFlexGridEdit.Item(1, 14))
                                     End If
 
                                     Dim i As Integer
@@ -10014,988 +10394,1042 @@ nexttreeline:
                                     For i = 0 To 4
                                         .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i))
                                     Next i
-
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i) * 10)
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 1))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 2))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 3))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 4))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 5))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 6))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 7))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 8))
                                     .ExecuteNonQuery()
-                                End If
-                            End With
-                            LoadDB_Flexindeling_accessoire_prijzen()
-                            DatabaseFlexGridEdit.Rows.Count = 1
-                            MsgBox("Accessoire prijzen opgeslagen!", MsgBoxStyle.OkOnly)
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Database opslaan: (accessoire prijzen)" + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
+                                End With
+                                Load_Database_accessoires()
+                                LoadDB_Flexindeling_accessoires()
+                                DatabaseFlexGridEdit.Rows.Count = 1
+                                MsgBox("Accessoire opgeslagen!", MsgBoxStyle.OkOnly)
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Database opslaan: (accessoires)" + ex.Message)
+                            MsgBox(ex.Message, MsgBoxStyle.OkOnly)
+                        End Try
 
+                    Case "Accessoire prijzen"
 
-                Case "Mixen naam"
-
-                    Dim CmdString As String = "SELECT * FROM mixen WHERE 1=0"
-                    Try
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-
-                            Dim Cmd As New OdbcCommand(CmdString, Conn)
-                            With Cmd
-
-                                If DatabaseFlexGridEdit.Item(1, 19) = 0 Then   'nieuwe mix
-                                    .CommandText = "INSERT INTO mixen(actief,naam,fust,koperean,kopergroepid,rijpheid,hoogte,diameter,transporthoogte,potmaat,vbn_code,sdf_code,interne_code,mixlaag,mix_pakboninfo,accessoire,vestiging,labelnaam,sdf_artcode)" _
-                                                    & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-                                Else   'veranderd mix 
-                                    .CommandText = "UPDATE mixen SET actief=?,naam=?,fust=?,koperean=?,kopergroepid=?,rijpheid=?,hoogte=?,diameter=?,transporthoogte=?,potmaat=?,vbn_code=?,sdf_code=?,interne_code=?,mixlaag=?,mix_pakboninfo=?,accessoire=?,vestiging=?,labelnaam=?,sdf_artcode=? " _
-                                                    & "WHERE id = " + Str(DatabaseFlexGridEdit.Item(1, 19))
-                                End If
-
-
-                                Dim i As Integer
-                                .Parameters.Clear()
-                                For i = 0 To 3
-                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i))
-                                Next i
-                                If DatabaseFlexGridEdit.Item(1, 4) = "" Then
-                                    .Parameters.AddWithValue("", 0)
-                                Else
-                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 4))
-                                End If
-                                For i = 5 To 8
-                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i))
-                                Next i
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i) * 10)
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 1))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 2))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 3))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 4))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 5))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 6))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 7))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 8))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 9))
-                                .ExecuteNonQuery()
-                            End With
-                            If DatabaseFlexGridEdit.Item(1, 19) = 0 Then
-                                'soort in volgorde database plaatsen
-                                If postgress = True Then
-                                    Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('mixen','id'))", Conn)
-                                    Dim soort_id = Convert.ToInt32(Cmd5.ExecuteScalar())
-                                    SetSoortVolgorde(10000 + soort_id)
-                                Else
-                                    Dim Cmd5 As New OdbcCommand("SELECT LAST_INSERT_ID()", Conn)
-                                    Dim soort_id = Convert.ToInt32(Cmd5.ExecuteScalar())
-                                    SetSoortVolgorde(10000 + soort_id)
-                                End If
-                            End If
-                            LoadDB_Flexindeling_mixen()
-                            Load_Database_mixen()
-                            DatabaseFlexGridEdit.Rows.Count = 1
-                            MsgBox("Mixen opgeslagen!", MsgBoxStyle.OkOnly)
-                            Create_SoortMixTable()
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Database opslaan: (mixen)" + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
-
-                Case "Mixen vullen"
-
-                    Dim cmdstring As String
-                    Dim mix_id As Integer
-                    mix_id = DatabaseFlexGridEdit.GetData(1, 0)
-
-                    Dim Reader As OdbcDataReader
-                    Try
-
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-
-                            'ivm wisselen van fust 8 naar 6 gaats -> altijd eerst mix wissen en dan toevoegen (update hieronder is dus niet nodig)
-                            Dim Cmd2String As String = "DELETE FROM mixen_vulling where mix_id = " + Str(mix_id)
-                            Dim Cmd2 As New OdbcCommand(Cmd2String, Conn)
-                            Cmd2.ExecuteNonQuery()
-
-                            For i = 1 To DatabaseFlexGridShow.Cols.Count() - 1
-                                cmdstring = "select * from mixen_vulling where mix_id = " + Str(mix_id) + " and plaats = " + Str(i)
-
+                        Dim CmdString As String = "SELECT * FROM accessoire_prijzen WHERE 1=0"
+                        Try
+                            'Open Connection
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
                                 'Execute Query
-                                Dim Cmd As New OdbcCommand(cmdstring, Conn)
+                                Dim Cmd As New OdbcCommand(CmdString, Conn)
                                 With Cmd
 
-                                    Reader = Cmd.ExecuteReader()
-                                    If Not Reader.HasRows Then   'nieuwe mixvulling
-                                        .CommandText = "INSERT INTO mixen_vulling(mix_id,plaats,soort_id,accessoire_id1,accessoire_id2,accessoire_id3,accessoire_id4,accessoire_id5,accessoire_id6,wps_filternr)" _
-                                                        & "VALUES(?,?,?,?,?,?,?,?,?,?)"
-                                    Else   'veranderd mixvulling (outdated door delete in begin)
-                                        .CommandText = "UPDATE mixen_vulling SET mix_id=?,plaats=?,soort_id=?,accessoire_id1=?,accessoire_id2=?,accessoire_id3=?,accessoire_id4=?,accessoire_id5=?,accessoire_id6=?,wps_filternr=? " _
-                                                        & "where mix_id = " + Str(mix_id) + " and plaats = " + Str(i)
+                                    Dim id = DatabaseFlexGridEdit.Item(1, 5)
+
+                                    If id > 0 And DatabaseFlexGridEdit.Item(1, 6) = True Then
+                                        CmdString = "DELETE FROM accessoire_prijzen WHERE id = " + Str(id)
+                                        Dim Cmd2 As New OdbcCommand(CmdString, Conn)
+                                        Cmd2.ExecuteNonQuery()
+                                    Else
+
+                                        If DatabaseFlexGridEdit.Item(1, 5) = 0 Then   'nieuwe prijs
+                                            .CommandText = "INSERT INTO accessoire_prijzen(accessoire,soort,prijslijst,plus_prijs,wps_filtergroep)" _
+                                                        & "VALUES(?,?,?,?,?)"
+                                        Else   'veranderd asse
+                                            .CommandText = "UPDATE accessoire_prijzen SET accessoire=?,soort=?,prijslijst=?,plus_prijs=?,wps_filtergroep=? " _
+                                                        & "WHERE id = " + Str$(DatabaseFlexGridEdit.Item(1, 5))
+                                        End If
+
+                                        Dim i As Integer
+                                        .Parameters.Clear()
+                                        For i = 0 To 4
+                                            .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i))
+                                        Next i
+
+                                        .ExecuteNonQuery()
                                     End If
-                                    Reader.Close()
-                                    Dim j As Integer
-                                    .Parameters.Clear()
-                                    .Parameters.AddWithValue("", mix_id)
-                                    .Parameters.AddWithValue("", i) 'plaats
-                                    .Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(1, i))) 'soort
-                                    For j = 3 To 8
-                                        .Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(j, i))) 'accessoires
-                                    Next j
-                                    .Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(9, i))) ' filternr
-
-                                    .ExecuteNonQuery()
-
                                 End With
-                            Next i
-                            MsgBox("Mix opgeslagen!", MsgBoxStyle.OkOnly)
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Database opslaan: (mixen vullen)" + ex.Message)
-                        MessageBox.Show("Database fout: (mixen vullen)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
-                    End Try
+                                LoadDB_Flexindeling_accessoire_prijzen()
+                                DatabaseFlexGridEdit.Rows.Count = 1
+                                MsgBox("Accessoire prijzen opgeslagen!", MsgBoxStyle.OkOnly)
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Database opslaan: (accessoire prijzen)" + ex.Message)
+                            MsgBox(ex.Message, MsgBoxStyle.OkOnly)
+                        End Try
 
-                Case "Fust categorie vullen"
 
-                    If DatabaseFlexGridShow.Cols.Count = 3 Then
+                    Case "Mixen naam"
 
-                        Dim fust_cat_id As Integer = DatabaseFlexGridEdit(1, 0)
-                        Dim naam As String = DatabaseFlexGridEdit(1, 1)
-
-                        Dim CmdString As String
+                        Dim CmdString As String = "SELECT * FROM mixen WHERE 1=0"
                         Try
                             'Open Connection
                             Using Conn As New OdbcConnection(ConnString)
                                 Conn.Open()
-                                'Execute Query
 
-                                CmdString = "SELECT * FROM fustcategorie WHERE 1=0"
-                                Dim Cmd15 As New OdbcCommand(CmdString, Conn)
-                                With Cmd15
-                                    If fust_cat_id = 0 Then   'nieuwe groep
-                                        .CommandText = "INSERT INTO fustcategorie(naam) VALUES(?)"
-                                    Else   'veranderd groep 
-                                        .CommandText = "UPDATE fustcategorie SET naam=? WHERE id = " + Str(fust_cat_id)
+                                Dim Cmd As New OdbcCommand(CmdString, Conn)
+                                With Cmd
+
+                                    If DatabaseFlexGridEdit.Item(1, 19) = 0 Then   'nieuwe mix
+                                        .CommandText = "INSERT INTO mixen(actief,naam,fust,koperean,kopergroepid,rijpheid,hoogte,diameter,transporthoogte,potmaat,vbn_code,sdf_code,interne_code,mixlaag,mix_pakboninfo,accessoire,vestiging,labelnaam,sdf_artcode)" _
+                                                    & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                                    Else   'veranderd mix 
+                                        .CommandText = "UPDATE mixen SET actief=?,naam=?,fust=?,koperean=?,kopergroepid=?,rijpheid=?,hoogte=?,diameter=?,transporthoogte=?,potmaat=?,vbn_code=?,sdf_code=?,interne_code=?,mixlaag=?,mix_pakboninfo=?,accessoire=?,vestiging=?,labelnaam=?,sdf_artcode=? " _
+                                                    & "WHERE id = " + Str(DatabaseFlexGridEdit.Item(1, 19))
                                     End If
+
+
+                                    Dim i As Integer
                                     .Parameters.Clear()
-                                    .Parameters.AddWithValue("", naam)
+                                    For i = 0 To 3
+                                        .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i))
+                                    Next i
+                                    If DatabaseFlexGridEdit.Item(1, 4) = "" Then
+                                        .Parameters.AddWithValue("", 0)
+                                    Else
+                                        .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 4))
+                                    End If
+                                    For i = 5 To 8
+                                        .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i))
+                                    Next i
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i) * 10)
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 1))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 2))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 3))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 4))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 5))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 6))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 7))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 8))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i + 9))
                                     .ExecuteNonQuery()
-
                                 End With
-
-
-                                If fust_cat_id = 0 Then  'fetch new id if needed
+                                If DatabaseFlexGridEdit.Item(1, 19) = 0 Then
+                                    'soort in volgorde database plaatsen
                                     If postgress = True Then
-                                        Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('fustcategorie','id'))", Conn)
-                                        fust_cat_id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                        Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('mixen','id'))", Conn)
+                                        Dim soort_id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                        SetSoortVolgorde(10000 + soort_id)
                                     Else
                                         Dim Cmd5 As New OdbcCommand("SELECT LAST_INSERT_ID()", Conn)
-                                        fust_cat_id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                        Dim soort_id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                        SetSoortVolgorde(10000 + soort_id)
                                     End If
-                                Else
-                                    Dim Cmd2String As String = "DELETE FROM fustcategorie_ids where fustcategorie_id = " + Str(fust_cat_id)
-                                    Dim Cmd2 As New OdbcCommand(Cmd2String, Conn)
-                                    Cmd2.ExecuteNonQuery()
                                 End If
-
-
-                                For i = 1 To DatabaseFlexGridShow.Rows.Count() - 1
-
-                                    Dim Cmd As New OdbcCommand("INSERT INTO fustcategorie_ids(fustcategorie_id,soortgroep_id,fust_id) VALUES(?,?,?)", Conn)
-                                    Cmd.Parameters.Clear()
-                                    Cmd.Parameters.AddWithValue("", fust_cat_id)
-                                    Cmd.Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(i, 0))) 'soortgroep id
-                                    Cmd.Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(i, 2))) 'fust id
-
-                                    Cmd.ExecuteNonQuery()
-
-
-                                Next i
-                                Set_Flexindeling_fustcategorie()
-                                MsgBox("Fust categorie opgeslagen!", MsgBoxStyle.OkOnly)
+                                LoadDB_Flexindeling_mixen()
+                                Load_Database_mixen()
+                                DatabaseFlexGridEdit.Rows.Count = 1
+                                MsgBox("Mixen opgeslagen!", MsgBoxStyle.OkOnly)
+                                Create_SoortMixTable()
                             End Using
                         Catch ex As Exception
-                            ErrorLog("Database opslaan: (Fust categorie vullen)" + ex.Message)
-                            MessageBox.Show("Database fout: (Fust categorie vullen)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+                            ErrorLog("Database opslaan: (mixen)" + ex.Message)
+                            MsgBox(ex.Message, MsgBoxStyle.OkOnly)
                         End Try
-                    End If
 
-                Case "Hoes categorie vullen"
+                    Case "Mixen vullen"
 
-                    If DatabaseFlexGridShow.Cols.Count = 3 Then
+                        Dim cmdstring As String
+                        Dim mix_id As Integer
+                        mix_id = DatabaseFlexGridEdit.GetData(1, 0)
 
-                        Dim hoes_cat_id As Integer = DatabaseFlexGridEdit(1, 0)
-                        Dim naam As String = DatabaseFlexGridEdit(1, 1)
-
-                        Dim CmdString As String
+                        Dim Reader As OdbcDataReader
                         Try
+
                             'Open Connection
                             Using Conn As New OdbcConnection(ConnString)
                                 Conn.Open()
-                                'Execute Query
 
-                                CmdString = "SELECT * FROM hoescategorie WHERE 1=0"
-                                Dim Cmd15 As New OdbcCommand(CmdString, Conn)
-                                With Cmd15
-                                    If hoes_cat_id = 0 Then   'nieuwe groep
-                                        .CommandText = "INSERT INTO hoescategorie(naam) VALUES(?)"
-                                    Else   'veranderd groep 
-                                        .CommandText = "UPDATE hoescategorie SET naam=? WHERE id = " + Str(hoes_cat_id)
-                                    End If
-                                    .Parameters.Clear()
-                                    .Parameters.AddWithValue("", naam)
-                                    .ExecuteNonQuery()
+                                'ivm wisselen van fust 8 naar 6 gaats -> altijd eerst mix wissen en dan toevoegen (update hieronder is dus niet nodig)
+                                Dim Cmd2String As String = "DELETE FROM mixen_vulling where mix_id = " + Str(mix_id)
+                                Dim Cmd2 As New OdbcCommand(Cmd2String, Conn)
+                                Cmd2.ExecuteNonQuery()
 
-                                End With
+                                For i = 1 To DatabaseFlexGridShow.Cols.Count() - 1
+                                    cmdstring = "select * from mixen_vulling where mix_id = " + Str(mix_id) + " and plaats = " + Str(i)
 
-
-                                If hoes_cat_id = 0 Then  'fetch new id if needed
-                                    If postgress = True Then
-                                        Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('hoescategorie','id'))", Conn)
-                                        hoes_cat_id = Convert.ToInt32(Cmd5.ExecuteScalar())
-                                    Else
-                                        Dim Cmd5 As New OdbcCommand("SELECT LAST_INSERT_ID()", Conn)
-                                        hoes_cat_id = Convert.ToInt32(Cmd5.ExecuteScalar())
-                                    End If
-                                Else
-                                    Dim Cmd2String As String = "DELETE FROM hoescategorie_ids where hoescategorie_id = " + Str(hoes_cat_id)
-                                    Dim Cmd2 As New OdbcCommand(Cmd2String, Conn)
-                                    Cmd2.ExecuteNonQuery()
-                                End If
-
-
-                                For i = 1 To DatabaseFlexGridShow.Rows.Count() - 1
-
-                                    Dim Cmd As New OdbcCommand("INSERT INTO hoescategorie_ids(hoescategorie_id,soortgroep_id,accessoire_id) VALUES(?,?,?)", Conn)
-                                    Cmd.Parameters.Clear()
-                                    Cmd.Parameters.AddWithValue("", hoes_cat_id)
-                                    Cmd.Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(i, 0))) 'soortgroep id
-                                    Cmd.Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(i, 2))) 'hoes id
-
-                                    Cmd.ExecuteNonQuery()
-
-
-                                Next i
-                                Set_Flexindeling_hoescategorie()
-                                MsgBox("hoes categorie opgeslagen!", MsgBoxStyle.OkOnly)
-                            End Using
-                        Catch ex As Exception
-                            ErrorLog("Database opslaan: (hoes categorie vullen)" + ex.Message)
-                            MessageBox.Show("Database fout: (hoes categorie vullen)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
-                        End Try
-                    End If
- 
-
-
-                Case "Mix lagen"
-
-                    Dim cmdstring As String
-                    Dim mix_id As Integer
-                    mix_id = DatabaseFlexGridEdit.GetData(1, 0)
-
-                    Try
-
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-
-                            ' eerst mixlagen wissen en dan toevoegen
-                            Dim Cmd2String As String = "DELETE FROM mixlagen where mixlaag_id = " + Str(mix_id)
-                            Dim Cmd2 As New OdbcCommand(Cmd2String, Conn)
-                            Cmd2.ExecuteNonQuery()
-
-                            For i = 1 To DatabaseFlexGridShow.Rows.Count() - 1
-                                cmdstring = ""
-                                If Val(DatabaseFlexGridShow.Item(i, 1)) > 0 Then
                                     'Execute Query
                                     Dim Cmd As New OdbcCommand(cmdstring, Conn)
                                     With Cmd
 
-                                        .CommandText = "INSERT INTO mixlagen(mixlaag_id,soort_id) VALUES(?,?)"
+                                        Reader = Cmd.ExecuteReader()
+                                        If Not Reader.HasRows Then   'nieuwe mixvulling
+                                            .CommandText = "INSERT INTO mixen_vulling(mix_id,plaats,soort_id,accessoire_id1,accessoire_id2,accessoire_id3,accessoire_id4,accessoire_id5,accessoire_id6,wps_filternr)" _
+                                                        & "VALUES(?,?,?,?,?,?,?,?,?,?)"
+                                        Else   'veranderd mixvulling (outdated door delete in begin)
+                                            .CommandText = "UPDATE mixen_vulling SET mix_id=?,plaats=?,soort_id=?,accessoire_id1=?,accessoire_id2=?,accessoire_id3=?,accessoire_id4=?,accessoire_id5=?,accessoire_id6=?,wps_filternr=? " _
+                                                        & "where mix_id = " + Str(mix_id) + " and plaats = " + Str(i)
+                                        End If
+                                        Reader.Close()
+                                        Dim j As Integer
                                         .Parameters.Clear()
                                         .Parameters.AddWithValue("", mix_id)
-                                        .Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(i, 1))) 'soortid
+                                        .Parameters.AddWithValue("", i) 'plaats
+                                        .Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(1, i))) 'soort
+                                        For j = 3 To 8
+                                            .Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(j, i))) 'accessoires
+                                        Next j
+                                        .Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(9, i))) ' filternr
+
                                         .ExecuteNonQuery()
 
                                     End With
+                                Next i
+                                MsgBox("Mix opgeslagen!", MsgBoxStyle.OkOnly)
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Database opslaan: (mixen vullen)" + ex.Message)
+                            MessageBox.Show("Database fout: (mixen vullen)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+                        End Try
+
+                    Case "Fust categorie vullen"
+
+                        If DatabaseFlexGridShow.Cols.Count = 3 Then
+
+                            Dim fust_cat_id As Integer = DatabaseFlexGridEdit(1, 0)
+                            Dim naam As String = DatabaseFlexGridEdit(1, 1)
+
+                            Dim CmdString As String
+                            Try
+                                'Open Connection
+                                Using Conn As New OdbcConnection(ConnString)
+                                    Conn.Open()
+                                    'Execute Query
+
+                                    CmdString = "SELECT * FROM fustcategorie WHERE 1=0"
+                                    Dim Cmd15 As New OdbcCommand(CmdString, Conn)
+                                    With Cmd15
+                                        If fust_cat_id = 0 Then   'nieuwe groep
+                                            .CommandText = "INSERT INTO fustcategorie(naam) VALUES(?)"
+                                        Else   'veranderd groep 
+                                            .CommandText = "UPDATE fustcategorie SET naam=? WHERE id = " + Str(fust_cat_id)
+                                        End If
+                                        .Parameters.Clear()
+                                        .Parameters.AddWithValue("", naam)
+                                        .ExecuteNonQuery()
+
+                                    End With
+
+
+                                    If fust_cat_id = 0 Then  'fetch new id if needed
+                                        If postgress = True Then
+                                            Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('fustcategorie','id'))", Conn)
+                                            fust_cat_id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                        Else
+                                            Dim Cmd5 As New OdbcCommand("SELECT LAST_INSERT_ID()", Conn)
+                                            fust_cat_id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                        End If
+                                    Else
+                                        Dim Cmd2String As String = "DELETE FROM fustcategorie_ids where fustcategorie_id = " + Str(fust_cat_id)
+                                        Dim Cmd2 As New OdbcCommand(Cmd2String, Conn)
+                                        Cmd2.ExecuteNonQuery()
+                                    End If
+
+
+                                    For i = 1 To DatabaseFlexGridShow.Rows.Count() - 1
+
+                                        Dim Cmd As New OdbcCommand("INSERT INTO fustcategorie_ids(fustcategorie_id,soortgroep_id,fust_id) VALUES(?,?,?)", Conn)
+                                        Cmd.Parameters.Clear()
+                                        Cmd.Parameters.AddWithValue("", fust_cat_id)
+                                        Cmd.Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(i, 0))) 'soortgroep id
+                                        Cmd.Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(i, 2))) 'fust id
+
+                                        Cmd.ExecuteNonQuery()
+
+
+                                    Next i
+                                    Set_Flexindeling_fustcategorie()
+                                    MsgBox("Fust categorie opgeslagen!", MsgBoxStyle.OkOnly)
+                                End Using
+                            Catch ex As Exception
+                                ErrorLog("Database opslaan: (Fust categorie vullen)" + ex.Message)
+                                MessageBox.Show("Database fout: (Fust categorie vullen)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+                            End Try
+                        End If
+
+                    Case "Hoes categorie vullen"
+
+                        If DatabaseFlexGridShow.Cols.Count = 3 Then
+
+                            Dim hoes_cat_id As Integer = DatabaseFlexGridEdit(1, 0)
+                            Dim naam As String = DatabaseFlexGridEdit(1, 1)
+
+                            Dim CmdString As String
+                            Try
+                                'Open Connection
+                                Using Conn As New OdbcConnection(ConnString)
+                                    Conn.Open()
+                                    'Execute Query
+
+                                    CmdString = "SELECT * FROM hoescategorie WHERE 1=0"
+                                    Dim Cmd15 As New OdbcCommand(CmdString, Conn)
+                                    With Cmd15
+                                        If hoes_cat_id = 0 Then   'nieuwe groep
+                                            .CommandText = "INSERT INTO hoescategorie(naam) VALUES(?)"
+                                        Else   'veranderd groep 
+                                            .CommandText = "UPDATE hoescategorie SET naam=? WHERE id = " + Str(hoes_cat_id)
+                                        End If
+                                        .Parameters.Clear()
+                                        .Parameters.AddWithValue("", naam)
+                                        .ExecuteNonQuery()
+
+                                    End With
+
+
+                                    If hoes_cat_id = 0 Then  'fetch new id if needed
+                                        If postgress = True Then
+                                            Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('hoescategorie','id'))", Conn)
+                                            hoes_cat_id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                        Else
+                                            Dim Cmd5 As New OdbcCommand("SELECT LAST_INSERT_ID()", Conn)
+                                            hoes_cat_id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                        End If
+                                    Else
+                                        Dim Cmd2String As String = "DELETE FROM hoescategorie_ids where hoescategorie_id = " + Str(hoes_cat_id)
+                                        Dim Cmd2 As New OdbcCommand(Cmd2String, Conn)
+                                        Cmd2.ExecuteNonQuery()
+                                    End If
+
+
+                                    For i = 1 To DatabaseFlexGridShow.Rows.Count() - 1
+
+                                        Dim Cmd As New OdbcCommand("INSERT INTO hoescategorie_ids(hoescategorie_id,soortgroep_id,accessoire_id) VALUES(?,?,?)", Conn)
+                                        Cmd.Parameters.Clear()
+                                        Cmd.Parameters.AddWithValue("", hoes_cat_id)
+                                        Cmd.Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(i, 0))) 'soortgroep id
+                                        Cmd.Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(i, 2))) 'hoes id
+
+                                        Cmd.ExecuteNonQuery()
+
+
+                                    Next i
+                                    Set_Flexindeling_hoescategorie()
+                                    MsgBox("hoes categorie opgeslagen!", MsgBoxStyle.OkOnly)
+                                End Using
+                            Catch ex As Exception
+                                ErrorLog("Database opslaan: (hoes categorie vullen)" + ex.Message)
+                                MessageBox.Show("Database fout: (hoes categorie vullen)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+                            End Try
+                        End If
+
+
+
+                    Case "Mix lagen"
+
+                        Dim cmdstring As String
+                        Dim mix_id As Integer
+                        mix_id = DatabaseFlexGridEdit.GetData(1, 0)
+
+                        Try
+
+                            'Open Connection
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+
+                                ' eerst mixlagen wissen en dan toevoegen
+                                Dim Cmd2String As String = "DELETE FROM mixlagen where mixlaag_id = " + Str(mix_id)
+                                Dim Cmd2 As New OdbcCommand(Cmd2String, Conn)
+                                Cmd2.ExecuteNonQuery()
+
+                                For i = 1 To DatabaseFlexGridShow.Rows.Count() - 1
+                                    cmdstring = ""
+                                    If Val(DatabaseFlexGridShow.Item(i, 1)) > 0 Then
+                                        'Execute Query
+                                        Dim Cmd As New OdbcCommand(cmdstring, Conn)
+                                        With Cmd
+
+                                            .CommandText = "INSERT INTO mixlagen(mixlaag_id,soort_id) VALUES(?,?)"
+                                            .Parameters.Clear()
+                                            .Parameters.AddWithValue("", mix_id)
+                                            .Parameters.AddWithValue("", Val(DatabaseFlexGridShow.Item(i, 1))) 'soortid
+                                            .ExecuteNonQuery()
+
+                                        End With
+                                    End If
+                                Next i
+
+                                LoadDB_Flexindeling_mixlagenvullen()
+
+                                MsgBox("Mixlagen opgeslagen!", MsgBoxStyle.OkOnly)
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Database opslaan: (mixlagen vullen)" + ex.Message)
+                            MessageBox.Show("Database fout: (mixlagen vullen)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+                        End Try
+
+
+
+                    Case "Kopersgroepen"
+
+                        Dim eanlist As String = ""
+                        Dim id As Integer
+                        Dim naam As String
+
+                        If DatabaseFlexGridShow.Cols.Count = 3 Then
+
+                            id = DatabaseFlexGridEdit(1, 0)
+                            naam = DatabaseFlexGridEdit(1, 1)
+
+                            Dim CmdString As String
+                            Try
+                                'Open Connection
+                                Using Conn As New OdbcConnection(ConnString)
+                                    Conn.Open()
+                                    'Execute Query
+
+                                    CmdString = "SELECT * FROM kopersgroepen2 WHERE 1=0"
+                                    Dim Cmd As New OdbcCommand(CmdString, Conn)
+                                    With Cmd
+
+                                        If id = 0 Then   'nieuwe groep
+                                            .CommandText = "INSERT INTO kopersgroepen2(groepnaam) VALUES(?)"
+                                        Else   'veranderd groep 
+                                            .CommandText = "UPDATE kopersgroepen2 SET groepnaam=? WHERE id = " + Str(id)
+                                        End If
+                                        .Parameters.Clear()
+                                        .Parameters.AddWithValue("", naam)
+                                        .ExecuteNonQuery()
+
+                                    End With
+
+
+                                    If id = 0 Then  'fetch new id if needed
+
+                                        If postgress = True Then
+                                            Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('kopersgroepen2','id'))", Conn)
+                                            id = Convert.ToInt32(Cmd5.ExecuteScalar())
+
+                                        Else
+                                            Dim Cmd5 As New OdbcCommand("SELECT LAST_INSERT_ID()", Conn)
+                                            id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                        End If
+
+                                    Else
+                                        CmdString = "DELETE FROM kopersgroepen2_eans WHERE id = " + Str(id)
+                                        Dim Cmd2 As New OdbcCommand(CmdString, Conn)
+                                        Cmd2.ExecuteNonQuery()
+                                    End If
+
+                                    CmdString = "SELECT * FROM kopersgroepen2_eans WHERE 1=0"
+                                    Dim Cmd3 As New OdbcCommand(CmdString, Conn)
+                                    With Cmd3
+                                        For i = 1 To DatabaseFlexGridShow.Rows.Count - 1
+                                            If DatabaseFlexGridShow.Item(i, 0) = True Then
+                                                .CommandText = "INSERT INTO kopersgroepen2_eans(id,ean) VALUES(?,?)"
+                                                .Parameters.Clear()
+                                                .Parameters.AddWithValue("", id)
+                                                .Parameters.AddWithValue("", DatabaseFlexGridShow.GetData(i, 2))
+                                                .ExecuteNonQuery()
+                                                .Parameters.Clear()
+                                            End If
+                                        Next i
+                                    End With
+
+                                    Set_Flexindeling_kopersgroep()
+                                    LoadDB_Flexindeling_kopersgroepen()
+                                    DatabaseFlexGridEdit.Focus()
+                                    DatabaseFlexGridEdit.Rows.Count = 1
+                                    MsgBox("Kopersgroep opgeslagen!", MsgBoxStyle.OkOnly)
+                                End Using
+                            Catch ex As Exception
+                                ErrorLog("Database opslaan: (kopersgroepen)" + ex.Message)
+                                MsgBox(ex.Message, MsgBoxStyle.OkOnly)
+                            End Try
+                        End If
+
+                    Case "Soortgroepen"
+
+                        Dim idlist As String = ""
+                        Dim id As Integer
+                        Dim naam As String
+                        Dim fusten As Boolean = False
+                        Dim hoezen As Boolean = False
+                        Dim prijzen As Boolean = False
+                        Dim veilgroepen As Boolean = False
+                        If DatabaseFlexGridShow.Cols.Count = 3 Then
+
+                            id = DatabaseFlexGridEdit(1, 0)
+                            naam = DatabaseFlexGridEdit(1, 1)
+                            fusten = CHbool(DatabaseFlexGridEdit(1, 2))
+                            hoezen = CHbool(DatabaseFlexGridEdit(1, 3))
+                            prijzen = CHbool(DatabaseFlexGridEdit(1, 4))
+                            veilgroepen = CHbool(DatabaseFlexGridEdit(1, 5))
+                            Dim CmdString As String
+                            Try
+                                'Open Connection
+                                Using Conn As New OdbcConnection(ConnString)
+                                    Conn.Open()
+                                    'Execute Query
+
+                                    CmdString = "SELECT * FROM soortgroepen WHERE 1=0"
+                                    Dim Cmd As New OdbcCommand(CmdString, Conn)
+                                    With Cmd
+
+                                        If id = 0 Then   'nieuwe groep
+                                            .CommandText = "INSERT INTO soortgroepen(groepnaam,fusten,hoezen,prijzen,veilgroep) VALUES(?,?,?,?,?)"
+                                        Else   'veranderd groep 
+                                            .CommandText = "UPDATE soortgroepen SET groepnaam=?, fusten=?, hoezen=?, prijzen=?,veilgroep=? WHERE id = " + Str(id)
+                                        End If
+                                        .Parameters.Clear()
+                                        .Parameters.AddWithValue("", naam)
+                                        .Parameters.AddWithValue("", fusten)
+                                        .Parameters.AddWithValue("", hoezen)
+                                        .Parameters.AddWithValue("", prijzen)
+                                        .Parameters.AddWithValue("", veilgroepen)
+                                        .ExecuteNonQuery()
+
+                                    End With
+
+
+                                    If id = 0 Then  'fetch new id if needed
+                                        If postgress = True Then
+                                            Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('soortgroepen','id'))", Conn)
+                                            id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                        Else
+                                            Dim Cmd5 As New OdbcCommand("SELECT LAST_INSERT_ID()", Conn)
+                                            id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                        End If
+                                    Else
+                                        CmdString = "DELETE FROM soortgroepen_ids WHERE id = " + Str(id)
+                                        Dim Cmd2 As New OdbcCommand(CmdString, Conn)
+                                        Cmd2.ExecuteNonQuery()
+                                    End If
+
+                                    CmdString = "SELECT * FROM soortgroepen_ids WHERE 1=0"
+                                    Dim Cmd3 As New OdbcCommand(CmdString, Conn)
+                                    With Cmd3
+                                        For i = 1 To DatabaseFlexGridShow.Rows.Count - 1
+                                            If DatabaseFlexGridShow.Item(i, 0) = True Then
+                                                .CommandText = "INSERT INTO soortgroepen_ids(id,soortmixid) VALUES(?,?)"
+                                                .Parameters.Clear()
+                                                .Parameters.AddWithValue("", id)
+                                                .Parameters.AddWithValue("", DatabaseFlexGridShow.GetData(i, 2))
+                                                .ExecuteNonQuery()
+                                                .Parameters.Clear()
+                                            End If
+                                        Next i
+                                    End With
+
+                                    Set_Flexindeling_soortgroep()
+                                    LoadDB_Flexindeling_soortgroepen()
+                                    DatabaseFlexGridEdit.Focus()
+                                    DatabaseFlexGridEdit.Rows.Count = 1
+                                    MsgBox("Soortgroep opgeslagen!", MsgBoxStyle.OkOnly)
+                                End Using
+                            Catch ex As Exception
+                                ErrorLog("Database opslaan: (soortgroepen)" + ex.Message)
+                                MsgBox(ex.Message, MsgBoxStyle.OkOnly)
+                            End Try
+                        End If
+
+
+
+                    Case "Agenda"
+
+                        Dim CmdString As String = "SELECT * FROM agenda WHERE 1=0"
+                        Try
+                            'Open Connection
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+                                'Execute Query
+                                Dim Cmd As New OdbcCommand(CmdString, Conn)
+                                With Cmd
+
+                                    Dim id = DatabaseFlexGridEdit.Item(1, 6)
+
+                                    If id > 0 And DatabaseFlexGridEdit.Item(1, 7) = True Then
+                                        CmdString = "DELETE FROM agenda WHERE id = " + Str(id)
+                                        Dim Cmd2 As New OdbcCommand(CmdString, Conn)
+                                        Cmd2.ExecuteNonQuery()
+                                    Else
+
+                                        If DatabaseFlexGridEdit.Item(1, 6) = 0 Then   'nieuwe invoer
+                                            .CommandText = "INSERT INTO agenda(start_datum,eind_datum,vakantie,aktie,opmerking,tekst)" _
+                                                        & "VALUES(?,?,?,?,?,?)"
+                                        Else   'verander
+                                            .CommandText = "UPDATE agenda SET start_datum=?,eind_datum=?,vakantie=?,aktie=?,opmerking=?, tekst=?" _
+                                                        & "WHERE id = " + Str$(id)
+                                        End If
+
+                                        Dim i As Integer
+                                        .Parameters.Clear()
+                                        For i = 0 To 5
+                                            .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i))
+                                        Next i
+
+                                        .ExecuteNonQuery()
+
+                                    End If
+                                End With
+                                LoadDB_Flexindeling_agenda()
+                                ShowAgenda(Now)
+                                DatabaseFlexGridEdit.Rows.Count = 1
+                                MsgBox("Agenda invoer opgeslagen!", MsgBoxStyle.OkOnly)
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Database opslaan: (agenda)" + ex.Message)
+                            MsgBox(ex.Message, MsgBoxStyle.OkOnly)
+                        End Try
+
+
+                    Case "Favorieten"
+
+                        Dim cmdstring As String
+                        Try
+                            'Open Connection
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+                                'Execute Query
+                                cmdstring = "TRUNCATE favorieten_naam"
+                                Dim Cmd2 As New OdbcCommand(cmdstring, Conn)
+                                Cmd2.ExecuteNonQuery()
+
+                                cmdstring = "SELECT * FROM favorieten_naam WHERE 1=0"
+                                Dim Cmd3 As New OdbcCommand(cmdstring, Conn)
+                                With Cmd3
+                                    For i = 0 To 4
+
+                                        .CommandText = "INSERT INTO favorieten_naam(naam) VALUES(?)"
+                                        .Parameters.Clear()
+                                        .Parameters.AddWithValue("", DatabaseFlexGridEdit.GetData(1, i))
+                                        .ExecuteNonQuery()
+                                        .Parameters.Clear()
+                                    Next i
+                                End With
+
+                                'Execute Query
+                                cmdstring = "TRUNCATE favorieten_lijst"
+                                Dim Cmd4 As New OdbcCommand(cmdstring, Conn)
+                                Cmd4.ExecuteNonQuery()
+
+                                cmdstring = "SELECT * FROM favorieten_lijst WHERE 1=0"
+                                Dim Cmd5 As New OdbcCommand(cmdstring, Conn)
+                                With Cmd5
+                                    For j = 0 To 4
+                                        For i = 1 To DatabaseFlexGridShow.Rows.Count - 1
+                                            If DatabaseFlexGridShow.Item(i, j * 2) = True Then
+                                                .CommandText = "INSERT INTO favorieten_lijst(nummer,soortid) VALUES(?,?)"
+                                                .Parameters.Clear()
+                                                .Parameters.AddWithValue("", j + 1)
+                                                .Parameters.AddWithValue("", DatabaseFlexGridShow.GetData(i, 10))
+                                                .ExecuteNonQuery()
+                                                .Parameters.Clear()
+                                            End If
+                                        Next i
+                                    Next j
+                                End With
+
+                                MsgBox("Favorieten opgeslagen!", MsgBoxStyle.OkOnly)
+                            End Using
+
+                        Catch ex As Exception
+                            ErrorLog("Database opslaan: (favorieten)" + ex.Message)
+                            MsgBox(ex.Message, MsgBoxStyle.OkOnly)
+                        End Try
+
+                    Case "Soort volgorde"
+
+                        'resort table 
+                        For j = 1 To DatabaseFlexGridShow.Rows.Count - 2
+                            For i = 1 To DatabaseFlexGridShow.Rows.Count - 2
+                                Dim line1 As Integer = DatabaseFlexGridShow.GetData(i, 2)
+                                Dim line2 As Integer = DatabaseFlexGridShow.GetData(i + 1, 2)
+                                If line1 > line2 Then
+                                    Dim saveval1 As String = DatabaseFlexGridShow.GetData(i, 0)  'naam
+                                    Dim saveval2 As Integer = DatabaseFlexGridShow.GetData(i, 1)  'id
+                                    Dim saveval3 As Integer = DatabaseFlexGridShow.GetData(i, 2)   'volgorde
+                                    DatabaseFlexGridShow.SetData(i, 0, DatabaseFlexGridShow.GetData(i + 1, 0))
+                                    DatabaseFlexGridShow.SetData(i, 1, DatabaseFlexGridShow.GetData(i + 1, 1))
+                                    DatabaseFlexGridShow.SetData(i, 2, DatabaseFlexGridShow.GetData(i + 1, 2))
+                                    DatabaseFlexGridShow.SetData(i + 1, 0, saveval1 + "x")
+                                    DatabaseFlexGridShow.SetData(i + 1, 1, saveval2)
+                                    DatabaseFlexGridShow.SetData(i + 1, 2, saveval3)
                                 End If
                             Next i
+                        Next j
 
-                            LoadDB_Flexindeling_mixlagenvullen()
+                        Dim cmdstring As String = "SELECT * FROM soortvolgorde WHERE 1=0"
+                        Try
+                            'Open Connection
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+                                'Execute Query
+                                cmdstring = "update soortvolgorde set soortid = 99999, volgorde = 99999"
+                                Dim Cmd2 As New OdbcCommand(cmdstring, Conn)
+                                Cmd2.ExecuteNonQuery()
 
-                            MsgBox("Mixlagen opgeslagen!", MsgBoxStyle.OkOnly)
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Database opslaan: (mixlagen vullen)" + ex.Message)
-                        MessageBox.Show("Database fout: (mixlagen vullen)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
-                    End Try
+                                cmdstring = "SELECT * FROM soortvolgorde WHERE 1=0"
+                                Dim Cmd3 As New OdbcCommand(cmdstring, Conn)
+                                With Cmd3
+                                    For i = 1 To DatabaseFlexGridShow.Rows.Count - 1
+
+                                        .CommandText = "INSERT INTO soortvolgorde(volgorde,soortid) VALUES(?,?)"
+                                        .Parameters.Clear()
+                                        .Parameters.AddWithValue("", 1000 + i)
+                                        .Parameters.AddWithValue("", DatabaseFlexGridShow.GetData(i, 1))
+                                        .ExecuteNonQuery()
+                                        .Parameters.Clear()
+                                    Next i
+                                End With
+
+                                cmdstring = "delete from soortvolgorde where soortid = 99999 and volgorde =99999"
+                                Dim Cmd4 As New OdbcCommand(cmdstring, Conn)
+                                Cmd4.ExecuteNonQuery()
 
 
+                                LoadDB_Flexindeling_soortvolgorde()
+                                Create_SoortMixTable()
+                                MsgBox("Soort volgorde opgeslagen!", MsgBoxStyle.OkOnly)
+                            End Using
 
-                Case "Kopersgroepen"
+                        Catch ex As Exception
+                            ErrorLog("Database opslaan: (soortvolgorde)" + ex.Message)
+                            MsgBox(ex.Message, MsgBoxStyle.OkOnly)
+                        End Try
 
-                    Dim eanlist As String = ""
-                    Dim id As Integer
-                    Dim naam As String
+                    Case "Florecom soortmatch opm"
 
-                    If DatabaseFlexGridShow.Cols.Count = 3 Then
-
-                        id = DatabaseFlexGridEdit(1, 0)
-                        naam = DatabaseFlexGridEdit(1, 1)
-
-                        Dim CmdString As String
+                        Dim CmdString As String = "SELECT * FROM soortmatch3 WHERE 1=0"
                         Try
                             'Open Connection
                             Using Conn As New OdbcConnection(ConnString)
                                 Conn.Open()
                                 'Execute Query
 
-                                CmdString = "SELECT * FROM kopersgroepen2 WHERE 1=0"
-                                Dim Cmd As New OdbcCommand(CmdString, Conn)
-                                With Cmd
 
-                                    If id = 0 Then   'nieuwe groep
-                                        .CommandText = "INSERT INTO kopersgroepen2(groepnaam) VALUES(?)"
-                                    Else   'veranderd groep 
-                                        .CommandText = "UPDATE kopersgroepen2 SET groepnaam=? WHERE id = " + Str(id)
-                                    End If
-                                    .Parameters.Clear()
-                                    .Parameters.AddWithValue("", naam)
-                                    .ExecuteNonQuery()
+                                Dim koper_ean As String = DatabaseFlexGridEdit.Item(1, 0)
+                                Dim vbn_string As String = DatabaseFlexGridEdit.Item(1, 1)
+                                Dim vbn_string2() As String = Microsoft.VisualBasic.Strings.Split(vbn_string, ":")
+                                Dim vbn_code = vbn_string2(0)
+                                Dim kwekercode = DatabaseFlexGridEdit.Item(1, 2)
+                                Dim soortomschrijving As String = DatabaseFlexGridEdit.Item(1, 3)
+                                Dim opmerking As String = DatabaseFlexGridEdit.Item(1, 4)
+                                Dim soort As Integer = DatabaseFlexGridEdit.Item(1, 5)
+                                Dim acc1 As Integer = DatabaseFlexGridEdit.Item(1, 6)
+                                Dim acc2 As Integer = DatabaseFlexGridEdit.Item(1, 7)
+                                Dim fust As Integer = DatabaseFlexGridEdit.Item(1, 8)
+                                Dim potmaat As Integer = DatabaseFlexGridEdit.Item(1, 9)
+                                Dim delete As Boolean = DatabaseFlexGridEdit.Item(1, 10)
 
-                                End With
-
-
-                                If id = 0 Then  'fetch new id if needed
-
-                                    If postgress = True Then
-                                        Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('kopersgroepen2','id'))", Conn)
-                                        id = Convert.ToInt32(Cmd5.ExecuteScalar())
-
-                                    Else
-                                        Dim Cmd5 As New OdbcCommand("SELECT LAST_INSERT_ID()", Conn)
-                                        id = Convert.ToInt32(Cmd5.ExecuteScalar())
-                                    End If
-
-                                Else
-                                    CmdString = "DELETE FROM kopersgroepen2_eans WHERE id = " + Str(id)
+                                If delete = True Then
+                                    CmdString = "DELETE FROM soortmatch3 WHERE koper_ean = ? and vbn_code = ? and PIA_SA_EAN = ? and IMD_Full_name = ? and opmerking3 =? and potmaat =?"
                                     Dim Cmd2 As New OdbcCommand(CmdString, Conn)
+                                    Cmd2.Parameters.Clear()
+                                    Cmd2.Parameters.AddWithValue("", koper_ean)
+                                    Cmd2.Parameters.AddWithValue("", vbn_code)
+                                    Cmd2.Parameters.AddWithValue("", kwekercode)
+                                    Cmd2.Parameters.AddWithValue("", soortomschrijving)
+                                    Cmd2.Parameters.AddWithValue("", opmerking)
+                                    Cmd2.Parameters.AddWithValue("", potmaat)
+                                    Cmd2.ExecuteNonQuery()
+                                Else
+
+                                    CmdString = "UPDATE soortmatch3 SET soortid=?,accessoire1=?,accessoire2=?,fustcode=? WHERE koper_ean = ? and vbn_code = ? and PIA_SA_EAN = ? and IMD_Full_name = ? and opmerking3 = ? and potmaat = ?"
+                                    Dim Cmd2 As New OdbcCommand(CmdString, Conn)
+                                    Cmd2.Parameters.Clear()
+                                    Cmd2.Parameters.AddWithValue("", soort)
+                                    Cmd2.Parameters.AddWithValue("", acc1)
+                                    Cmd2.Parameters.AddWithValue("", acc2)
+                                    Cmd2.Parameters.AddWithValue("", fust)
+                                    '
+                                    Cmd2.Parameters.AddWithValue("", koper_ean)
+                                    Cmd2.Parameters.AddWithValue("", vbn_code)
+                                    Cmd2.Parameters.AddWithValue("", kwekercode)
+                                    Cmd2.Parameters.AddWithValue("", soortomschrijving)
+                                    Cmd2.Parameters.AddWithValue("", opmerking)
+                                    Cmd2.Parameters.AddWithValue("", potmaat)
                                     Cmd2.ExecuteNonQuery()
                                 End If
 
-                                CmdString = "SELECT * FROM kopersgroepen2_eans WHERE 1=0"
-                                Dim Cmd3 As New OdbcCommand(CmdString, Conn)
-                                With Cmd3
-                                    For i = 1 To DatabaseFlexGridShow.Rows.Count - 1
-                                        If DatabaseFlexGridShow.Item(i, 0) = True Then
-                                            .CommandText = "INSERT INTO kopersgroepen2_eans(id,ean) VALUES(?,?)"
-                                            .Parameters.Clear()
-                                            .Parameters.AddWithValue("", id)
-                                            .Parameters.AddWithValue("", DatabaseFlexGridShow.GetData(i, 2))
-                                            .ExecuteNonQuery()
-                                            .Parameters.Clear()
-                                        End If
-                                    Next i
-                                End With
-
-                                Set_Flexindeling_kopersgroep()
-                                LoadDB_Flexindeling_kopersgroepen()
-                                DatabaseFlexGridEdit.Focus()
+                                loadDB_FlexIndeling_soortmatch1()
                                 DatabaseFlexGridEdit.Rows.Count = 1
-                                MsgBox("Kopersgroep opgeslagen!", MsgBoxStyle.OkOnly)
+                                MsgBox("Soortmatch aangepast", MsgBoxStyle.OkOnly)
                             End Using
                         Catch ex As Exception
-                            ErrorLog("Database opslaan: (kopersgroepen)" + ex.Message)
+                            ErrorLog("soortmatch opslaan: " + ex.Message)
                             MsgBox(ex.Message, MsgBoxStyle.OkOnly)
                         End Try
-                    End If
 
-                Case "Soortgroepen"
+                    Case "Florecom soortmatch -"
 
-                    Dim idlist As String = ""
-                    Dim id As Integer
-                    Dim naam As String
-                    Dim fusten As Boolean = False
-                    Dim hoezen As Boolean = False
-                    Dim prijzen As Boolean = False
-                    Dim veilgroepen As Boolean = False
-                    If DatabaseFlexGridShow.Cols.Count = 3 Then
-
-                        id = DatabaseFlexGridEdit(1, 0)
-                        naam = DatabaseFlexGridEdit(1, 1)
-                        fusten = CHbool(DatabaseFlexGridEdit(1, 2))
-                        hoezen = CHbool(DatabaseFlexGridEdit(1, 3))
-                        prijzen = CHbool(DatabaseFlexGridEdit(1, 4))
-                        veilgroepen = CHbool(DatabaseFlexGridEdit(1, 5))
-                        Dim CmdString As String
+                        Dim CmdString As String = "SELECT * FROM soortmatch2 WHERE 1=0"
                         Try
                             'Open Connection
                             Using Conn As New OdbcConnection(ConnString)
                                 Conn.Open()
                                 'Execute Query
 
-                                CmdString = "SELECT * FROM soortgroepen WHERE 1=0"
-                                Dim Cmd As New OdbcCommand(CmdString, Conn)
-                                With Cmd
 
-                                    If id = 0 Then   'nieuwe groep
-                                        .CommandText = "INSERT INTO soortgroepen(groepnaam,fusten,hoezen,prijzen,veilgroep) VALUES(?,?,?,?,?)"
-                                    Else   'veranderd groep 
-                                        .CommandText = "UPDATE soortgroepen SET groepnaam=?, fusten=?, hoezen=?, prijzen=?,veilgroep=? WHERE id = " + Str(id)
-                                    End If
-                                    .Parameters.Clear()
-                                    .Parameters.AddWithValue("", naam)
-                                    .Parameters.AddWithValue("", fusten)
-                                    .Parameters.AddWithValue("", hoezen)
-                                    .Parameters.AddWithValue("", prijzen)
-                                    .Parameters.AddWithValue("", veilgroepen)
-                                    .ExecuteNonQuery()
+                                Dim koper_ean As String = DatabaseFlexGridEdit.Item(1, 0)
+                                Dim vbn_string As String = DatabaseFlexGridEdit.Item(1, 1)
+                                Dim vbn_string2() As String = Microsoft.VisualBasic.Strings.Split(vbn_string, ":")
+                                Dim vbn_code = vbn_string2(0)
+                                Dim kwekercode = DatabaseFlexGridEdit.Item(1, 2)
+                                Dim soortomschrijving As String = DatabaseFlexGridEdit.Item(1, 3)
+                                'Dim opmerking As String = DatabaseFlexGridEdit.Item(1, 4)
+                                Dim soort As Integer = DatabaseFlexGridEdit.Item(1, 5)
+                                Dim acc1 As Integer = DatabaseFlexGridEdit.Item(1, 6)
+                                Dim acc2 As Integer = DatabaseFlexGridEdit.Item(1, 7)
+                                Dim fust As Integer = DatabaseFlexGridEdit.Item(1, 8)
+                                Dim potmaat As Integer = DatabaseFlexGridEdit.Item(1, 9)
+                                Dim delete As Boolean = DatabaseFlexGridEdit.Item(1, 10)
 
-                                End With
-
-
-                                If id = 0 Then  'fetch new id if needed
-                                    If postgress = True Then
-                                        Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('soortgroepen','id'))", Conn)
-                                        id = Convert.ToInt32(Cmd5.ExecuteScalar())
-                                    Else
-                                        Dim Cmd5 As New OdbcCommand("SELECT LAST_INSERT_ID()", Conn)
-                                        id = Convert.ToInt32(Cmd5.ExecuteScalar())
-                                    End If
-                                Else
-                                    CmdString = "DELETE FROM soortgroepen_ids WHERE id = " + Str(id)
+                                If delete = True Then
+                                    CmdString = "DELETE FROM soortmatch2 WHERE koper_ean = ? and vbn_code = ? and PIA_SA_EAN = ? and IMD_Full_name = ? and potmaat = ? "
                                     Dim Cmd2 As New OdbcCommand(CmdString, Conn)
+                                    Cmd2.Parameters.Clear()
+                                    Cmd2.Parameters.AddWithValue("", koper_ean)
+                                    Cmd2.Parameters.AddWithValue("", vbn_code)
+                                    Cmd2.Parameters.AddWithValue("", kwekercode)
+                                    Cmd2.Parameters.AddWithValue("", soortomschrijving)
+                                    Cmd2.Parameters.AddWithValue("", potmaat)
+                                    Cmd2.ExecuteNonQuery()
+                                Else
+
+                                    CmdString = "UPDATE soortmatch2 SET soortid=?,accessoire1=?,accessoire2=?,fustcode=? WHERE koper_ean = ? and vbn_code = ? and PIA_SA_EAN = ? and IMD_Full_name = ? and potmaat = ?"
+                                    Dim Cmd2 As New OdbcCommand(CmdString, Conn)
+                                    Cmd2.Parameters.Clear()
+                                    Cmd2.Parameters.AddWithValue("", soort)
+                                    Cmd2.Parameters.AddWithValue("", acc1)
+                                    Cmd2.Parameters.AddWithValue("", acc2)
+                                    Cmd2.Parameters.AddWithValue("", fust)
+                                    '
+                                    Cmd2.Parameters.AddWithValue("", koper_ean)
+                                    Cmd2.Parameters.AddWithValue("", vbn_code)
+                                    Cmd2.Parameters.AddWithValue("", kwekercode)
+                                    Cmd2.Parameters.AddWithValue("", soortomschrijving)
+                                    Cmd2.Parameters.AddWithValue("", potmaat)
                                     Cmd2.ExecuteNonQuery()
                                 End If
 
-                                CmdString = "SELECT * FROM soortgroepen_ids WHERE 1=0"
-                                Dim Cmd3 As New OdbcCommand(CmdString, Conn)
-                                With Cmd3
-                                    For i = 1 To DatabaseFlexGridShow.Rows.Count - 1
-                                        If DatabaseFlexGridShow.Item(i, 0) = True Then
-                                            .CommandText = "INSERT INTO soortgroepen_ids(id,soortmixid) VALUES(?,?)"
-                                            .Parameters.Clear()
-                                            .Parameters.AddWithValue("", id)
-                                            .Parameters.AddWithValue("", DatabaseFlexGridShow.GetData(i, 2))
-                                            .ExecuteNonQuery()
-                                            .Parameters.Clear()
-                                        End If
-                                    Next i
-                                End With
-
-                                Set_Flexindeling_soortgroep()
-                                LoadDB_Flexindeling_soortgroepen()
-                                DatabaseFlexGridEdit.Focus()
+                                loadDB_FlexIndeling_soortmatch2()
                                 DatabaseFlexGridEdit.Rows.Count = 1
-                                MsgBox("Soortgroep opgeslagen!", MsgBoxStyle.OkOnly)
+                                MsgBox("Soortmatch aangepast", MsgBoxStyle.OkOnly)
                             End Using
                         Catch ex As Exception
-                            ErrorLog("Database opslaan: (soortgroepen)" + ex.Message)
+                            ErrorLog("soortmatch opslaan: " + ex.Message)
                             MsgBox(ex.Message, MsgBoxStyle.OkOnly)
                         End Try
-                    End If
 
+                    Case "Kwekerscode"
 
+                        Dim CmdString As String = "SELECT * FROM prijslijst WHERE 1=0"
+                        Try
+                            'Open Connection
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+                                'Execute Query
+                                Dim id As Integer = DatabaseFlexGridEdit.Item(1, 0)
+                                Dim kwekerscode As String = DatabaseFlexGridEdit.Item(1, 1)
+                                Dim omschrijving As String = DatabaseFlexGridEdit.Item(1, 2)
+                                Dim soort As Integer = DatabaseFlexGridEdit.Item(1, 3)
+                                Dim acc1 As Integer = DatabaseFlexGridEdit.Item(1, 4)
+                                Dim acc2 As Integer = DatabaseFlexGridEdit.Item(1, 5)
+                                Dim fust As Integer = DatabaseFlexGridEdit.Item(1, 6)
+                                Dim hoes As Integer = DatabaseFlexGridEdit.Item(1, 7)
+                                Dim prijs As Integer = DatabaseFlexGridEdit.Item(1, 8) * 100
+                                Dim korting As Integer = DatabaseFlexGridEdit.Item(1, 9)
+                                Dim kopersgroep As Integer = DatabaseFlexGridEdit.Item(1, 10)
 
-                Case "Agenda"
+                                Dim delete As Boolean = DatabaseFlexGridEdit.Item(1, 11)
 
-                    Dim CmdString As String = "SELECT * FROM agenda WHERE 1=0"
-                    Try
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            'Execute Query
-                            Dim Cmd As New OdbcCommand(CmdString, Conn)
-                            With Cmd
-
-                                Dim id = DatabaseFlexGridEdit.Item(1, 6)
-
-                                If id > 0 And DatabaseFlexGridEdit.Item(1, 7) = True Then
-                                    CmdString = "DELETE FROM agenda WHERE id = " + Str(id)
-                                    Dim Cmd2 As New OdbcCommand(CmdString, Conn)
+                                If delete = True Then
+                                    Dim Cmd2 As New OdbcCommand("DELETE FROM prijslijst WHERE kwekerscode = ? and omschrijving = ? ", Conn)
+                                    Cmd2.Parameters.Clear()
+                                    Cmd2.Parameters.AddWithValue("", kwekerscode)
+                                    Cmd2.Parameters.AddWithValue("", omschrijving)
                                     Cmd2.ExecuteNonQuery()
                                 Else
 
-                                    If DatabaseFlexGridEdit.Item(1, 6) = 0 Then   'nieuwe invoer
-                                        .CommandText = "INSERT INTO agenda(start_datum,eind_datum,vakantie,aktie,opmerking,tekst)" _
-                                                        & "VALUES(?,?,?,?,?,?)"
-                                    Else   'verander
-                                        .CommandText = "UPDATE agenda SET start_datum=?,eind_datum=?,vakantie=?,aktie=?,opmerking=?, tekst=?" _
-                                                        & "WHERE id = " + Str$(id)
+                                    CmdString = ""
+                                    If id = 0 Then
+                                        CmdString = "INSERT INTO prijslijst (soort, accessoire1, accessoire2, fust, hoes, prijs, korting, kopersgroep, kwekerscode, omschrijving) VALUES(?,?,?,?,?,?,?,?,?,?)"
+                                    Else
+                                        CmdString = "UPDATE prijslijst SET soort=?, accessoire1=?, accessoire2=?, fust=?, hoes=?, prijs=?, korting=?, kopersgroep=? WHERE kwekerscode = ? and omschrijving = ?"
                                     End If
 
-                                    Dim i As Integer
-                                    .Parameters.Clear()
-                                    For i = 0 To 5
-                                        .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, i))
-                                    Next i
+                                    Dim Cmd2 As New OdbcCommand(CmdString, Conn)
+                                    Cmd2.Parameters.Clear()
+                                    Cmd2.Parameters.AddWithValue("", soort)
+                                    Cmd2.Parameters.AddWithValue("", acc1)
+                                    Cmd2.Parameters.AddWithValue("", acc2)
+                                    Cmd2.Parameters.AddWithValue("", fust)
+                                    Cmd2.Parameters.AddWithValue("", hoes)
+                                    Cmd2.Parameters.AddWithValue("", prijs)
+                                    Cmd2.Parameters.AddWithValue("", korting)
+                                    Cmd2.Parameters.AddWithValue("", kopersgroep)
+                                    Cmd2.Parameters.AddWithValue("", kwekerscode.ToUpper())
+                                    Cmd2.Parameters.AddWithValue("", omschrijving)
+                                    Cmd2.ExecuteNonQuery()
+                                End If
 
+                                loadDB_FlexIndeling_kwekerscode()
+                                DatabaseFlexGridEdit.Rows.Count = 1
+                                MsgBox("Kwekerscode opgeslagen", MsgBoxStyle.OkOnly)
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Kwekerscode opslaan: " + ex.Message)
+                            MsgBox(ex.Message, MsgBoxStyle.OkOnly)
+                        End Try
+
+
+                    Case "Prijslijst J en P importeren"
+
+                        Dim nieuwe_code As Boolean = True
+                        Dim kwekerscode As String = DatabaseFlexGridEdit.GetData(1, 1)
+                        Dim omschrijving As String = DatabaseFlexGridEdit.GetData(1, 2)
+                        Try
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+                                Dim Reader As OdbcDataReader
+                                Dim Cmd As New OdbcCommand("SELECT * FROM prijslijst WHERE kwekerscode=? and omschrijving=?", Conn)
+                                Cmd.Parameters.Clear()
+                                Cmd.Parameters.AddWithValue("", kwekerscode)
+                                Cmd.Parameters.AddWithValue("", omschrijving)
+                                Reader = Cmd.ExecuteReader()
+                                If Reader.HasRows Then
+                                    nieuwe_code = False
+                                End If
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Database fout: (prijslijst/menuopslaan)" + ex.Message)
+                            MessageBox.Show("Database fout: (prijslijst/menuopslaan)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+                        End Try
+
+                        Try
+
+                            'Open Connection
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+                                'Execute Query
+                                Dim Cmd2 As New OdbcCommand("", Conn)
+                                With Cmd2
+
+                                    If nieuwe_code = True Then   'nieuwe line 
+                                        .CommandText = "INSERT INTO prijslijst(soort,accessoire1,accessoire2,fust,hoes,prijs,korting,kopersgroep,kwekerscode,omschrijving) VALUES(?,?,?,?,?,?,?,?,?,?)"
+                                    Else
+                                        .CommandText = "UPDATE prijslijst SET soort=?, accessoire1=?, accessoire2=?, fust=?, hoes=? ,prijs=?, korting=?, kopersgroep=? WHERE kwekerscode = ? and omschrijving = ?"
+                                    End If
+                                    .Parameters.Clear()
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 3))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 4))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 5))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 6))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 7))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 8) * 100)
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 9))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 10))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 1))
+                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 2))
                                     .ExecuteNonQuery()
+                                End With
 
-                                End If
-                            End With
-                            LoadDB_Flexindeling_agenda()
-                            ShowAgenda(Now)
-                            DatabaseFlexGridEdit.Rows.Count = 1
-                            MsgBox("Agenda invoer opgeslagen!", MsgBoxStyle.OkOnly)
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Database opslaan: (agenda)" + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
+                                DatabaseFlexGridEdit.Rows(1).Style = DatabaseFlexGridShow.Styles("blue")
+                                Dim row As Integer = DatabaseFlexGridEdit.Item(1, 0)
+                                DatabaseFlexGridShow.Rows(row).Style = DatabaseFlexGridShow.Styles("blue")
 
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Database opslaan: (alias)" + ex.Message)
+                            MsgBox(ex.Message, MsgBoxStyle.OkOnly)
+                        End Try
 
-                Case "Favorieten"
+                    Case "Prijslijst kortingtabel"
 
-                    Dim cmdstring As String
-                    Try
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            'Execute Query
-                            cmdstring = "TRUNCATE favorieten_naam"
-                            Dim Cmd2 As New OdbcCommand(cmdstring, Conn)
-                            Cmd2.ExecuteNonQuery()
+                        Try
+                            'Open Connection
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+                                'Execute Query
+                                Dim id As Integer = DatabaseFlexGridEdit.Item(1, 0)
+                                Dim kopersgroep As String = DatabaseFlexGridEdit.Item(1, 1)
+                                Dim korting As Integer = DatabaseFlexGridEdit.Item(1, 2) * 100
+                                Dim volgorde As Integer = DatabaseFlexGridEdit.Item(1, 3)
+                                Dim delete As Integer = DatabaseFlexGridEdit.Item(1, 4)
 
-                            cmdstring = "SELECT * FROM favorieten_naam WHERE 1=0"
-                            Dim Cmd3 As New OdbcCommand(cmdstring, Conn)
-                            With Cmd3
-                                For i = 0 To 4
-
-                                    .CommandText = "INSERT INTO favorieten_naam(naam) VALUES(?)"
-                                    .Parameters.Clear()
-                                    .Parameters.AddWithValue("", DatabaseFlexGridEdit.GetData(1, i))
-                                    .ExecuteNonQuery()
-                                    .Parameters.Clear()
-                                Next i
-                            End With
-
-                            'Execute Query
-                            cmdstring = "TRUNCATE favorieten_lijst"
-                            Dim Cmd4 As New OdbcCommand(cmdstring, Conn)
-                            Cmd4.ExecuteNonQuery()
-
-                            cmdstring = "SELECT * FROM favorieten_lijst WHERE 1=0"
-                            Dim Cmd5 As New OdbcCommand(cmdstring, Conn)
-                            With Cmd5
-                                For j = 0 To 4
-                                    For i = 1 To DatabaseFlexGridShow.Rows.Count - 1
-                                        If DatabaseFlexGridShow.Item(i, j * 2) = True Then
-                                            .CommandText = "INSERT INTO favorieten_lijst(nummer,soortid) VALUES(?,?)"
-                                            .Parameters.Clear()
-                                            .Parameters.AddWithValue("", j + 1)
-                                            .Parameters.AddWithValue("", DatabaseFlexGridShow.GetData(i, 10))
-                                            .ExecuteNonQuery()
-                                            .Parameters.Clear()
-                                        End If
-                                    Next i
-                                Next j
-                            End With
-
-                            MsgBox("Favorieten opgeslagen!", MsgBoxStyle.OkOnly)
-                        End Using
-
-                    Catch ex As Exception
-                        ErrorLog("Database opslaan: (favorieten)" + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
-
-                Case "Soort volgorde"
-
-                    'resort table 
-                    For j = 1 To DatabaseFlexGridShow.Rows.Count - 2
-                        For i = 1 To DatabaseFlexGridShow.Rows.Count - 2
-                            Dim line1 As Integer = DatabaseFlexGridShow.GetData(i, 2)
-                            Dim line2 As Integer = DatabaseFlexGridShow.GetData(i + 1, 2)
-                            If line1 > line2 Then
-                                Dim saveval1 As String = DatabaseFlexGridShow.GetData(i, 0)  'naam
-                                Dim saveval2 As Integer = DatabaseFlexGridShow.GetData(i, 1)  'id
-                                Dim saveval3 As Integer = DatabaseFlexGridShow.GetData(i, 2)   'volgorde
-                                DatabaseFlexGridShow.SetData(i, 0, DatabaseFlexGridShow.GetData(i + 1, 0))
-                                DatabaseFlexGridShow.SetData(i, 1, DatabaseFlexGridShow.GetData(i + 1, 1))
-                                DatabaseFlexGridShow.SetData(i, 2, DatabaseFlexGridShow.GetData(i + 1, 2))
-                                DatabaseFlexGridShow.SetData(i + 1, 0, saveval1 + "x")
-                                DatabaseFlexGridShow.SetData(i + 1, 1, saveval2)
-                                DatabaseFlexGridShow.SetData(i + 1, 2, saveval3)
-                            End If
-                        Next i
-                    Next j
-
-                    Dim cmdstring As String = "SELECT * FROM soortvolgorde WHERE 1=0"
-                    Try
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            'Execute Query
-                            cmdstring = "update soortvolgorde set soortid = 99999, volgorde = 99999"
-                            Dim Cmd2 As New OdbcCommand(cmdstring, Conn)
-                            Cmd2.ExecuteNonQuery()
-
-                            cmdstring = "SELECT * FROM soortvolgorde WHERE 1=0"
-                            Dim Cmd3 As New OdbcCommand(cmdstring, Conn)
-                            With Cmd3
-                                For i = 1 To DatabaseFlexGridShow.Rows.Count - 1
-
-                                    .CommandText = "INSERT INTO soortvolgorde(volgorde,soortid) VALUES(?,?)"
-                                    .Parameters.Clear()
-                                    .Parameters.AddWithValue("", 1000 + i)
-                                    .Parameters.AddWithValue("", DatabaseFlexGridShow.GetData(i, 1))
-                                    .ExecuteNonQuery()
-                                    .Parameters.Clear()
-                                Next i
-                            End With
-
-                            cmdstring = "delete from soortvolgorde where soortid = 99999 and volgorde =99999"
-                            Dim Cmd4 As New OdbcCommand(cmdstring, Conn)
-                            Cmd4.ExecuteNonQuery()
-
-
-                            LoadDB_Flexindeling_soortvolgorde()
-                            Create_SoortMixTable()
-                            MsgBox("Soort volgorde opgeslagen!", MsgBoxStyle.OkOnly)
-                        End Using
-
-                    Catch ex As Exception
-                        ErrorLog("Database opslaan: (soortvolgorde)" + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
-
-                Case "Florecom soortmatch opm"
-
-                    Dim CmdString As String = "SELECT * FROM soortmatch3 WHERE 1=0"
-                    Try
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            'Execute Query
-
-
-                            Dim koper_ean As String = DatabaseFlexGridEdit.Item(1, 0)
-                            Dim vbn_string As String = DatabaseFlexGridEdit.Item(1, 1)
-                            Dim vbn_string2() As String = Microsoft.VisualBasic.Strings.Split(vbn_string, ":")
-                            Dim vbn_code = vbn_string2(0)
-                            Dim kwekercode = DatabaseFlexGridEdit.Item(1, 2)
-                            Dim soortomschrijving As String = DatabaseFlexGridEdit.Item(1, 3)
-                            Dim opmerking As String = DatabaseFlexGridEdit.Item(1, 4)
-                            Dim soort As Integer = DatabaseFlexGridEdit.Item(1, 5)
-                            Dim acc1 As Integer = DatabaseFlexGridEdit.Item(1, 6)
-                            Dim acc2 As Integer = DatabaseFlexGridEdit.Item(1, 7)
-                            Dim fust As Integer = DatabaseFlexGridEdit.Item(1, 8)
-                            Dim potmaat As Integer = DatabaseFlexGridEdit.Item(1, 9)
-                            Dim delete As Boolean = DatabaseFlexGridEdit.Item(1, 10)
-
-                            If delete = True Then
-                                CmdString = "DELETE FROM soortmatch3 WHERE koper_ean = ? and vbn_code = ? and PIA_SA_EAN = ? and IMD_Full_name = ? and opmerking3 =? and potmaat =?"
-                                Dim Cmd2 As New OdbcCommand(CmdString, Conn)
-                                Cmd2.Parameters.Clear()
-                                Cmd2.Parameters.AddWithValue("", koper_ean)
-                                Cmd2.Parameters.AddWithValue("", vbn_code)
-                                Cmd2.Parameters.AddWithValue("", kwekercode)
-                                Cmd2.Parameters.AddWithValue("", soortomschrijving)
-                                Cmd2.Parameters.AddWithValue("", opmerking)
-                                Cmd2.Parameters.AddWithValue("", potmaat)
-                                Cmd2.ExecuteNonQuery()
-                            Else
-
-                                CmdString = "UPDATE soortmatch3 SET soortid=?,accessoire1=?,accessoire2=?,fustcode=? WHERE koper_ean = ? and vbn_code = ? and PIA_SA_EAN = ? and IMD_Full_name = ? and opmerking3 = ? and potmaat = ?"
-                                Dim Cmd2 As New OdbcCommand(CmdString, Conn)
-                                Cmd2.Parameters.Clear()
-                                Cmd2.Parameters.AddWithValue("", soort)
-                                Cmd2.Parameters.AddWithValue("", acc1)
-                                Cmd2.Parameters.AddWithValue("", acc2)
-                                Cmd2.Parameters.AddWithValue("", fust)
-                                '
-                                Cmd2.Parameters.AddWithValue("", koper_ean)
-                                Cmd2.Parameters.AddWithValue("", vbn_code)
-                                Cmd2.Parameters.AddWithValue("", kwekercode)
-                                Cmd2.Parameters.AddWithValue("", soortomschrijving)
-                                Cmd2.Parameters.AddWithValue("", opmerking)
-                                Cmd2.Parameters.AddWithValue("", potmaat)
-                                Cmd2.ExecuteNonQuery()
-                            End If
-
-                            loadDB_FlexIndeling_soortmatch1()
-                            DatabaseFlexGridEdit.Rows.Count = 1
-                            MsgBox("Soortmatch aangepast", MsgBoxStyle.OkOnly)
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("soortmatch opslaan: " + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
-
-                Case "Florecom soortmatch -"
-
-                    Dim CmdString As String = "SELECT * FROM soortmatch2 WHERE 1=0"
-                    Try
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            'Execute Query
-
-
-                            Dim koper_ean As String = DatabaseFlexGridEdit.Item(1, 0)
-                            Dim vbn_string As String = DatabaseFlexGridEdit.Item(1, 1)
-                            Dim vbn_string2() As String = Microsoft.VisualBasic.Strings.Split(vbn_string, ":")
-                            Dim vbn_code = vbn_string2(0)
-                            Dim kwekercode = DatabaseFlexGridEdit.Item(1, 2)
-                            Dim soortomschrijving As String = DatabaseFlexGridEdit.Item(1, 3)
-                            'Dim opmerking As String = DatabaseFlexGridEdit.Item(1, 4)
-                            Dim soort As Integer = DatabaseFlexGridEdit.Item(1, 5)
-                            Dim acc1 As Integer = DatabaseFlexGridEdit.Item(1, 6)
-                            Dim acc2 As Integer = DatabaseFlexGridEdit.Item(1, 7)
-                            Dim fust As Integer = DatabaseFlexGridEdit.Item(1, 8)
-                            Dim potmaat As Integer = DatabaseFlexGridEdit.Item(1, 9)
-                            Dim delete As Boolean = DatabaseFlexGridEdit.Item(1, 10)
-
-                            If delete = True Then
-                                CmdString = "DELETE FROM soortmatch2 WHERE koper_ean = ? and vbn_code = ? and PIA_SA_EAN = ? and IMD_Full_name = ? and potmaat = ? "
-                                Dim Cmd2 As New OdbcCommand(CmdString, Conn)
-                                Cmd2.Parameters.Clear()
-                                Cmd2.Parameters.AddWithValue("", koper_ean)
-                                Cmd2.Parameters.AddWithValue("", vbn_code)
-                                Cmd2.Parameters.AddWithValue("", kwekercode)
-                                Cmd2.Parameters.AddWithValue("", soortomschrijving)
-                                Cmd2.Parameters.AddWithValue("", potmaat)
-                                Cmd2.ExecuteNonQuery()
-                            Else
-
-                                CmdString = "UPDATE soortmatch2 SET soortid=?,accessoire1=?,accessoire2=?,fustcode=? WHERE koper_ean = ? and vbn_code = ? and PIA_SA_EAN = ? and IMD_Full_name = ? and potmaat = ?"
-                                Dim Cmd2 As New OdbcCommand(CmdString, Conn)
-                                Cmd2.Parameters.Clear()
-                                Cmd2.Parameters.AddWithValue("", soort)
-                                Cmd2.Parameters.AddWithValue("", acc1)
-                                Cmd2.Parameters.AddWithValue("", acc2)
-                                Cmd2.Parameters.AddWithValue("", fust)
-                                '
-                                Cmd2.Parameters.AddWithValue("", koper_ean)
-                                Cmd2.Parameters.AddWithValue("", vbn_code)
-                                Cmd2.Parameters.AddWithValue("", kwekercode)
-                                Cmd2.Parameters.AddWithValue("", soortomschrijving)
-                                Cmd2.Parameters.AddWithValue("", potmaat)
-                                Cmd2.ExecuteNonQuery()
-                            End If
-
-                            loadDB_FlexIndeling_soortmatch2()
-                            DatabaseFlexGridEdit.Rows.Count = 1
-                            MsgBox("Soortmatch aangepast", MsgBoxStyle.OkOnly)
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("soortmatch opslaan: " + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
-
-                Case "Kwekerscode"
-
-                    Dim CmdString As String = "SELECT * FROM prijslijst WHERE 1=0"
-                    Try
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            'Execute Query
-                            Dim id As Integer = DatabaseFlexGridEdit.Item(1, 0)
-                            Dim kwekerscode As String = DatabaseFlexGridEdit.Item(1, 1)
-                            Dim omschrijving As String = DatabaseFlexGridEdit.Item(1, 2)
-                            Dim soort As Integer = DatabaseFlexGridEdit.Item(1, 3)
-                            Dim acc1 As Integer = DatabaseFlexGridEdit.Item(1, 4)
-                            Dim acc2 As Integer = DatabaseFlexGridEdit.Item(1, 5)
-                            Dim fust As Integer = DatabaseFlexGridEdit.Item(1, 6)
-                            Dim hoes As Integer = DatabaseFlexGridEdit.Item(1, 7)
-                            Dim prijs As Integer = DatabaseFlexGridEdit.Item(1, 8) * 100
-                            Dim korting As Integer = DatabaseFlexGridEdit.Item(1, 9)
-                            Dim kopersgroep As Integer = DatabaseFlexGridEdit.Item(1, 10)
-
-                            Dim delete As Boolean = DatabaseFlexGridEdit.Item(1, 11)
-
-                            If delete = True Then
-                                Dim Cmd2 As New OdbcCommand("DELETE FROM prijslijst WHERE kwekerscode = ? and omschrijving = ? ", Conn)
-                                Cmd2.Parameters.Clear()
-                                Cmd2.Parameters.AddWithValue("", kwekerscode)
-                                Cmd2.Parameters.AddWithValue("", omschrijving)
-                                Cmd2.ExecuteNonQuery()
-                            Else
-
-                                CmdString = ""
-                                If id = 0 Then
-                                    CmdString = "INSERT INTO prijslijst (soort, accessoire1, accessoire2, fust, hoes, prijs, korting, kopersgroep, kwekerscode, omschrijving) VALUES(?,?,?,?,?,?,?,?,?,?)"
-                                Else
-                                    CmdString = "UPDATE prijslijst SET soort=?, accessoire1=?, accessoire2=?, fust=?, hoes=?, prijs=?, korting=?, kopersgroep=? WHERE kwekerscode = ? and omschrijving = ?"
-                                End If
-
-                                Dim Cmd2 As New OdbcCommand(CmdString, Conn)
-                                Cmd2.Parameters.Clear()
-                                Cmd2.Parameters.AddWithValue("", soort)
-                                Cmd2.Parameters.AddWithValue("", acc1)
-                                Cmd2.Parameters.AddWithValue("", acc2)
-                                Cmd2.Parameters.AddWithValue("", fust)
-                                Cmd2.Parameters.AddWithValue("", hoes)
-                                Cmd2.Parameters.AddWithValue("", prijs)
-                                Cmd2.Parameters.AddWithValue("", korting)
-                                Cmd2.Parameters.AddWithValue("", kopersgroep)
-                                Cmd2.Parameters.AddWithValue("", kwekerscode.ToUpper())
-                                Cmd2.Parameters.AddWithValue("", omschrijving)
-                                Cmd2.ExecuteNonQuery()
-                            End If
-
-                            loadDB_FlexIndeling_kwekerscode()
-                            DatabaseFlexGridEdit.Rows.Count = 1
-                            MsgBox("Kwekerscode opgeslagen", MsgBoxStyle.OkOnly)
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Kwekerscode opslaan: " + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
-
-
-                Case "Prijslijst J en P importeren"
-
-                    Dim nieuwe_code As Boolean = True
-                    Dim kwekerscode As String = DatabaseFlexGridEdit.GetData(1, 1)
-                    Dim omschrijving As String = DatabaseFlexGridEdit.GetData(1, 2)
-                    Try
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            Dim Reader As OdbcDataReader
-                            Dim Cmd As New OdbcCommand("SELECT * FROM prijslijst WHERE kwekerscode=? and omschrijving=?", Conn)
-                            Cmd.Parameters.Clear()
-                            Cmd.Parameters.AddWithValue("", kwekerscode)
-                            Cmd.Parameters.AddWithValue("", omschrijving)
-                            Reader = Cmd.ExecuteReader()
-                            If Reader.HasRows Then
-                                nieuwe_code = False
-                            End If
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Database fout: (prijslijst/menuopslaan)" + ex.Message)
-                        MessageBox.Show("Database fout: (prijslijst/menuopslaan)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
-                    End Try
-
-                    Try
-
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            'Execute Query
-                            Dim Cmd2 As New OdbcCommand("", Conn)
-                            With Cmd2
-
-                                If nieuwe_code = True Then   'nieuwe line 
-                                    .CommandText = "INSERT INTO prijslijst(soort,accessoire1,accessoire2,fust,hoes,prijs,korting,kopersgroep,kwekerscode,omschrijving) VALUES(?,?,?,?,?,?,?,?,?,?)"
-                                Else
-                                    .CommandText = "UPDATE prijslijst SET soort=?, accessoire1=?, accessoire2=?, fust=?, hoes=? ,prijs=?, korting=?, kopersgroep=? WHERE kwekerscode = ? and omschrijving = ?"
-                                End If
-                                .Parameters.Clear()
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 3))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 4))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 5))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 6))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 7))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 8) * 100)
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 9))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 10))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 1))
-                                .Parameters.AddWithValue("", DatabaseFlexGridEdit.Item(1, 2))
-                                .ExecuteNonQuery()
-                            End With
-
-                            DatabaseFlexGridEdit.Rows(1).Style = DatabaseFlexGridShow.Styles("blue")
-                            Dim row As Integer = DatabaseFlexGridEdit.Item(1, 0)
-                            DatabaseFlexGridShow.Rows(row).Style = DatabaseFlexGridShow.Styles("blue")
-
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Database opslaan: (alias)" + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
-
-                Case "Prijslijst kortingtabel"
-
-                    Try
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            'Execute Query
-                            Dim id As Integer = DatabaseFlexGridEdit.Item(1, 0)
-                            Dim kopersgroep As String = DatabaseFlexGridEdit.Item(1, 1)
-                            Dim korting As Integer = DatabaseFlexGridEdit.Item(1, 2) * 100
-                            Dim volgorde As Integer = DatabaseFlexGridEdit.Item(1, 3)
-                            Dim delete As Integer = DatabaseFlexGridEdit.Item(1, 4)
-
-                            If delete = -1 Then
-                                Dim Cmd2 As New OdbcCommand("DELETE FROM prijslijstkortingen WHERE id = ? ", Conn)
-                                Cmd2.Parameters.Clear()
-                                Cmd2.Parameters.AddWithValue("", id)
-                                Cmd2.ExecuteNonQuery()
-                            Else
-
-                                Dim CmdString As String = ""
-                                If id = 0 Then
-                                    CmdString = "INSERT INTO prijslijstkortingen (kopersgroep,korting,volgorde) VALUES(?,?,?)"
-                                Else
-                                    CmdString = "UPDATE prijslijstkortingen SET kopersgroep=?, korting=?, volgorde=? WHERE id = ?"
-                                End If
-
-                                Dim Cmd2 As New OdbcCommand(CmdString, Conn)
-                                Cmd2.Parameters.Clear()
-                                Cmd2.Parameters.AddWithValue("", kopersgroep)
-                                Cmd2.Parameters.AddWithValue("", korting)
-                                Cmd2.Parameters.AddWithValue("", volgorde)
-                                If id > 0 Then
+                                If delete = -1 Then
+                                    Dim Cmd2 As New OdbcCommand("DELETE FROM prijslijstkortingen WHERE id = ? ", Conn)
+                                    Cmd2.Parameters.Clear()
                                     Cmd2.Parameters.AddWithValue("", id)
-                                End If
-                                Cmd2.ExecuteNonQuery()
-                            End If
-
-                            loadDB_FlexIndeling_prijslijstkortingtabel()
-                            DatabaseFlexGridEdit.Rows.Count = 1
-                            MsgBox("Kortingstabel opgeslagen", MsgBoxStyle.OkOnly)
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Kortingtabel opslaan: " + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
-
-                Case "Prijslijst koppelingen"
-
-                    Try
-                        'Open Connection
-                        Using Conn As New OdbcConnection(ConnString)
-                            Conn.Open()
-                            'Execute Query
-                            Dim id As Integer = DatabaseFlexGridEdit.Item(1, 0)
-                            Dim soortgroep_id As Integer = DatabaseFlexGridEdit.Item(1, 1)
-                            Dim soortmix_id As Integer = DatabaseFlexGridEdit.Item(1, 2)
-                            Dim delete As Integer = DatabaseFlexGridEdit.Item(1, 3)
-
-                            If delete = -1 Then
-                                Dim Cmd2 As New OdbcCommand("DELETE FROM prijslijstkoppelingen WHERE id = ? ", Conn)
-                                Cmd2.Parameters.Clear()
-                                Cmd2.Parameters.AddWithValue("", id)
-                                Cmd2.ExecuteNonQuery()
-                            Else
-
-                                Dim CmdString As String = ""
-                                If id = 0 Then
-                                    CmdString = "INSERT INTO prijslijstkoppelingen (soortgroep_id,soortmix_id) VALUES(?,?)"
+                                    Cmd2.ExecuteNonQuery()
                                 Else
-                                    CmdString = "UPDATE prijslijstkoppelingen SET soortgroep_id=?, soortmix_id=? WHERE id = ?"
+
+                                    Dim CmdString As String = ""
+                                    If id = 0 Then
+                                        CmdString = "INSERT INTO prijslijstkortingen (kopersgroep,korting,volgorde) VALUES(?,?,?)"
+                                    Else
+                                        CmdString = "UPDATE prijslijstkortingen SET kopersgroep=?, korting=?, volgorde=? WHERE id = ?"
+                                    End If
+
+                                    Dim Cmd2 As New OdbcCommand(CmdString, Conn)
+                                    Cmd2.Parameters.Clear()
+                                    Cmd2.Parameters.AddWithValue("", kopersgroep)
+                                    Cmd2.Parameters.AddWithValue("", korting)
+                                    Cmd2.Parameters.AddWithValue("", volgorde)
+                                    If id > 0 Then
+                                        Cmd2.Parameters.AddWithValue("", id)
+                                    End If
+                                    Cmd2.ExecuteNonQuery()
                                 End If
 
-                                Dim Cmd2 As New OdbcCommand(CmdString, Conn)
-                                Cmd2.Parameters.Clear()
-                                Cmd2.Parameters.AddWithValue("", soortgroep_id)
-                                Cmd2.Parameters.AddWithValue("", soortmix_id)
-                                If id > 0 Then
+                                loadDB_FlexIndeling_prijslijstkortingtabel()
+                                DatabaseFlexGridEdit.Rows.Count = 1
+                                MsgBox("Kortingstabel opgeslagen", MsgBoxStyle.OkOnly)
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Kortingtabel opslaan: " + ex.Message)
+                            MsgBox(ex.Message, MsgBoxStyle.OkOnly)
+                        End Try
+
+                    Case "Prijslijst koppelingen"
+
+                        Try
+                            'Open Connection
+                            Using Conn As New OdbcConnection(ConnString)
+                                Conn.Open()
+                                'Execute Query
+                                Dim id As Integer = DatabaseFlexGridEdit.Item(1, 0)
+                                Dim soortgroep_id As Integer = DatabaseFlexGridEdit.Item(1, 1)
+                                Dim soortmix_id As Integer = DatabaseFlexGridEdit.Item(1, 2)
+                                Dim delete As Integer = DatabaseFlexGridEdit.Item(1, 3)
+
+                                If delete = -1 Then
+                                    Dim Cmd2 As New OdbcCommand("DELETE FROM prijslijstkoppelingen WHERE id = ? ", Conn)
+                                    Cmd2.Parameters.Clear()
                                     Cmd2.Parameters.AddWithValue("", id)
+                                    Cmd2.ExecuteNonQuery()
+                                Else
+
+                                    Dim CmdString As String = ""
+                                    If id = 0 Then
+                                        CmdString = "INSERT INTO prijslijstkoppelingen (soortgroep_id,soortmix_id) VALUES(?,?)"
+                                    Else
+                                        CmdString = "UPDATE prijslijstkoppelingen SET soortgroep_id=?, soortmix_id=? WHERE id = ?"
+                                    End If
+
+                                    Dim Cmd2 As New OdbcCommand(CmdString, Conn)
+                                    Cmd2.Parameters.Clear()
+                                    Cmd2.Parameters.AddWithValue("", soortgroep_id)
+                                    Cmd2.Parameters.AddWithValue("", soortmix_id)
+                                    If id > 0 Then
+                                        Cmd2.Parameters.AddWithValue("", id)
+                                    End If
+                                    Cmd2.ExecuteNonQuery()
                                 End If
-                                Cmd2.ExecuteNonQuery()
-                            End If
 
-                            loadDB_FlexIndeling_prijslijstkoppelingen()
-                            DatabaseFlexGridEdit.Rows.Count = 1
-                            MsgBox("Koppelingstabel opgeslagen", MsgBoxStyle.OkOnly)
-                        End Using
-                    Catch ex As Exception
-                        ErrorLog("Koppelingstabel opslaan: " + ex.Message)
-                        MsgBox(ex.Message, MsgBoxStyle.OkOnly)
-                    End Try
+                                loadDB_FlexIndeling_prijslijstkoppelingen()
+                                DatabaseFlexGridEdit.Rows.Count = 1
+                                MsgBox("Koppelingstabel opgeslagen", MsgBoxStyle.OkOnly)
+                            End Using
+                        Catch ex As Exception
+                            ErrorLog("Koppelingstabel opslaan: " + ex.Message)
+                            MsgBox(ex.Message, MsgBoxStyle.OkOnly)
+                        End Try
 
-            End Select
+                End Select
+            End If
         End If
         Set_Database_reload()
     End Sub
@@ -11022,64 +11456,66 @@ nexttreeline:
         End Try
     End Sub
     Private Sub DatabaseMenuAanpassen_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles DatabaseMenuAanpassen.Click
-        Dim selecteditem As String = database_lbl.Text
-        Select Case selecteditem
+        If current_dbtype = 1 Then
+            Dim selecteditem As String = current_dbselection
+            Select Case selecteditem
 
-            Case "Kopers"
-                DatabaseLoadFromGrid(19)
+                Case "Kopers"
+                    DatabaseLoadFromGrid(19)
 
-            Case "Koper alias"
-                DatabaseLoadFromGrid(1)
+                Case "Koper alias"
+                    DatabaseLoadFromGrid(1)
 
-            Case "Fusten"
-                DatabaseLoadFromGrid(16)
+                Case "Fusten"
+                    DatabaseLoadFromGrid(16)
 
-            Case "Soorten"
-                DatabaseLoadFromGrid(18)
+                Case "Soorten"
+                    DatabaseLoadFromGrid(18)
 
-            Case "Accessoires"
-                DatabaseLoadFromGrid(14)
+                Case "Accessoires"
+                    DatabaseLoadFromGrid(14)
 
-            Case "Accessoire prijzen"
-                DatabaseLoadFromGrid(5)
+                Case "Accessoire prijzen"
+                    DatabaseLoadFromGrid(5)
 
-            Case "Mixen naam"
-                DatabaseLoadFromGrid(19)
+                Case "Mixen naam"
+                    DatabaseLoadFromGrid(19)
 
-            Case "Mixen vullen"
-                LoadDB_Flexindeling_mixenvullen()
+                Case "Mixen vullen"
+                    LoadDB_Flexindeling_mixenvullen()
 
-            Case "Kopersgroepen"
-                LoadDB_Flexindeling_kopersgroepenlist2()
+                Case "Kopersgroepen"
+                    LoadDB_Flexindeling_kopersgroepenlist2()
 
-            Case "Soortgroepen"
-                LoadDB_Flexindeling_soortgroepenlist2()
+                Case "Soortgroepen"
+                    LoadDB_Flexindeling_soortgroepenlist2()
 
-            Case "Fust categorie vullen"
-                Set_Flexindeling_fustcategorie_vullen2(False)
+                Case "Fust categorie vullen"
+                    Set_Flexindeling_fustcategorie_vullen2(False)
 
-            Case "Hoes categorie vullen"
-                Set_Flexindeling_hoescategorie_vullen2(False)
+                Case "Hoes categorie vullen"
+                    Set_Flexindeling_hoescategorie_vullen2(False)
 
-            Case "Agenda"
-                DatabaseLoadFromGrid(6)
+                Case "Agenda"
+                    DatabaseLoadFromGrid(6)
 
-            Case "Florecom soortmatch opm"
-                DatabaseLoadFromGrid(9)
+                Case "Florecom soortmatch opm"
+                    DatabaseLoadFromGrid(9)
 
-            Case "Florecom soortmatch -"
-                DatabaseLoadFromGrid(9)
+                Case "Florecom soortmatch -"
+                    DatabaseLoadFromGrid(9)
 
-            Case "Kwekerscode"
-                DatabaseLoadFromGrid(10)
+                Case "Kwekerscode"
+                    DatabaseLoadFromGrid(10)
 
-            Case "Prijslijst kortingtabel"
-                DatabaseLoadFromGrid(3)
+                Case "Prijslijst kortingtabel"
+                    DatabaseLoadFromGrid(3)
 
-            Case "Prijslijst koppelingen"
-                DatabaseLoadFromGrid(2)
+                Case "Prijslijst koppelingen"
+                    DatabaseLoadFromGrid(2)
 
-        End Select
+            End Select
+        End If
     End Sub
 
     Private Sub DatabaseLoadFromGrid(ByVal gridlength As Integer)
@@ -12670,7 +13106,7 @@ nexttreeline:
 
             Dim flexrows As Integer = .Rows.Count - 1
             Do While irow < flexrows + 1
-                If .Item(irow, 2) = 0 Then  ' aantal > 0 ?
+                If .Item(irow, aantalcol) = 0 Then  ' aantal > 0 ?
                     .Rows.Remove(irow)
                     flexrows = flexrows - 1
                 Else
@@ -12687,7 +13123,7 @@ nexttreeline:
         ' TimePassed("Start")
 
         Dim Reader As OdbcDataReader
-        Dim gridfill1(28) As String
+        Dim gridfill1(60) As String
 
         Try
             'Open Connection
@@ -12749,32 +13185,44 @@ nexttreeline:
                     Dim newhoesid As Integer = FindHoesFromHoesCat(hoescatid, soortid)
                     ' fill list
                     gridfill1(0) = 0               'id
-                    gridfill1(1) = "+"              'plus
-                    gridfill1(2) = ""               '
-                    gridfill1(3) = "x " + Tstr(fust(GID(fust, newfustid)).aantal_per_fust)
+                    gridfill1(pluscol) = "+"              'plus
+                    gridfill1(aantalcol) = ""               '
+                    gridfill1(xcol) = "x " + Tstr(fust(GID(fust, newfustid)).aantal_per_fust)
                     'gridfill1(3) = "x" + Str(fust(newfustid).aantal_per_fust)
 
                     'TimePassed("Zoek Fust")
 
-                    gridfill1(4) = Tstr(soortid)
+                    gridfill1(soortcol) = Tstr(soortid)
                     prijskleur = 0
                     Dim actie_type As Integer = 0
                     prijs = ZoekPrijs(soortid, koper_ean, order_date, prijskleur, actie_type)
                     If prijs = 0 Then prijskleur = 2
                     'TimePassed("Zoek prijs")
 
-                    gridfill1(5) = prijs
-                    gridfill1(6) = Tstr(newfustid)
-                    gridfill1(7) = Tstr(newhoesid)
-                    If Val(koper_ean) < 2000 Then 'klok 
-                        gridfill1(8) = Tstr(ZoekSoortCode("klokrijpheid", soortid))
-                        gridfill1(9) = Tstr(ZoekSoortCode("klokhoogte", soortid))
-                        gridfill1(10) = Tstr(ZoekSoortCode("klokdiameter", soortid))
+                    gridfill1(prijscol) = prijs
+                    gridfill1(fustcol) = Tstr(newfustid)
+                    gridfill1(hoescol) = Tstr(newhoesid)
+
+
+                    If Val(koper_ean) < 2000 Then 'klok
+                        Dim rijpheid As Integer = ZoekSoortCode("klokrijpheid", soortid)
+                        Dim hoogte As Integer = Tstr(ZoekSoortCode("klokhoogte", soortid))
+                        Dim diameter As Integer = Tstr(ZoekSoortCode("klokdiameter", soortid))
+
+                        gridfill1(rijpheidcol) = Tstr(rijpheid)
+                        gridfill1(hoogtecol) = Tstr(hoogte)
+                        gridfill1(diametercol) = Tstr(diameter)
+                        gridfill1(fotocol) = FindFotoMatch(soortid, newfustid, rijpheid, hoogte, diameter)
+
                     Else                          'bb 
-                        gridfill1(8) = Tstr(ZoekSoortCode("bbrijpheid", soortid))
-                        gridfill1(9) = Tstr(ZoekSoortCode("bbhoogte", soortid))
-                        gridfill1(10) = Tstr(ZoekSoortCode("bbdiameter", soortid))
+                        gridfill1(rijpheidcol) = Tstr(ZoekSoortCode("bbrijpheid", soortid))
+                        gridfill1(hoogtecol) = Tstr(ZoekSoortCode("bbhoogte", soortid))
+                        gridfill1(diametercol) = Tstr(ZoekSoortCode("bbdiameter", soortid))
+                        gridfill1(fotocol) = ""
                     End If
+
+
+
                     Dim accessoire_id As Integer = 0
 
                     If jenptenhave = False Then
@@ -12814,11 +13262,11 @@ nexttreeline:
                         End If
                     End If
 
-                    gridfill1(11) = Tstr(accessoire_id)
-                    gridfill1(12) = Tstr(0)
-                    gridfill1(13) = ""
-                    gridfill1(14) = ""
-                    gridfill1(15) = ""   'labelcode
+                    gridfill1(acce1col) = Tstr(accessoire_id)
+                    gridfill1(acce2col) = Tstr(0)
+                    gridfill1(kopercodecol) = ""
+                    gridfill1(opmerkingcol) = ""
+                    gridfill1(labelcol) = ""   'labelcode
 
                     Dim wpsfilternaam As String = ""
                     Dim wpsfilterid As Integer = 0
@@ -12833,46 +13281,47 @@ nexttreeline:
 
                     'TimePassed("GetFilternr")
 
-                    gridfill1(16) = wpsfilternaam
-                    gridfill1(17) = Tstr(ZoekSoortCode("vestiging", soortid))
-                    gridfill1(18) = Tstr(0)
-                    gridfill1(19) = Tstr(ZoekSoortCode("potmaat", soortid) / 10)
-                    gridfill1(20) = Tstr(ZoekSoortCode("transporthoogte", soortid))
-                    gridfill1(21) = Tstr(1)
-                    gridfill1(22) = Tstr(0)
-                    gridfill1(23) = Tstr(0)
-                    gridfill1(24) = ""
-                    gridfill1(25) = Tstr(actie_type)
+                    gridfill1(wpsfilter1col) = wpsfilternaam
+                    gridfill1(vestigingcol) = Tstr(ZoekSoortCode("vestiging", soortid))
+                    gridfill1(keurcodecol) = Tstr(0)
+                    gridfill1(potmaatcol) = Tstr(ZoekSoortCode("potmaat", soortid) / 10)
+                    gridfill1(transporthoogtecol) = Tstr(ZoekSoortCode("transporthoogte", soortid))
+                    gridfill1(schermencol) = 5
+                    gridfill1(GPcol) = Tstr(1)
+                    gridfill1(acce4col) = Tstr(0)
+                    gridfill1(acce5col) = Tstr(0)
+                    gridfill1(florecomnrcol) = ""
+                    gridfill1(actiecol) = Tstr(actie_type)
                     If wpsfilterid = 999999 Then
-                        gridfill1(26) = 999999
+                        gridfill1(wpsfilter2col) = 999999
                     Else
-                        gridfill1(26) = 0
+                        gridfill1(wpsfilter2col) = 0
                     End If
-                    gridfill1(27) = 0
-                    gridfill1(28) = 0
+                    gridfill1(wpsfilter3col) = 0
+                    gridfill1(oldheadercol) = 0
 
                     If soortid > 10000 Then
                         'mix specifieke accessoire?
                         Dim mix_id As Integer = soortid - 10000
                         If mixen(GID(mixen, mix_id)).accessoire > 0 Then
                             accessoire_id = mixen(GID(mixen, mix_id)).accessoire
-                            gridfill1(11) = Tstr(accessoire_id)
+                            gridfill1(acce1col) = Tstr(accessoire_id)
                             Dim aID As Integer = GID(accessoire, accessoire_id)
 
                             Dim huidige_prijs As Double = prijs
                             Dim nieuwe_prijs As Double = FindAccessoirePrijs(koper_ean, huidige_prijs, accessoire_id, soortid, order_date, actie_type)
                             If nieuwe_prijs <> huidige_prijs Then
-                                gridfill1(5) = nieuwe_prijs
+                                gridfill1(prijscol) = nieuwe_prijs
                             End If
 
                             If accessoire(aID).fust > 0 Then
-                                gridfill1(6) = Tstr(fust(GID(fust, accessoire(aID).fust)).id)
+                                gridfill1(fustcol) = Tstr(fust(GID(fust, accessoire(aID).fust)).id)
                                 Dim apf As Integer
                                 apf = fust(GID(fust, accessoire(aID).fust)).aantal_per_fust
-                                gridfill1(3) = "x " + Trim(Str(apf))
+                                gridfill1(xcol) = "x " + Trim(Str(apf))
                             End If
                             If accessoire(aID).potmaat > 0 Then
-                                gridfill1(19) = Tstr(accessoire(aID).potmaat / 10)
+                                gridfill1(potmaatcol) = Tstr(accessoire(aID).potmaat / 10)
                             End If
 
                         End If
@@ -12883,10 +13332,10 @@ nexttreeline:
                     Order_invoer_FlexGrid.AddItem(gridfill1)
 
                     If prijskleur = 1 Then
-                        Order_invoer_FlexGrid.SetCellStyle(irow, 5, "ErrorColor")
+                        Order_invoer_FlexGrid.SetCellStyle(irow, prijscol, "ErrorColor")
                     End If
                     If prijskleur = 2 Then
-                        Order_invoer_FlexGrid.SetCellStyle(irow, 5, "WarningColor")
+                        Order_invoer_FlexGrid.SetCellStyle(irow, prijscol, "WarningColor")
                     End If
 
                     irow = irow + 1
@@ -12898,6 +13347,9 @@ next_fav:
             ErrorLog("Database fout: (laad favoriet)" + ex.Message)
             MessageBox.Show("Database fout: (laad favoriet)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
         End Try
+
+        SetOrderGrid()
+
 
         'TimePassed("End")
 
@@ -12965,6 +13417,47 @@ next_fav:
 
     End Function
 
+    Private Sub SetOrderGrid()
+
+
+
+        If jenptenhave = True Then
+            Order_invoer_FlexGrid.Cols(hoescol).Visible = True
+        Else
+            Order_invoer_FlexGrid.Cols(hoescol).Visible = False
+        End If
+
+        Dim koper_ean As String = DirectCast(DirectCast(Order_koper_combo.SelectedItem, System.Object), System.Data.DataRowView).Item(0)
+        If Val(koper_ean) >= 1000 And Val(koper_ean) < 2000 Then
+            'KLOK
+            Order_invoer_FlexGrid.Cols(rijpheidcol).Visible = True
+            Order_invoer_FlexGrid.Cols(diametercol).Visible = True
+            Order_invoer_FlexGrid.Cols(hoogtecol).Visible = True
+            If jenptenhave = True Then Order_invoer_FlexGrid.Cols(schermencol).Visible = True
+            Order_invoer_FlexGrid.Cols(keurcodecol).Visible = True
+        Else
+            Order_invoer_FlexGrid.Cols(rijpheidcol).Visible = False
+            Order_invoer_FlexGrid.Cols(diametercol).Visible = False
+            Order_invoer_FlexGrid.Cols(hoogtecol).Visible = False
+            Order_invoer_FlexGrid.Cols(schermencol).Visible = False
+            Order_invoer_FlexGrid.Cols(keurcodecol).Visible = False
+        End If
+        Order_invoer_FlexGrid.Cols(acce1col).Visible = True
+        Order_invoer_FlexGrid.Cols(acce2col).Visible = True
+        Order_invoer_FlexGrid.Cols(acce4col).Visible = False
+        Order_invoer_FlexGrid.Cols(acce5col).Visible = False
+        Order_invoer_FlexGrid.Cols(acce6col).Visible = False
+        Order_invoer_FlexGrid.Cols(acce7col).Visible = False
+        Order_invoer_FlexGrid.Cols(acce8col).Visible = False
+        For i = 1 To Order_invoer_FlexGrid.Rows.Count - 1
+            If Order_invoer_FlexGrid.Item(i, acce4col) > 0 Then Order_invoer_FlexGrid.Cols(acce4col).Visible = True
+            If Order_invoer_FlexGrid.Item(i, acce5col) > 0 Then Order_invoer_FlexGrid.Cols(acce5col).Visible = True
+            If Order_invoer_FlexGrid.Item(i, acce6col) > 0 Then Order_invoer_FlexGrid.Cols(acce6col).Visible = True
+            If Order_invoer_FlexGrid.Item(i, acce7col) > 0 Then Order_invoer_FlexGrid.Cols(acce7col).Visible = True
+            If Order_invoer_FlexGrid.Item(i, acce8col) > 0 Then Order_invoer_FlexGrid.Cols(acce8col).Visible = True
+        Next
+
+    End Sub
     Private Sub Load_AccessoireList(ByVal soortid As Integer, ByVal fustid As Integer, ByVal koper_ean As String)
 
         If soortid >= 10000 Then  'mixen geen lijst
@@ -12978,7 +13471,7 @@ next_fav:
 
             Dim flexrows As Integer = .Rows.Count - 1
             Do While irow < flexrows + 1
-                If .Item(irow, 2) = 0 Then  ' aantal > 0 ?
+                If .Item(irow, aantalcol) = 0 Then  ' aantal > 0 ?
                     .Rows.Remove(irow)
                     flexrows = flexrows - 1
                 Else
@@ -12991,7 +13484,7 @@ next_fav:
         'fill grid 
 
         Dim Reader As OdbcDataReader
-        Dim gridfill1(28) As String
+        Dim gridfill1(60) As String
 
         Try
             'Open Connection
@@ -13018,31 +13511,31 @@ next_fav:
 
                         ' fill list
                         gridfill1(0) = 0               'id
-                        gridfill1(1) = "+"              'plus
-                        gridfill1(2) = ""               '
-                        gridfill1(3) = "x" + Str(fust(GID(fust, newfustid)).aantal_per_fust)
-                        gridfill1(4) = Tstr(soortid)
+                        gridfill1(pluscol) = "+"              'plus
+                        gridfill1(aantalcol) = ""               '
+                        gridfill1(xcol) = "x" + Str(fust(GID(fust, newfustid)).aantal_per_fust)
+                        gridfill1(soortcol) = Tstr(soortid)
                         prijskleur = 0
-                        gridfill1(5) = prijs
-                        gridfill1(6) = Tstr(newfustid)
-                        gridfill1(7) = Tstr(0)
+                        gridfill1(prijscol) = prijs
+                        gridfill1(fustcol) = Tstr(newfustid)
+                        gridfill1(hoescol) = Tstr(0)
                         If Val(koper_ean) < 2000 Then 'klok 
-                            gridfill1(8) = Tstr(ZoekSoortCode("klokrijpheid", soortid))
-                            gridfill1(9) = Tstr(ZoekSoortCode("klokhoogte", soortid))
-                            gridfill1(10) = Tstr(ZoekSoortCode("klokdiameter", soortid))
+                            gridfill1(rijpheidcol) = Tstr(ZoekSoortCode("klokrijpheid", soortid))
+                            gridfill1(hoogtecol) = Tstr(ZoekSoortCode("klokhoogte", soortid))
+                            gridfill1(diametercol) = Tstr(ZoekSoortCode("klokdiameter", soortid))
                         Else                          'bb 
-                            gridfill1(8) = Tstr(ZoekSoortCode("bbrijpheid", soortid))
-                            gridfill1(9) = Tstr(ZoekSoortCode("bbhoogte", soortid))
-                            gridfill1(10) = Tstr(ZoekSoortCode("bbdiameter", soortid))
+                            gridfill1(rijpheidcol) = Tstr(ZoekSoortCode("bbrijpheid", soortid))
+                            gridfill1(hoogtecol) = Tstr(ZoekSoortCode("bbhoogte", soortid))
+                            gridfill1(diametercol) = Tstr(ZoekSoortCode("bbdiameter", soortid))
                         End If
 
-                        gridfill1(11) = Tstr(accessoireID)
+                        gridfill1(acce1col) = Tstr(accessoireID)
 
-                        gridfill1(12) = Tstr(0)
-                        gridfill1(13) = ""
-                        gridfill1(14) = ""
+                        gridfill1(acce2col) = Tstr(0)
+                        gridfill1(kopercodecol) = ""
+                        gridfill1(opmerkingcol) = ""
 
-                        gridfill1(15) = 0 'labelcode
+                        gridfill1(labelcol) = 0 'labelcode
 
                         Dim wpsfilternaam As String = ""
                         Dim wpsfilterid As Integer = 0
@@ -13056,30 +13549,30 @@ next_fav:
                             End If
                         Next j
 
-                        gridfill1(16) = wpsfilternaam
-                        gridfill1(17) = Tstr(ZoekSoortCode("vestiging", soortid))
-                        gridfill1(18) = Tstr(0)
+                        gridfill1(wpsfilter1col) = wpsfilternaam
+                        gridfill1(vestigingcol) = Tstr(ZoekSoortCode("vestiging", soortid))
+                        gridfill1(keurcodecol) = Tstr(0)
                         Dim potmaat As Integer = CHint(Reader("potmaat"))
                         If potmaat > 0 Then
-                            gridfill1(19) = Tstr(potmaat / 10)
+                            gridfill1(potmaatcol) = Tstr(potmaat / 10)
                         Else
-                            gridfill1(19) = Tstr(ZoekSoortCode("potmaat", soortid) / 10)
+                            gridfill1(potmaatcol) = Tstr(ZoekSoortCode("potmaat", soortid) / 10)
                         End If
-                        gridfill1(20) = Tstr(ZoekSoortCode("transporthoogte", soortid))
-                        gridfill1(21) = Tstr(1)
-                        gridfill1(22) = Tstr(0)
-                        gridfill1(23) = Tstr(0)
-                        gridfill1(24) = ""
-                        gridfill1(25) = Tstr(actie_type)
-                        gridfill1(26) = wpsfilterid
-                        gridfill1(27) = wpsfilterid2
-                        gridfill1(28) = 0
+                        gridfill1(transporthoogtecol) = Tstr(ZoekSoortCode("transporthoogte", soortid))
+                        gridfill1(GPcol) = Tstr(1)
+                        gridfill1(acce4col) = Tstr(0)
+                        gridfill1(acce4col) = Tstr(0)
+                        gridfill1(florecomnrcol) = ""
+                        gridfill1(actiecol) = Tstr(actie_type)
+                        gridfill1(wpsfilter2col) = wpsfilterid
+                        gridfill1(wpsfilter3col) = wpsfilterid2
+                        gridfill1(oldheadercol) = 0
                         Order_invoer_FlexGrid.AddItem(gridfill1)
                         If prijskleur = 1 Then
-                            Order_invoer_FlexGrid.SetCellStyle(irow, 5, "ErrorColor")
+                            Order_invoer_FlexGrid.SetCellStyle(irow, prijscol, "ErrorColor")
                         End If
                         If prijskleur = 2 Then
-                            Order_invoer_FlexGrid.SetCellStyle(irow, 5, "WarningColor")
+                            Order_invoer_FlexGrid.SetCellStyle(irow, prijscol, "WarningColor")
                         End If
                         irow = irow + 1
                     End If
@@ -13094,13 +13587,14 @@ next_fav:
     End Sub
     Public Sub Load_CodeLine(ByVal interne_code As String, ByVal accessoire1_code As String, ByVal accessoire2_code As String, ByVal aantal As Integer)
 
+
         'soortid opzoeken 
         Dim koper_ean = Order_ean_lbl.Text
 
         Dim soortid As Integer = -1
 
         If interne_code >= 100 Then  'mixen
-            For i = 0 To UBound(mixen)
+            For i = 0 To UBound(mixen) - 1
                 If interne_code = mixen(i).interne_code Then
                     soortid = 10000 + mixen(i).id
                     Exit For
@@ -13108,7 +13602,7 @@ next_fav:
             Next
         Else
 
-            For i = 0 To UBound(soorten)
+            For i = 0 To UBound(soorten) - 1
                 If interne_code = soorten(i).interne_code Then
                     soortid = soorten(i).id
                     Exit For
@@ -13145,7 +13639,7 @@ next_fav:
 
             Dim flexrows As Integer = .Rows.Count - 1
             Do While irow < flexrows + 1
-                If .Item(irow, 2) = 0 Then  ' aantal > 0 ?
+                If .Item(irow, aantal) = 0 Then  ' aantal > 0 ?
                     .Rows.Remove(irow)
                     flexrows = flexrows - 1
                 Else
@@ -13157,7 +13651,7 @@ next_fav:
         '
         'fill grid 
 
-        Dim gridfill1(28) As String
+        Dim gridfill1(60) As String
 
         'fust 
         'Dim newfustid = Order_fust_combo.SelectedValue
@@ -13186,30 +13680,30 @@ next_fav:
 
         ' fill list
         gridfill1(0) = 0               'id
-        gridfill1(1) = "+"              'plus
-        gridfill1(2) = Tstr(aantal)              '
-        gridfill1(3) = "x" + Tstr(fust(GID(fust, newfustid)).aantal_per_fust)
-        gridfill1(4) = Tstr(soortid)
+        gridfill1(pluscol) = "+"              'plus
+        gridfill1(aantalcol) = Tstr(aantal)              '
+        gridfill1(xcol) = "x" + Tstr(fust(GID(fust, newfustid)).aantal_per_fust)
+        gridfill1(soortcol) = Tstr(soortid)
         prijskleur = 0
-        gridfill1(5) = prijs
-        gridfill1(6) = Tstr(newfustid)
-        gridfill1(7) = Tstr(0)
+        gridfill1(prijscol) = prijs
+        gridfill1(fustcol) = Tstr(newfustid)
+        gridfill1(hoescol) = Tstr(0)
         If Val(koper_ean) < 2000 Then 'klok 
-            gridfill1(8) = Tstr(ZoekSoortCode("klokrijpheid", soortid))
-            gridfill1(9) = Tstr(ZoekSoortCode("klokhoogte", soortid))
-            gridfill1(10) = Tstr(ZoekSoortCode("klokdiameter", soortid))
+            gridfill1(rijpheidcol) = Tstr(ZoekSoortCode("klokrijpheid", soortid))
+            gridfill1(hoogtecol) = Tstr(ZoekSoortCode("klokhoogte", soortid))
+            gridfill1(diametercol) = Tstr(ZoekSoortCode("klokdiameter", soortid))
         Else                          'bb 
-            gridfill1(8) = Tstr(ZoekSoortCode("bbrijpheid", soortid))
-            gridfill1(9) = Tstr(ZoekSoortCode("bbhoogte", soortid))
-            gridfill1(10) = Tstr(ZoekSoortCode("bbdiameter", soortid))
+            gridfill1(rijpheidcol) = Tstr(ZoekSoortCode("bbrijpheid", soortid))
+            gridfill1(hoogtecol) = Tstr(ZoekSoortCode("bbhoogte", soortid))
+            gridfill1(diametercol) = Tstr(ZoekSoortCode("bbdiameter", soortid))
         End If
 
-        gridfill1(11) = Tstr(acce1_id)
-        gridfill1(12) = Tstr(acce2_id)
-        gridfill1(13) = ""
-        gridfill1(14) = ""
+        gridfill1(acce1col) = Tstr(acce1_id)
+        gridfill1(acce2col) = Tstr(acce2_id)
+        gridfill1(kopercodecol) = ""
+        gridfill1(opmerkingcol) = ""
 
-        gridfill1(15) = 0
+        gridfill1(labelcol) = 0
 
         Dim wpsfilternaam As String = ""
         Dim wpsfilterid As Integer = 0
@@ -13223,30 +13717,30 @@ next_fav:
             End If
         Next j
 
-        gridfill1(16) = wpsfilternaam
-        gridfill1(17) = Tstr(ZoekSoortCode("vestiging", soortid))
-        gridfill1(18) = Tstr(0)
+        gridfill1(wpsfilter1col) = wpsfilternaam
+        gridfill1(vestigingcol) = Tstr(ZoekSoortCode("vestiging", soortid))
+        gridfill1(keurcodecol) = Tstr(0)
         Dim potmaat As Integer = accessoire(GID(accessoire, acce1_id)).potmaat
         If potmaat > 0 Then
-            gridfill1(19) = potmaat / 10
+            gridfill1(potmaatcol) = potmaat / 10
         Else
-            gridfill1(19) = Tstr(ZoekSoortCode("potmaat", soortid) / 10)
+            gridfill1(potmaatcol) = Tstr(ZoekSoortCode("potmaat", soortid) / 10)
         End If
-        gridfill1(20) = Tstr(ZoekSoortCode("transporthoogte", soortid))
-        gridfill1(21) = Tstr(1)  'GP
-        gridfill1(22) = Tstr(0)
-        gridfill1(23) = Tstr(0)
-        gridfill1(24) = ""
-        gridfill1(25) = Tstr(actie_type)
-        gridfill1(26) = wpsfilterid
-        gridfill1(27) = wpsfilterid2
-        gridfill1(28) = 0
+        gridfill1(transporthoogtecol) = Tstr(ZoekSoortCode("transporthoogte", soortid))
+        gridfill1(GPcol) = Tstr(1)  'GP
+        gridfill1(acce4col) = Tstr(0)
+        gridfill1(acce5col) = Tstr(0)
+        gridfill1(florecomnrcol) = ""
+        gridfill1(actiecol) = Tstr(actie_type)
+        gridfill1(wpsfilter2col) = wpsfilterid
+        gridfill1(wpsfilter3col) = wpsfilterid2
+        gridfill1(oldheadercol) = 0
         Order_invoer_FlexGrid.AddItem(gridfill1)
         If prijskleur = 1 Then
-            Order_invoer_FlexGrid.SetCellStyle(irow, 5, "ErrorColor")
+            Order_invoer_FlexGrid.SetCellStyle(irow, prijscol, "ErrorColor")
         End If
         If prijskleur = 2 Then
-            Order_invoer_FlexGrid.SetCellStyle(irow, 5, "WarningColor")
+            Order_invoer_FlexGrid.SetCellStyle(irow, prijscol, "WarningColor")
         End If
 
 
@@ -13254,6 +13748,7 @@ next_fav:
 
     End Sub
     Public Sub Load_CodeLine2(ByVal kwekerscode As String, ByVal aantal As Integer)
+
 
         'soortid opzoeken 
         Dim koper_ean As String = Order_ean_lbl.Text
@@ -13307,7 +13802,7 @@ next_fav:
         '
         'fill grid 
 
-        Dim gridfill1(28) As String
+        Dim gridfill1(60) As String
 
         Dim prijskleur As Integer
         Dim actie_type As Integer = 0
@@ -13319,31 +13814,40 @@ next_fav:
         End If
 
         ' fill list
+
+        ' fill list
         gridfill1(0) = 0               'id
-        gridfill1(1) = "+"              'plus
-        gridfill1(2) = Tstr(aantal)              '
-        gridfill1(3) = "x" + Tstr(fust(GID(fust, newfustid)).aantal_per_fust)
-        gridfill1(4) = Tstr(soortid)
+        gridfill1(pluscol) = "+"              'plus
+        gridfill1(aantalcol) = Tstr(aantal)              '
+        gridfill1(xcol) = "x" + Tstr(fust(GID(fust, newfustid)).aantal_per_fust)
+        gridfill1(soortcol) = Tstr(soortid)
         prijskleur = 0
-        gridfill1(5) = prijs
-        gridfill1(6) = Tstr(newfustid)
-        gridfill1(7) = Tstr(hoes_id)
-        If Val(koper_ean) < 2000 Then 'klok 
-            gridfill1(8) = Tstr(ZoekSoortCode("klokrijpheid", soortid))
-            gridfill1(9) = Tstr(ZoekSoortCode("klokhoogte", soortid))
-            gridfill1(10) = Tstr(ZoekSoortCode("klokdiameter", soortid))
+        gridfill1(prijscol) = prijs
+        gridfill1(fustcol) = Tstr(newfustid)
+        gridfill1(hoescol) = Tstr(0)
+        If Val(koper_ean) < 2000 Then 'klok
+            Dim rijpheid As Integer = ZoekSoortCode("klokrijpheid", soortid)
+            Dim hoogte As Integer = Tstr(ZoekSoortCode("klokhoogte", soortid))
+            Dim diameter As Integer = Tstr(ZoekSoortCode("klokdiameter", soortid))
+
+            gridfill1(rijpheidcol) = Tstr(rijpheid)
+            gridfill1(hoogtecol) = Tstr(hoogte)
+            gridfill1(diametercol) = Tstr(diameter)
+            gridfill1(fotocol) = FindFotoMatch(newfustid, soortid, rijpheid, hoogte, diameter)
+
         Else                          'bb 
-            gridfill1(8) = Tstr(ZoekSoortCode("bbrijpheid", soortid))
-            gridfill1(9) = Tstr(ZoekSoortCode("bbhoogte", soortid))
-            gridfill1(10) = Tstr(ZoekSoortCode("bbdiameter", soortid))
+            gridfill1(rijpheidcol) = Tstr(ZoekSoortCode("bbrijpheid", soortid))
+            gridfill1(hoogtecol) = Tstr(ZoekSoortCode("bbhoogte", soortid))
+            gridfill1(diametercol) = Tstr(ZoekSoortCode("bbdiameter", soortid))
+            gridfill1(fotocol) = ""
         End If
 
-        gridfill1(11) = Tstr(acce1_id)
-        gridfill1(12) = Tstr(acce2_id)
-        gridfill1(13) = ""
-        gridfill1(14) = ""
+        gridfill1(acce1col) = Tstr(acce1_id)
+        gridfill1(acce2col) = Tstr(acce2_id)
+        gridfill1(kopercodecol) = ""
+        gridfill1(opmerkingcol) = ""
 
-        gridfill1(15) = 0
+        gridfill1(labelcol) = 0
 
         Dim wpsfilternaam As String = ""
         Dim wpsfilterid As Integer = 0
@@ -13357,34 +13861,83 @@ next_fav:
             End If
         Next j
 
-        gridfill1(16) = wpsfilternaam
-        gridfill1(17) = Tstr(ZoekSoortCode("vestiging", soortid))
-        gridfill1(18) = Tstr(0)
+        gridfill1(wpsfilter1col) = wpsfilternaam
+        gridfill1(vestigingcol) = Tstr(ZoekSoortCode("vestiging", soortid))
+        gridfill1(keurcodecol) = Tstr(0)
         Dim potmaat As Integer = accessoire(GID(accessoire, acce1_id)).potmaat
         If potmaat > 0 Then
-            gridfill1(19) = potmaat / 10
+            gridfill1(potmaatcol) = potmaat / 10
         Else
-            gridfill1(19) = Tstr(ZoekSoortCode("potmaat", soortid) / 10)
+            gridfill1(potmaatcol) = Tstr(ZoekSoortCode("potmaat", soortid) / 10)
         End If
-        gridfill1(20) = Tstr(ZoekSoortCode("transporthoogte", soortid))
-        gridfill1(21) = Tstr(1)  'GP
-        gridfill1(22) = Tstr(0)
-        gridfill1(23) = Tstr(0)
-        gridfill1(24) = ""
-        gridfill1(25) = Tstr(actie_type)
-        gridfill1(26) = wpsfilterid
-        gridfill1(27) = wpsfilterid2
-        gridfill1(28) = 0
+        gridfill1(transporthoogtecol) = Tstr(ZoekSoortCode("transporthoogte", soortid))
+        gridfill1(GPcol) = Tstr(1)  'GP
+        gridfill1(acce4col) = Tstr(0)
+        gridfill1(acce5col) = Tstr(0)
+        gridfill1(florecomnrcol) = ""
+        gridfill1(actiecol) = Tstr(actie_type)
+        gridfill1(wpsfilter2col) = wpsfilterid
+        gridfill1(wpsfilter3col) = wpsfilterid2
+        gridfill1(oldheadercol) = 0
         Order_invoer_FlexGrid.AddItem(gridfill1)
         If prijskleur = 1 Then
-            Order_invoer_FlexGrid.SetCellStyle(irow, 5, "ErrorColor")
+            Order_invoer_FlexGrid.SetCellStyle(irow, prijscol, "ErrorColor")
         End If
         If prijskleur = 2 Then
-            Order_invoer_FlexGrid.SetCellStyle(irow, 5, "WarningColor")
+            Order_invoer_FlexGrid.SetCellStyle(irow, prijscol, "WarningColor")
         End If
 
     End Sub
 
+    Private Function FindFotoMatch(soortmixid As Integer, fustid As Integer, rijpheid As Integer, hoogte As Integer, diameter As Integer) As String
+        Dim returnpath As String = ""
+
+        Dim FotoTradeItemDBId As Integer = 0
+        If soortmixid < 10000 Then
+            For i = 0 To UBound(soorten) - 1
+                If soorten(i).id = soortmixid Then
+                    FotoTradeItemDBId = soorten(i).tradeitemklok
+                    Exit For
+                End If
+            Next
+        Else
+            For i = 0 To UBound(mixen) - 1
+                If mixen(i).id = soortmixid - 10000 Then
+                    FotoTradeItemDBId = mixen(i).tradeitemklok
+                    Exit For
+                End If
+            Next
+        End If
+
+        If FotoTradeItemDBId > 0 Then
+            'test all
+            For i = 1 To UBound(fotofilters)
+                If FotoTradeItemDBId = fotofilters(i).tradeItemId Then
+                    If fustid = fotofilters(i).fust And rijpheid = fotofilters(i).rijpheid And hoogte = fotofilters(i).hoogte And diameter = fotofilters(i).diameter Then
+                        Return fotofilters(i).fotopath
+                    End If
+                End If
+            Next
+            For i = 1 To UBound(fotofilters)
+                If FotoTradeItemDBId = fotofilters(i).tradeItemId Then
+                    If fustid = fotofilters(i).fust And rijpheid = fotofilters(i).rijpheid And hoogte = fotofilters(i).hoogte Then
+                        Return fotofilters(i).fotopath
+                    End If
+                End If
+            Next
+
+            For i = 1 To UBound(fotofilters)
+                If FotoTradeItemDBId = fotofilters(i).tradeItemId Then
+                    If fustid = fotofilters(i).fust And rijpheid = fotofilters(i).rijpheid And diameter = fotofilters(i).diameter Then
+                        Return fotofilters(i).fotopath
+                    End If
+                End If
+            Next
+        End If
+
+
+        Return returnpath
+    End Function
     Private Sub Order_invoer_FlexGrid_SetupEditor(ByVal sender As System.Object, ByVal e As C1.Win.C1FlexGrid.RowColEventArgs) Handles Order_invoer_FlexGrid.SetupEditor
         If TypeOf Order_invoer_FlexGrid.Editor Is ComboBox Then
             DirectCast(Order_invoer_FlexGrid.Editor, ComboBox).MaxDropDownItems = 20
@@ -13392,75 +13945,98 @@ next_fav:
     End Sub
     Private Sub Order_invoer_FlexGrid_BeforeEdit(ByVal sender As Object, ByVal e As C1.Win.C1FlexGrid.RowColEventArgs) Handles Order_invoer_FlexGrid.BeforeEdit
         If Order_Slot_Chk.Checked = True Then
-            If Order_invoer_FlexGrid.Item(e.Row, 0) > 0 Then   'als lock actief en line heeft een id.. dan soms edit verhinderen
-                If e.Col = 2 Or e.Col = 4 Or e.Col = 6 Or e.Col = 21 Or e.Col = 11 Or e.Col = 17 Then
-                    e.Cancel = True
+            Try
+
+
+                If Order_invoer_FlexGrid.Item(e.Row, 0) > 0 Then   'als lock actief en line heeft een id.. dan soms edit verhinderen
+
+                    'If e.Col = 2 Or e.Col = 4 Or e.Col = 6 Or e.Col = 21 Or e.Col = 11 Or e.Col = 17 Then
+                    '    e.Cancel = True
+                    'End If
+
+                    If e.Col = aantalcol Or e.Col = soortcol Or e.Col = fustcol Or e.Col = gpcol Or e.Col = acce1col Or e.Col = vestigingcol Then
+                        e.Cancel = True
+                    End If
+
                 End If
-            End If
+            Catch ex As Exception
+
+            End Try
         End If
     End Sub
     Private Sub Order_invoer_FlexGrid_AfterEdit(ByVal sender As Object, ByVal e As C1.Win.C1FlexGrid.RowColEventArgs) Handles Order_invoer_FlexGrid.AfterEdit
 
+
         '***************************************************
         ' DIVERSE GRID FUNCTIES AFTER EDIT
         '***************************************************
-        If e.Col = 2 Then
+        If e.Col = aantalcol Then
             'totaal aantal laten zien
 
             Dim tot_aantal As Integer = 0
             For i = 1 To Order_invoer_FlexGrid.Rows.Count - 1
-                tot_aantal = tot_aantal + Order_invoer_FlexGrid.Item(i, 2)
+                tot_aantal = tot_aantal + Order_invoer_FlexGrid.Item(i, aantalcol)
             Next
-            Order_invoer_FlexGrid.Item(0, 2) = "A#" + Str(tot_aantal)
+            Order_invoer_FlexGrid.Item(0, aantalcol) = "A#" + Str(tot_aantal)
 
         End If
 
         '*************** Achtergrond kleur blauw ********************
-        If e.Col = 2 Then  'kleur rij naar blauw zetten als er iets wordt ingevuld bij aantallen
+        If e.Col = aantalcol Then  'kleur rij naar blauw zetten als er iets wordt ingevuld bij aantallen
             If Order_invoer_FlexGrid.Item(e.Row, e.Col) > 0 Then
                 Order_invoer_FlexGrid.Rows(e.Row).Style = Order_invoer_FlexGrid.Styles("RowColor")
             End If
         End If
 
+
+
         '*************** Fust verandered, X aanpassen ********************
 
-        If e.Col = 6 Then   'fustrow
+        If e.Col = fustcol Then   'fustrow
             Dim fustid As Integer
-            fustid = Order_invoer_FlexGrid.Item(e.Row, 6)
+            fustid = Order_invoer_FlexGrid.Item(e.Row, fustcol)
             Dim apf As Integer
             apf = fust(GID(fust, fustid)).aantal_per_fust
-            Order_invoer_FlexGrid.Item(e.Row, 3) = "x " + Trim(Str(apf))
+            Order_invoer_FlexGrid.Item(e.Row, xcol) = "x " + Trim(Str(apf))
         End If
 
-        '*************** Soort verandered, prijs aanpassen & hoogte/diameter/rijpheid? ********************
+        '****************** keurcode ************************
 
-        If e.Col = 4 Then  'soortrow
+        If e.Col = keurcodecol Then
+            Order_invoer_FlexGrid.Item(e.Row, fotocol) = ""
+        End If
+
+
+        '*************** Soort verandered, prijs aanpassen & hoogte/diameter/rijpheid/foto? ********************
+
+        If e.Col = soortcol Then  'soortrow
 
             '
             Dim prijskleur = 0
             Dim actie_type As Integer
             Dim koper_ean As String = Order_ean_lbl.Text
-            Dim accessoire_id As Integer = Order_invoer_FlexGrid.Item(e.Row, 11)
-            Dim soortid As Integer = Order_invoer_FlexGrid.Item(e.Row, 4)
+            Dim accessoire_id As Integer = Order_invoer_FlexGrid.Item(e.Row, acce1col)
+            Dim soortid As Integer = Order_invoer_FlexGrid.Item(e.Row, soortcol)
             Dim aID As Integer = GID(accessoire, accessoire_id)
             ' If accessoire(aID).prijslijst > 0 Then
             'Order_invoer_FlexGrid.Item(e.Row, 5) = fetchprijs(accessoire(aID).prijslijst, order_date)
             Dim huidige_prijs As Double = ZoekPrijs(soortid, koper_ean, order_date, prijskleur, actie_type)
             Dim nieuwe_prijs As Double = FindAccessoirePrijs(koper_ean, huidige_prijs, accessoire_id, soortid, order_date, actie_type)
             If nieuwe_prijs <> huidige_prijs Then
-                Order_invoer_FlexGrid.Item(e.Row, 5) = nieuwe_prijs
-                Order_invoer_FlexGrid.Item(e.Row, 24) = Tstr(actie_type)
-                Order_invoer_FlexGrid.SetCellStyle(e.Row, 5, "WarningColor")
+                Order_invoer_FlexGrid.Item(e.Row, prijscol) = nieuwe_prijs
+                Order_invoer_FlexGrid.Item(e.Row, aanbodcol) = Tstr(actie_type)
+                Order_invoer_FlexGrid.SetCellStyle(e.Row, prijscol, "WarningColor")
             End If
 
             If Val(koper_ean) < 2000 Then 'klok 
-                Order_invoer_FlexGrid.Item(e.Row, 8) = Tstr(ZoekSoortCode("klokrijpheid", soortid))
-                Order_invoer_FlexGrid.Item(e.Row, 9) = Tstr(ZoekSoortCode("klokhoogte", soortid))
-                Order_invoer_FlexGrid.Item(e.Row, 10) = Tstr(ZoekSoortCode("klokdiameter", soortid))
+                Order_invoer_FlexGrid.Item(e.Row, rijpheidcol) = Tstr(ZoekSoortCode("klokrijpheid", soortid))
+                Order_invoer_FlexGrid.Item(e.Row, hoogtecol) = Tstr(ZoekSoortCode("klokhoogte", soortid))
+                Order_invoer_FlexGrid.Item(e.Row, diametercol) = Tstr(ZoekSoortCode("klokdiameter", soortid))
+                Order_invoer_FlexGrid.Item(e.Row, fotocol) = ""
             Else                          'bb 
-                Order_invoer_FlexGrid.Item(e.Row, 8) = Tstr(ZoekSoortCode("bbrijpheid", soortid))
-                Order_invoer_FlexGrid.Item(e.Row, 9) = Tstr(ZoekSoortCode("bbhoogte", soortid))
-                Order_invoer_FlexGrid.Item(e.Row, 10) = Tstr(ZoekSoortCode("bbdiameter", soortid))
+                Order_invoer_FlexGrid.Item(e.Row, rijpheidcol) = Tstr(ZoekSoortCode("bbrijpheid", soortid))
+                Order_invoer_FlexGrid.Item(e.Row, hoogtecol) = Tstr(ZoekSoortCode("bbhoogte", soortid))
+                Order_invoer_FlexGrid.Item(e.Row, diametercol) = Tstr(ZoekSoortCode("bbdiameter", soortid))
             End If
 
             'filternr herberekene
@@ -13475,18 +14051,18 @@ next_fav:
                 End If
             Next j
 
-            Order_invoer_FlexGrid.Item(e.Row, 16) = wpsfilternaam
-            Order_invoer_FlexGrid.Item(e.Row, 26) = wpsfilterid
-            Order_invoer_FlexGrid.Item(e.Row, 27) = wpsfilterid2
+            Order_invoer_FlexGrid.Item(e.Row, wpsfilter1col) = wpsfilternaam
+            Order_invoer_FlexGrid.Item(e.Row, wpsfilter2col) = wpsfilterid
+            Order_invoer_FlexGrid.Item(e.Row, wpsfilter3col) = wpsfilterid2
         End If
 
         '*************** Accessoire verandered, prijs/fust/hoes aanpassen? ********************
 
-        If e.Col = 11 Then
+        If e.Col = acce1col Then
 
             Dim koper_ean As String = Order_ean_lbl.Text
-            Dim accessoire_id As Integer = Order_invoer_FlexGrid.Item(e.Row, 11)
-            Dim soortid As Integer = Order_invoer_FlexGrid.Item(e.Row, 4)
+            Dim accessoire_id As Integer = Order_invoer_FlexGrid.Item(e.Row, acce1col)
+            Dim soortid As Integer = Order_invoer_FlexGrid.Item(e.Row, soortcol)
             Dim aID As Integer = GID(accessoire, accessoire_id)
 
             If accessoire(aID).naam.IndexOf("Stik") >= 0 Then   'stikker accessoire? 
@@ -13497,34 +14073,34 @@ next_fav:
             End If
 
 
-            Dim huidige_prijs As Double = Order_invoer_FlexGrid.Item(e.Row, 5)
+            Dim huidige_prijs As Double = Order_invoer_FlexGrid.Item(e.Row, prijscol)
             Dim actie_type As Integer = 0
             Dim nieuwe_prijs As Double = FindAccessoirePrijs(koper_ean, huidige_prijs, accessoire_id, soortid, order_date, actie_type)
 
             If nieuwe_prijs <> huidige_prijs Then
-                Order_invoer_FlexGrid.Item(e.Row, 5) = nieuwe_prijs
-                Order_invoer_FlexGrid.Item(e.Row, 24) = Tstr(actie_type)
-                Order_invoer_FlexGrid.SetCellStyle(e.Row, 5, "WarningColor")
+                Order_invoer_FlexGrid.Item(e.Row, prijscol) = nieuwe_prijs
+                Order_invoer_FlexGrid.Item(e.Row, aanbodcol) = Tstr(actie_type)
+                Order_invoer_FlexGrid.SetCellStyle(e.Row, prijscol, "WarningColor")
             End If
 
 
             If accessoire(aID).hoes > 0 Then
-                Order_invoer_FlexGrid.Item(e.Row, 7) = Tstr(accessoire(GID(accessoire, accessoire(aID).hoes)).id)
-                Order_invoer_FlexGrid.SetCellStyle(e.Row, 7, "WarningColor")
+                Order_invoer_FlexGrid.Item(e.Row, hoescol) = Tstr(accessoire(GID(accessoire, accessoire(aID).hoes)).id)
+                Order_invoer_FlexGrid.SetCellStyle(e.Row, hoescol, "WarningColor")
             End If
 
             If accessoire(aID).fust > 0 Then
-                Order_invoer_FlexGrid.Item(e.Row, 6) = Tstr(fust(GID(fust, accessoire(aID).fust)).id)
-                Order_invoer_FlexGrid.SetCellStyle(e.Row, 6, "WarningColor")
+                Order_invoer_FlexGrid.Item(e.Row, fustcol) = Tstr(fust(GID(fust, accessoire(aID).fust)).id)
+                Order_invoer_FlexGrid.SetCellStyle(e.Row, fustcol, "WarningColor")
                 Dim fustid As Integer
-                fustid = Order_invoer_FlexGrid.Item(e.Row, 6)
+                fustid = Order_invoer_FlexGrid.Item(e.Row, fustcol)
                 Dim apf As Integer
                 apf = fust(GID(fust, fustid)).aantal_per_fust
-                Order_invoer_FlexGrid.Item(e.Row, 3) = "x " + Trim(Str(apf))
+                Order_invoer_FlexGrid.Item(e.Row, xcol) = "x " + Trim(Str(apf))
             End If
             If accessoire(aID).potmaat > 0 Then
-                Order_invoer_FlexGrid.Item(e.Row, 19) = Tstr(accessoire(aID).potmaat / 10)
-                Order_invoer_FlexGrid.SetCellStyle(e.Row, 19, "WarningColor")
+                Order_invoer_FlexGrid.Item(e.Row, potmaatcol) = Tstr(accessoire(aID).potmaat / 10)
+                Order_invoer_FlexGrid.SetCellStyle(e.Row, potmaatcol, "WarningColor")
             End If
 
             'filternr herbereken voor meerwaardes 
@@ -13539,24 +14115,24 @@ next_fav:
                 End If
             Next j
 
-            Order_invoer_FlexGrid.Item(e.Row, 16) = wpsfilternaam
-            Order_invoer_FlexGrid.Item(e.Row, 26) = wpsfilterid
-            Order_invoer_FlexGrid.Item(e.Row, 27) = wpsfilterid2
+            Order_invoer_FlexGrid.Item(e.Row, wpsfilter1col) = wpsfilternaam
+            Order_invoer_FlexGrid.Item(e.Row, wpsfilter2col) = wpsfilterid
+            Order_invoer_FlexGrid.Item(e.Row, wpsfilter3col) = wpsfilterid2
 
         End If
 
-        If e.Col = 12 Then 'accessoire2
+        If e.Col = acce2col Then 'accessoire2
 
 
-            Dim accessoire_id As Integer = Order_invoer_FlexGrid.Item(e.Row, 12)
-            Dim soortid As Integer = Order_invoer_FlexGrid.Item(e.Row, 4)
+            Dim accessoire_id As Integer = Order_invoer_FlexGrid.Item(e.Row, acce2col)
+            Dim soortid As Integer = Order_invoer_FlexGrid.Item(e.Row, soortcol)
             Dim aID As Integer = GID(accessoire, accessoire_id)
 
-            Dim huidige_prijs As Double = Order_invoer_FlexGrid.Item(e.Row, 5)
+            Dim huidige_prijs As Double = Order_invoer_FlexGrid.Item(e.Row, prijscol)
             Dim nieuwe_prijs As Double = FindAccessoirePlusPrijs(huidige_prijs, accessoire_id, soortid, order_date)
             If nieuwe_prijs <> huidige_prijs Then
-                Order_invoer_FlexGrid.Item(e.Row, 5) = nieuwe_prijs
-                Order_invoer_FlexGrid.SetCellStyle(e.Row, 5, "WarningColor")
+                Order_invoer_FlexGrid.Item(e.Row, prijscol) = nieuwe_prijs
+                Order_invoer_FlexGrid.SetCellStyle(e.Row, prijscol, "WarningColor")
             End If
 
             If accessoire(aID).naam.IndexOf("Stik") >= 0 Then   'stikker accessoire? 
@@ -13578,7 +14154,7 @@ next_fav:
         Dim prijs As Double = huidige_prijs
 
         Dim Reader As OdbcDataReader
-        Dim gridfill1(22) As String
+
 
         Try
             'Open Connection
@@ -13586,7 +14162,7 @@ next_fav:
                 Conn.Open()
 
                 Dim cmdstring As String
-                cmdstring = "SELECT * FROM accessoire_prijzen where accessoire = " + Str(AccessoireID) + " AND soort = " + Str(soortid)
+                cmdstring = "SELECT * FROM accessoire_prijzen where accessoire = " + Str(AccessoireID) + " And soort = " + Str(soortid)
 
                 'Execute Query
                 Dim Cmd As New OdbcCommand(cmdstring, Conn)
@@ -13604,14 +14180,14 @@ next_fav:
                 Else
 
                     'test 2 : accessoire en soortgroep specifiek 
-                    Dim cmdstring2 As String = "SELECT * FROM accessoire_prijzen where accessoire = " + Str(AccessoireID) + " AND soort >= 20000"
+                    Dim cmdstring2 As String = "SELECT * FROM accessoire_prijzen where accessoire = " + Str(AccessoireID) + " And soort >= 20000"
                     Dim reader2 As OdbcDataReader
                     Dim Cmd2 As New OdbcCommand(cmdstring2, Conn)
                     reader2 = Cmd2.ExecuteReader()
                     Dim reader3 As OdbcDataReader
                     Do While reader2.Read()
                         Dim soortgroep As Integer = CHint(reader2("soort"))
-                        Dim CmdString3 As String = "SELECT * FROM soortgroepen_ids where id = " + Str(soortgroep - 20000) + " AND soortmixid = " + Str(soortid)
+                        Dim CmdString3 As String = "SELECT * FROM soortgroepen_ids where id = " + Str(soortgroep - 20000) + " And soortmixid = " + Str(soortid)
                         Dim Cmd3 As New OdbcCommand(CmdString3, Conn)
                         reader3 = Cmd3.ExecuteReader()
                         If reader3.HasRows Then
@@ -13636,7 +14212,7 @@ next_fav:
 
             End Using
         Catch ex As Exception
-            ErrorLog("Database fout: (FindAccessoirePrijs)" + ex.Message)
+            ErrorLog("Database fout:  (FindAccessoirePrijs)" + ex.Message)
             MessageBox.Show("Database fout: (FindAccessoirePrijs)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
         End Try
 
@@ -13647,7 +14223,7 @@ next_fav:
         Dim prijs As Double = huidige_prijs
 
         Dim Reader As OdbcDataReader
-        Dim gridfill1(22) As String
+
 
         Try
             'Open Connection
@@ -13785,7 +14361,6 @@ next_fav:
         End If
 
     End Sub
-
     Private Sub Order_ToolStripMenuItem1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Order_ToolStripMenuItem1.Click
         If Order_invoer_FlexGrid.Rows.Count > 1 Then
             Dim row As Integer = Order_invoer_FlexGrid.Row
@@ -13838,13 +14413,14 @@ next_fav:
             End If
         End If
     End Sub
-
     Private Sub Order_invoer_FlexGrid_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles Order_invoer_FlexGrid.Click
+
+
         '***************************************************
         ' WPS Filter combo invullen als er op geclicked wordt
         ' Create the custom editor.
         '***************************************************
-        If Order_invoer_FlexGrid.Col = 16 Then
+        If Order_invoer_FlexGrid.Col = wpsfilter1col Then
             If Order_invoer_FlexGrid.Rows.Count > 1 Then
 
                 Dim style As C1.Win.C1FlexGrid.CellStyle = Order_invoer_FlexGrid.Styles.Add("newGridStyle")
@@ -13858,7 +14434,7 @@ next_fav:
                 dt_filter.Clear()
 
                 '*********** LIJST GENEREREN **************************
-                Dim soort_id = Order_invoer_FlexGrid.Item(Order_invoer_FlexGrid.Row, 4) '??  soortid kolom
+                Dim soort_id = Order_invoer_FlexGrid.Item(Order_invoer_FlexGrid.Row, soortcol) '??  soortid kolom
                 Dim wps_soort_id = soorten(GID(soorten, soort_id)).wps_code
                 Dim potmaat = soorten(GID(soorten, soort_id)).potmaat
                 Dim filterfound As Boolean = False
@@ -13884,8 +14460,8 @@ next_fav:
                 Invoer_WpsFilterCombo.MaxDropDownItems = 15
 
                 style.Editor = Invoer_WpsFilterCombo
-                Order_invoer_FlexGrid.SetCellStyle(Order_invoer_FlexGrid.Row, 16, style)
-                Order_invoer_FlexGrid.StartEditing(Order_invoer_FlexGrid.Row, 16)
+                Order_invoer_FlexGrid.SetCellStyle(Order_invoer_FlexGrid.Row, wpsfilter1col, style)
+                Order_invoer_FlexGrid.StartEditing(Order_invoer_FlexGrid.Row, wpsfilter1col)
 
                 Invoer_WpsFilterCombo.DroppedDown = True
 
@@ -13895,7 +14471,7 @@ next_fav:
         End If
 
 
-        If Order_invoer_FlexGrid.Col = 5 Then
+        If Order_invoer_FlexGrid.Col = prijscol Then
 
             '***************************************************
             ' PRIJS COMBO invullen als er op geclicked wordt
@@ -13928,7 +14504,7 @@ next_fav:
             Dim soortid As Integer
 
             koper_ean = Order_ean_lbl.Text
-            soortid = Order_invoer_FlexGrid.Item(Order_invoer_FlexGrid.Row, 4)
+            soortid = Order_invoer_FlexGrid.Item(Order_invoer_FlexGrid.Row, soortcol)
             Dim datum As Date
             datum = order_date
             'prijzen(i).id = Reader("id")
@@ -14185,36 +14761,36 @@ next_fav:
                 For i = 1 To UBound(prijslijst)
                     If soortid = prijslijst(i).soort Then
 
-                       If prijslijst(i).kopersgroep = 0 Then
-                                '(kopersgroep = 0 : Algemeen aanbod)
-                                Dim findid As Integer = i
-                                jpsoort = prijslijst(findid).soort
-                                jpaccessoire1 = prijslijst(findid).accessoire1
-                                jpaccessoire2 = prijslijst(findid).accessoire2
-                                jpfust = prijslijst(findid).fust
-                                jphoes = prijslijst(findid).hoes
-                                jpprijs = prijslijst(findid).prijs
-                                jpomschrijving = prijslijst(findid).omschrijving
-                                If prijslijst(findid).korting <> 0 Then
-                                    For j = 1 To UBound(kortingsgroepen)
-                                        Dim kopersgroepid2 As Integer = kortingsgroepen(j).kopergroep
-                                        For m = 1 To UBound(kopergroepEANs)
-                                            If kopergroepEANs(m).id = kopersgroepid2 And kopergroepEANs(m).ean = koper_ean Then
-                                                'korting found
-                                                jpkorting = kortingsgroepen(j).korting
-                                                soortprijs = (jpprijs - jpkorting) / 100
-                                                dt_celprijzen.Rows.Add(New String() {Format(soortprijs, "#.00"), jpomschrijving})
-                                                kortingfound = True
-                                            End If
-                                        Next
+                        If prijslijst(i).kopersgroep = 0 Then
+                            '(kopersgroep = 0 : Algemeen aanbod)
+                            Dim findid As Integer = i
+                            jpsoort = prijslijst(findid).soort
+                            jpaccessoire1 = prijslijst(findid).accessoire1
+                            jpaccessoire2 = prijslijst(findid).accessoire2
+                            jpfust = prijslijst(findid).fust
+                            jphoes = prijslijst(findid).hoes
+                            jpprijs = prijslijst(findid).prijs
+                            jpomschrijving = prijslijst(findid).omschrijving
+                            If prijslijst(findid).korting <> 0 Then
+                                For j = 1 To UBound(kortingsgroepen)
+                                    Dim kopersgroepid2 As Integer = kortingsgroepen(j).kopergroep
+                                    For m = 1 To UBound(kopergroepEANs)
+                                        If kopergroepEANs(m).id = kopersgroepid2 And kopergroepEANs(m).ean = koper_ean Then
+                                            'korting found
+                                            jpkorting = kortingsgroepen(j).korting
+                                            soortprijs = (jpprijs - jpkorting) / 100
+                                            dt_celprijzen.Rows.Add(New String() {Format(soortprijs, "#.00"), jpomschrijving})
+                                            kortingfound = True
+                                        End If
                                     Next
-                                End If
-                                If kortingfound = False Then
-                                    soortprijs = (jpprijs - jpkorting) / 100
-                                    dt_celprijzen.Rows.Add(New String() {Format(soortprijs, "#.00"), jpomschrijving})
-                                End If
-
+                                Next
                             End If
+                            If kortingfound = False Then
+                                soortprijs = (jpprijs - jpkorting) / 100
+                                dt_celprijzen.Rows.Add(New String() {Format(soortprijs, "#.00"), jpomschrijving})
+                            End If
+
+                        End If
                     End If
 
                 Next
@@ -14230,18 +14806,19 @@ next_fav:
             mycombo.MaxDropDownItems = 10
 
             style.Editor = mycombo
-            Order_invoer_FlexGrid.SetCellStyle(Order_invoer_FlexGrid.Row, 5, style)
-            Order_invoer_FlexGrid.StartEditing(Order_invoer_FlexGrid.Row, 5)
+            Order_invoer_FlexGrid.SetCellStyle(Order_invoer_FlexGrid.Row, prijscol, style)
+            Order_invoer_FlexGrid.StartEditing(Order_invoer_FlexGrid.Row, prijscol)
             mycombo.DroppedDown = True
         End If
     End Sub
     Private Sub Invoer_WpsFilterCombo_Validated(ByVal sender As Object, ByVal e As System.EventArgs) Handles Invoer_WpsFilterCombo.Validated
+
         'wps filter combobox naar filter1
-        If Order_invoer_FlexGrid.Col = 16 Then
+        If Order_invoer_FlexGrid.Col = wpsfilter1col Then
             If Invoer_WpsFilterCombo.SelectedValue = Nothing Then
-                Order_invoer_FlexGrid.Item(Order_invoer_FlexGrid.Row, 26) = 0
+                Order_invoer_FlexGrid.Item(Order_invoer_FlexGrid.Row, wpsfilter2col) = 0
             Else
-                Order_invoer_FlexGrid.Item(Order_invoer_FlexGrid.Row, 26) = Invoer_WpsFilterCombo.SelectedValue
+                Order_invoer_FlexGrid.Item(Order_invoer_FlexGrid.Row, wpsfilter2col) = Invoer_WpsFilterCombo.SelectedValue
             End If
 
         End If
@@ -14472,8 +15049,6 @@ next_fav:
         End If
         Return laagsteprijs / 100
     End Function
-
-
     Private Function ZoekPrijs(ByVal soortid As Integer, ByVal koper_ean As String, ByVal datum As Date, ByRef prijskleur As Integer, ByRef actie_type As Integer, Optional geen_jenp As Boolean = False, Optional actienummer As String = "") As Double
 
         '***************************************************
@@ -14962,11 +15537,14 @@ next_fav:
         '***************************************************
         ' Nieuwe order aanmaken 
         '***************************************************
+
+        Dim aantalcol As Integer = FindCol(Order_invoer_FlexGrid, "Aantal")
+
         SetComboIndex(Vervoer_Vervoerder_cmb, 1)  'set de winter default in vervoer sheet
         'reset klok order sheet
         ResetOrderinvoer()
 
-        Order_invoer_FlexGrid.Item(0, 2) = "Aantal"
+        Order_invoer_FlexGrid.Item(0, aantalcol) = "Aantal"
         Order_aanvulling_chk.Tag = "System"
         Order_aanvulling_chk.Checked = False
         Order_aanvulling_chk.Tag = "0"
@@ -15035,7 +15613,9 @@ next_fav:
     End Sub
     Private Sub Order_invoer_FlexGrid_CellButtonClick(ByVal sender As Object, ByVal e As C1.Win.C1FlexGrid.RowColEventArgs) Handles Order_invoer_FlexGrid.CellButtonClick
 
-        If e.Col = 1 Then
+
+
+        If e.Col = pluscol Then
             '***************************************************
             ' ORDERREGEL KOPIEREN NA CLICK op kolom 1
             '***************************************************
@@ -15045,9 +15625,9 @@ next_fav:
                 For j = 0 To .Cols.Count - 1
                     .Item(e.Row, j) = .Item(e.Row + 1, j)
                 Next
-                .Item(e.Row + 1, 2) = 0  ' aantal
+                .Item(e.Row + 1, aantalcol) = 0  ' aantal
                 .Item(e.Row + 1, 0) = 0  ' id 
-                .Select(e.Row + 1, 2, e.Row + 1, 2)
+                .Select(e.Row + 1, aantalcol, e.Row + 1, aantalcol)
 
                 .Rows(e.Row).Style = .Styles("RowColor")
                 .Rows(e.Row + 1).Style = .Styles("Default")
@@ -15058,25 +15638,25 @@ next_fav:
         '************************************************************
         ' LABELCODE INVOER
         '************************************************************
-        If e.Col = 15 Then
+        If e.Col = labelcol Then
 
             StickerType_cmb.SelectedIndex = 1
 
-            If IsNothing(Order_invoer_FlexGrid.Item(e.Row, 2)) Then
+            If IsNothing(Order_invoer_FlexGrid.Item(e.Row, aantalcol)) Then
                 MsgBox("Vul eerst het aantal planten in")
                 Exit Sub
             End If
-            Dim labelnummerstr As String = Order_invoer_FlexGrid.Item(e.Row, 15)
+            Dim labelnummerstr As String = Order_invoer_FlexGrid.Item(e.Row, labelcol)
             Dim labelnummer As Integer = Val(labelnummerstr)
 
-            Dim soort_id As Integer = Order_invoer_FlexGrid.Item(e.Row, 4)
+            Dim soort_id As Integer = Order_invoer_FlexGrid.Item(e.Row, soortcol)
             Dim soort As String = soorten(GID(soorten, soort_id)).soortnaam
-            Dim aantal As Integer = Order_invoer_FlexGrid.Item(e.Row, 2)
-            Dim fust_id As Integer = Order_invoer_FlexGrid.Item(e.Row, 6)
+            Dim aantal As Integer = Order_invoer_FlexGrid.Item(e.Row, aantalcol)
+            Dim fust_id As Integer = Order_invoer_FlexGrid.Item(e.Row, fustcol)
             Dim koper_ean As String = Order_ean_lbl.Text
             Dim koper_naam As String = Order_koper_combo.Text
-            Dim opmerking As String = Order_invoer_FlexGrid.Item(e.Row, 14)
-            Dim accessoire1 As Integer = Val(Order_invoer_FlexGrid.Item(e.Row, 11))
+            Dim opmerking As String = Order_invoer_FlexGrid.Item(e.Row, opmerkingcol)
+            Dim accessoire1 As Integer = Val(Order_invoer_FlexGrid.Item(e.Row, acce1col))
 
 
             Dim accessoire1naam As String = ""
@@ -15084,13 +15664,121 @@ next_fav:
                 accessoire1naam = accessoire(GID(accessoire, accessoire1)).naam
             End If
 
-            LabelWindow.Init(labelnummer, soort_id, aantal, fust_id, e.Row, koper_ean, koper_naam, opmerking, accessoire1naam)
+            LabelWindow.Init(labelnummer, soort_id, aantal, fust_id, e.Row, koper_ean, koper_naam, opmerking, accessoire1naam, 0)
             'LabelWindow.TopMost = True
             LabelWindow.Show()
             'global labeledit
 
 
         End If
+
+        '************************************************************
+        ' FOTO INVOER
+        '************************************************************
+        If e.Col = fotocol Then
+            Dim FotoTradeItemDBId As Integer = 0
+            Dim soortmixid As Integer = 0
+            Try
+                soortmixid = CHint(Order_invoer_FlexGrid.GetData(e.Row, FindCol(Order_invoer_FlexGrid, "Soort")))
+            Catch ex As Exception
+
+            End Try
+            If soortmixid = 0 Then
+                MsgBox("Selecteer eerst een soort")
+                Exit Sub
+            End If
+
+            If soortmixid < 10000 Then
+                For i = 0 To UBound(soorten)
+                    If soorten(i).id = soortmixid Then
+                        FotoTradeItemDBId = soorten(i).tradeitemklok
+                        Exit For
+                    End If
+                Next
+            Else
+                For i = 0 To UBound(mixen)
+                    If mixen(i).id = soortmixid - 10000 Then
+                        FotoTradeItemDBId = soorten(i).tradeitemklok
+                        Exit For
+                    End If
+                Next
+            End If
+            If FotoTradeItemDBId = 0 Then
+                MsgBox("Dit soort heeft geen klok-tradeitem")
+                Exit Sub
+            End If
+
+            If FotoTradeItemDBId > 0 Then
+                Form15.FotoTradeItemDBId = FotoTradeItemDBId
+
+                Dim rijpheid As Integer = 0
+                Dim fustid As Integer = 0
+                Dim Hoes As Integer = 0
+                Dim Hoogte As Integer = 0
+                Dim Diameter As Integer = 0
+                Dim Schermen As Integer = 0
+                Dim Keurcode As Integer = 0
+                Dim fotopath As String = ""
+
+                Try
+                    rijpheid = CHint(Order_invoer_FlexGrid.GetData(e.Row, rijpheidcol))
+                    fustid = CHint(Order_invoer_FlexGrid.GetData(e.Row, fustcol))
+                    Hoes = CHint(Order_invoer_FlexGrid.GetData(e.Row, hoescol))
+                    Hoogte = CHint(Order_invoer_FlexGrid.GetData(e.Row, hoogtecol))
+                    Diameter = CHint(Order_invoer_FlexGrid.GetData(e.Row, diametercol))
+                    Schermen = CHint(Order_invoer_FlexGrid.GetData(e.Row, schermencol))
+                    Keurcode = CHint(Order_invoer_FlexGrid.GetData(e.Row, keurcodecol))
+                    fotopath = CHstr(Order_invoer_FlexGrid.GetData(e.Row, fotocol))
+
+                Catch ex As Exception
+                End Try
+
+                    Form15.rijpheid = rijpheid
+                Form15.fustcode = fust(GID(fust, fustid)).fustcode
+                Form15.hoogte = Hoogte
+                Form15.diameter = Diameter
+                Form15.schermen = Schermen
+                Form15.keurcode = Keurcode
+                Form15.flexgridrow = e.Row
+                Form15.flexgridcol = fotocol
+                Form15.exportgrid = 2
+                Form15.fotopath = fotopath
+
+                Form15.StartPosition = FormStartPosition.CenterScreen
+                Form15.Show()
+            End If
+
+        End If
+
+        '************************************************************
+        ' AANBOD REFERENTIE
+        '************************************************************
+        If e.Col = floridaynrcol Then
+
+            C1TabOrderInvoer.Enabled = False
+            C1TabKarindeling.Enabled = True
+            C1TabFloriday.Enabled = True
+            C1TabFlorecom.Enabled = False
+            C1TabVervoer.Enabled = False
+            C1TabOverzichten.Enabled = False
+            C1TabInloggen.Enabled = False
+            C1TabDatabase.Enabled = False
+            C1TabInstellingen.Enabled = False
+            C1TabVoorraad.Enabled = False
+            C1TabPrijzen.Enabled = False
+            C1TabWPS.Enabled = False
+            SetupFloridayGrid()
+            Floriday_Calendar.SelectionStart = Now.Date
+            Floriday_Calendar.SelectionEnd = Now.Date
+            Fd_archief_rb.Checked = True
+
+            Dim orderline As Integer = CHint(Order_invoer_FlexGrid.GetData(e.Row, 0))   'col 0 = id col
+            FloridayOrdersShow(orderline)
+
+
+        End If
+
+
 
     End Sub
     Private Sub Order_veilingbrief_combo_SelectedValueChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles Order_veilingbrief_combo.SelectedValueChanged
@@ -15136,6 +15824,7 @@ next_fav:
         '***************************************************
         ' KOPER DATA inladen na ENTER 
         '***************************************************
+
 
         If e.KeyCode = 13 Then
 
@@ -15229,7 +15918,8 @@ next_fav:
                 Load_Favorites(1, Order_fustcat_cmb.SelectedValue, Order_hoescat_cmb.SelectedValue, Order_ean_lbl.Text)
                 Order_invoer_FlexGrid.Focus()
                 Try
-                    Order_invoer_FlexGrid.Select(1, 2, 1, 2)
+                    Dim aantalcol As Integer = FindCol(Order_invoer_FlexGrid, "Aantal")
+                    Order_invoer_FlexGrid.Select(1, aantalcol, 1, aantalcol)
                 Catch ex As Exception
 
                 End Try
@@ -15473,7 +16163,13 @@ next_fav:
             '  set focus sheet
             Load_Favorites(1, Order_fustcat_cmb.SelectedValue, Order_hoescat_cmb.SelectedValue, Order_ean_lbl.Text)
             Order_invoer_FlexGrid.Focus()
-            Order_invoer_FlexGrid.Select(1, 2, 1, 2)
+            Try
+                Dim aantalcol As Integer = FindCol(Order_invoer_FlexGrid, "Aantal")
+                Order_invoer_FlexGrid.Select(2, aantalcol, 2, aantalcol)
+            Catch ex As Exception
+
+            End Try
+
 
         End If
     End Sub
@@ -15505,7 +16201,6 @@ next_fav:
         End If
         AutoComplete(Order_koper_combo, e, True)
     End Sub
-
     Private Sub Order_Opslaan_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Order_Opslaan_but.Click
         order_opslaan_verdelen()
     End Sub
@@ -15513,20 +16208,22 @@ next_fav:
         'dubbele order?
         Dim tweedevestiging As Boolean = False
         Dim vestigingnummer As Integer = 0
+
+
         With Order_invoer_FlexGrid
             For i = 1 To .Rows.Count - 1
 
 
-                If .Item(i, 2) > 0 Then  ' aantal > 0 ?
+                If .Item(i, aantalcol) > 0 Then  ' aantal > 0 ?
 
                     'prijs check bij bb
-                    If Val(.Item(i, 5)) <= 0.01 And Val(Order_ean_lbl.Text) > 2000 Then
+                    If Val(.Item(i, prijscol)) <= 0.01 And Val(Order_ean_lbl.Text) > 2000 Then
                         MsgBox("Bij een van de order-regels in de prijs niet ingevuld")
                         Exit Sub
                     End If
 
 
-                    Dim vestigingline As Integer = .Item(i, 17)  'vestiging van line
+                    Dim vestigingline As Integer = .Item(i, vestigingcol)  'vestiging van line
 
                     If vestigingnummer = 0 Then
                         vestigingnummer = vestigingline
@@ -15580,6 +16277,7 @@ next_fav:
         End If
 
     End Sub
+
     Private Sub Order_Opslaan(ByVal vestigingnummer As Integer, ByVal tweedevestiging As Boolean, ByVal koppelnummer As Integer)
         '***************************************************
         ' ORDER Opslaan
@@ -15598,7 +16296,7 @@ next_fav:
             Dim invoer As Boolean = False
             With Order_invoer_FlexGrid
                 For i = 1 To .Rows.Count - 1
-                    If .Item(i, 2) > 0 Then  ' aantal > 0 ?
+                    If .Item(i, aantalcol) > 0 Then  ' aantal > 0 ?
                         invoer = True
                         Exit For
                     End If
@@ -15615,9 +16313,9 @@ next_fav:
         Dim linecount As Integer = 0
         With Order_invoer_FlexGrid
             For i = 1 To .Rows.Count - 1
-                If .Item(i, 2) > 0 Then
+                If .Item(i, aantalcol) > 0 Then
                     linecount = linecount + 1
-                    Gpaantal = .Item(i, 21)
+                    Gpaantal = .Item(i, GPcol)
                     If Gpaantal > 1 Then  ' GP > 1 ?
                         Gpfound = True
                     End If
@@ -15634,7 +16332,7 @@ next_fav:
         ' check op labelcode om opmerking aan te vullen
         With Order_invoer_FlexGrid
             For i = 1 To .Rows.Count - 1
-                If Val(.Item(i, 15)) > 0 Then  'labels ?
+                If Val(.Item(i, labelcol)) > 0 Then  'labels ?
                     Dim check_al_aanwezig As String = ""
                     If Order_Pakboninfo_txt.Text <> "" Then
                         check_al_aanwezig = Mid(Order_Pakboninfo_txt.Text, Len(Order_Pakboninfo_txt.Text), 1)
@@ -15651,7 +16349,11 @@ next_fav:
 
         ' prevent further edit 
         If Not Mid(Order_ean_lbl.Text, 1, 12) = "900000000000" Then
-            Order_invoer_FlexGrid.Select(1, 1, False)
+            Try
+                Order_invoer_FlexGrid.Select(2, 2, False)
+            Catch ex As Exception
+            End Try
+
         End If
         TabOrdersPanelTop.Enabled = False
         Order_OpmTab.Enabled = False
@@ -15848,7 +16550,7 @@ next_fav:
                     For i = 1 To .Rows.Count - 1
 
                         'DELETE LINES?
-                        If (.Item(i, 2) = 0 And Val(.Item(i, 0)) > 0) Or (Val(.Item(i, 0)) > 0 And vestigingnummer = 1 And Val(.Item(i, 17)) = 2) Then   'orderline gewist of vestiging is aangepast in een regel?
+                        If (.Item(i, aantalcol) = 0 And Val(.Item(i, 0)) > 0) Or (Val(.Item(i, 0)) > 0 And vestigingnummer = 1 And Val(.Item(i, vestigingcol)) = 2) Then   'orderline gewist of vestiging is aangepast in een regel?
                             line_id = Val(.Item(i, 0))
                             Dim DelString As String = "DELETE FROM " + orderlines_db + " WHERE OrderLine_id = " + Trim(Str(line_id))
                             Dim DelCmd As New OdbcCommand(DelString, Conn)
@@ -15857,14 +16559,14 @@ next_fav:
                         End If
 
                         'NEW LINES 
-                        If .Item(i, 2) > 0 And .Item(i, 17) = vestigingnummer Then  ' aantal > 0 en vesting =1of2?
+                        If .Item(i, aantalcol) > 0 And .Item(i, vestigingcol) = vestigingnummer Then  ' aantal > 0 en vesting =1of2?
 
                             'Execute Query
                             cmdstring = "SELECT * FROM " + orderlines_db + " WHERE 1=0"
                             Dim Cmd As New OdbcCommand(cmdstring, Conn)
 
-                            line_id = Val(.Item(i, 0))
-                            Dim labelberichtnr As Integer = Val(.Item(i, 15))
+                            line_id = CVal(.Item(i, 0))
+                            Dim labelberichtnr As Integer = CVal(.Item(i, labelcol))
                             Dim sdfbarcode As Integer = 0
                             If line_id = 0 Then   'nieuwe orderline
 
@@ -15886,21 +16588,24 @@ next_fav:
 
 
                                 Cmd.CommandText = "INSERT INTO " + orderlines_db + "(OrderHeader_id,Koper_naam,Aantal,Soort_id,Fust_id,Prijs,GP,Rijpheid,Hoogte,Diameter," _
-                                                & "Accessoire1,Accessoire2,Accessoire3,Accessoire4,Accessoire5,Kopercode,Potmaat,Wps_filternr,Vestiging,Opmerking,Keurcode,Transporthoogte,Florecom_nr,actie_type,Wps_filternr2,labelbericht_code,sdfbarcode,old_header_id) " _
-                                                & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                                                & "Accessoire1,Accessoire2,Accessoire3,Accessoire4,Accessoire5,Kopercode,Potmaat,Wps_filternr,Vestiging,Opmerking,Keurcode,Transporthoogte,Florecom_nr,actie_type,Wps_filternr2,labelbericht_code,sdfbarcode,old_header_id, " _
+                                                & "Accessoire6,Accessoire7,Accessoire8,Schermen,foto,supplyref,floridaynr) " _
+                                                & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 
                             Else
                                 'als labelberichtnr = 0 dan niet updaten ivm tussenkomende koppeling/sdfbarcode ook niet updaten
                                 If labelberichtnr = 0 Then
                                     Cmd.CommandText = "UPDATE " + orderlines_db + " SET OrderHeader_id=?,Koper_naam=?,Aantal=?,Soort_id=?,Fust_id=?,Prijs=?,GP=?,Rijpheid=?," _
                                              & "Hoogte=?,Diameter=?,Accessoire1=?,Accessoire2=?,Accessoire3=?,Accessoire4=?,Accessoire5=?," _
-                                             & "Kopercode=?,Potmaat=?,Wps_Filternr=?,Vestiging=?,Opmerking=?,Keurcode=?,Transporthoogte=?,Florecom_nr=?,actie_type=?,Wps_filternr2=?,old_header_id=? " _
+                                             & "Kopercode=?,Potmaat=?,Wps_Filternr=?,Vestiging=?,Opmerking=?,Keurcode=?,Transporthoogte=?,Florecom_nr=?,actie_type=?,Wps_filternr2=?,old_header_id=?, " _
+                                             & "Accessoire6=?,Accessoire7=?,Accessoire8=?,Schermen=?,foto=?,supplyref=?,floridaynr=? " _
                                              & "WHERE OrderLine_id = " + Trim(Str(line_id))
 
                                 Else
                                     Cmd.CommandText = "UPDATE " + orderlines_db + " SET OrderHeader_id=?,Koper_naam=?,Aantal=?,Soort_id=?,Fust_id=?,Prijs=?,GP=?,Rijpheid=?," _
                                              & "Hoogte=?,Diameter=?,Accessoire1=?,Accessoire2=?,Accessoire3=?,Accessoire4=?,Accessoire5=?," _
-                                             & "Kopercode=?,Potmaat=?,Wps_Filternr=?,Vestiging=?,Opmerking=?,Keurcode=?,Transporthoogte=?,Florecom_nr=?,actie_type=?,Wps_filternr2=?,labelbericht_code=?,old_header_id=? " _
+                                             & "Kopercode=?,Potmaat=?,Wps_Filternr=?,Vestiging=?,Opmerking=?,Keurcode=?,Transporthoogte=?,Florecom_nr=?,actie_type=?,Wps_filternr2=?,labelbericht_code=?,old_header_id=?, " _
+                                             & "Accessoire6=?,Accessoire7=?,Accessoire8=?,Schermen=?,foto=?,supplyref=?,floridaynr=? " _
                                              & "WHERE OrderLine_id = " + Trim(Str(line_id))
 
                                 End If
@@ -15908,51 +16613,57 @@ next_fav:
                             Cmd.Parameters.Clear()
 
                             Cmd.Parameters.AddWithValue("", header_id)                                      ' 1 orderheader_id 
-                            Cmd.Parameters.AddWithValue("", Order_koper_combo.Text)                         ' 2 koper_naam
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 2)))                               ' 3 aantal
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 4)))                               ' 4 soort_id
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 6)))                               ' 5 fust_id
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 5)))                               ' 6 prijs
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 21)))                              ' 7 GP
+                            Cmd.Parameters.AddWithValue("", CNStr(Order_koper_combo.Text))                     ' 2 koper_naam
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, aantalcol)))                       ' 3 aantal
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, soortcol)))                        ' 4 soort_id
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, fustcol)))                         ' 5 fust_id
+                            Cmd.Parameters.AddWithValue("", DVal(.Item(i, prijscol)))                        ' 6 prijs
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, GPcol)))                           ' 7 GP
 
-                            Dim rijpheid As Integer = Val(.Item(i, 8))
+                            Dim rijpheid As Integer = CVal(.Item(i, rijpheidcol))
                             If rijpheid = 1 Then rijpheid = 11
                             If rijpheid = 2 Then rijpheid = 22
                             If rijpheid = 3 Then rijpheid = 33
                             If rijpheid = 4 Then rijpheid = 44
                             Cmd.Parameters.AddWithValue("", rijpheid)                                       ' 8 Rijpheid
 
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 9)))                               ' 9 hoogte
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 10)))                              '10 Diameter
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 11)))                              '11 Accessoire1
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 12)))                              '12 Accessoire2
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 7)))                               '13 Accessoire3/Hoes
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 22)))                              '14 Accessoire4
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 23)))                              '15 Accessoire5
-                            Cmd.Parameters.AddWithValue("", .Item(i, 13))                                   '16 kopercode
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 19)) * 10)                         '17 potmaat
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 26)))                              '18 wps filternr    
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, hoogtecol)))                               ' 9 hoogte
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, diametercol)))                              '10 Diameter
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, acce1col)))                              '11 Accessoire1
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, acce2col)))                              '12 Accessoire2
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, hoescol)))                               '13 Accessoire3/Hoes
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, acce4col)))                              '14 Accessoire4
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, acce5col)))                              '15 Accessoire5
+                            Cmd.Parameters.AddWithValue("", CNStr(.Item(i, kopercodecol)))                                '16 kopercode
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, potmaatcol)) * 10)                         '17 potmaat
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, wpsfilter2col)))                              '18 wps filternr    
 
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 17)))                              '19 vestiging  
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, vestigingcol)))                              '19 vestiging  
 
-                            Cmd.Parameters.AddWithValue("", Mid(.Item(i, 14), 1, 195))                      '21 Opmerking
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 18)))                              '21 Keurcode
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 20)))                              '22 Transporthoogte
-                            Cmd.Parameters.AddWithValue("", .Item(i, 24))                                   '23 Florecom_nr
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 25)))                              '24 actie_type
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 27)))                              '25 wps filternr2
+                            Cmd.Parameters.AddWithValue("", Mid(CNStr(.Item(i, opmerkingcol)), 1, 195))                      '21 Opmerking
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, keurcodecol)))                              '21 Keurcode
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, transporthoogtecol)))                              '22 Transporthoogte
+                            Cmd.Parameters.AddWithValue("", CNStr(.Item(i, florecomnrcol)))                                 '23 Florecom_nr
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, actiecol)))                              '24 actie_type
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, wpsfilter3col)))                              '25 wps filternr2
 
                             If line_id = 0 Then
-                                Cmd.Parameters.AddWithValue("", Val(.Item(i, 15)))                          '15 labelcode
-                                Cmd.Parameters.AddWithValue("", sdfbarcode)                                  ' sdfbarcode
+                                Cmd.Parameters.AddWithValue("", CVal(.Item(i, labelcol)))                          '15 labelcode
+                                Cmd.Parameters.AddWithValue("", CNStr(sdfbarcode))                              ' sdfbarcode
                             Else
-                                If labelberichtnr <> 0 Then Cmd.Parameters.AddWithValue("", Val(.Item(i, 15))) '15 labelcode
+                                If labelberichtnr <> 0 Then Cmd.Parameters.AddWithValue("", CVal(.Item(i, labelcol))) '15 labelcode
                             End If
 
 
-                            Cmd.Parameters.AddWithValue("", Val(.Item(i, 28)))                              '15 old header id
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, oldheadercol)))                              '15 old header id
 
-
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, acce6col)))
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, acce7col)))
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, acce8col)))
+                            Cmd.Parameters.AddWithValue("", CVal(.Item(i, schermencol)))
+                            Cmd.Parameters.AddWithValue("", CNStr(.Item(i, fotocol)))
+                            Cmd.Parameters.AddWithValue("", CNStr(.Item(i, aanbodcol)))
+                            Cmd.Parameters.AddWithValue("", CNStr(.Item(i, floridaynrcol)))
                             Cmd.ExecuteNonQuery()
 
 
@@ -15977,7 +16688,7 @@ next_fav:
 
             Dim flexrows As Integer = .Rows.Count - 1
             Do While irow < flexrows + 1
-                If .Item(irow, 2) = 0 Then  ' aantal > 0 ?
+                If .Item(irow, aantalcol) = 0 Then  ' aantal > 0 ?
                     .Rows.Remove(irow)
                     flexrows = flexrows - 1
                 Else
@@ -15991,7 +16702,48 @@ next_fav:
         'Update_Boek()
         'Update_Boek(1, koper_ean)
     End Sub
+    Private Function CVal(value As Object) As Integer
+        Dim returnval As Integer = 0
+        Try
+            If IsNothing(value) Then
+                returnval = 0
+            Else
+                returnval = CInt(Val(value))
+            End If
+        Catch ex As Exception
+            returnval = 0
+        End Try
 
+        Return returnval
+    End Function
+    Private Function DVal(value As Object) As Double
+        Dim returnval As Double = 0
+        Try
+            If IsNothing(value) Then
+                returnval = 0
+            Else
+                returnval = Val(value)
+            End If
+        Catch ex As Exception
+            returnval = 0
+        End Try
+
+        Return returnval
+    End Function
+    Private Function CNStr(value As Object) As String
+        Dim returnval As String = ""
+        Try
+            If IsNothing(value) Then
+                returnval = ""
+            Else
+                returnval = CStr(value)
+            End If
+        Catch ex As Exception
+            returnval = ""
+        End Try
+
+        Return returnval
+    End Function
     Private Function Order_is_aangepast(ByVal versie_nr As Integer, ByVal orderheader_db As String, ByVal header_id As Integer) As Boolean
         'check of versienummers nog overeenkomen bij opslaan van order en/of karindeling 
         Dim is_aangepast As Boolean = False
@@ -16084,6 +16836,9 @@ next_fav:
             End If
         End If
     End Sub
+
+
+    Dim ordertable() As tablelayout
     Private Sub Setup_Order_Grid()
 
         '***************************************************
@@ -16250,177 +17005,223 @@ next_fav:
 
         ' setup grid
 
-        Dim cn() As String = New String() {"desc"}
-        With Order_invoer_FlexGrid
+        ordertable = BuildTable("orderinvoer", Order_invoer_FlexGrid)
+        'Order_invoer_FlexGrid.Cols(0).Visible = True
 
-            .Clear()
-            .Cols.Count = 29
-            .Rows.Count = 1
+        acce1col = FindCol(Order_invoer_FlexGrid, "Accessoire1")
+        acce2col = FindCol(Order_invoer_FlexGrid, "Accessoire2")
+        acce4col = FindCol(Order_invoer_FlexGrid, "Accessoire4")
+        acce5col = FindCol(Order_invoer_FlexGrid, "Accessoire5")
+        acce6col = FindCol(Order_invoer_FlexGrid, "Accessoire6")
+        acce7col = FindCol(Order_invoer_FlexGrid, "Accessoire7")
+        acce8col = FindCol(Order_invoer_FlexGrid, "Accessoire8")
 
-            .Cols(0).Visible = False
-            .Cols(0).Width = 30
+        fotocol = FindCol(Order_invoer_FlexGrid, "Foto")
+        hoescol = FindCol(Order_invoer_FlexGrid, "Hoes")
+        rijpheidcol = FindCol(Order_invoer_FlexGrid, "Rijpheid")
+        diametercol = FindCol(Order_invoer_FlexGrid, "Diameter")
+        hoogtecol = FindCol(Order_invoer_FlexGrid, "Hoogte")
+        schermencol = FindCol(Order_invoer_FlexGrid, "Schermen")
+        keurcodecol = FindCol(Order_invoer_FlexGrid, "Keurcode")
+        transporthoogtecol = FindCol(Order_invoer_FlexGrid, "Transporthoogte")
+        fotocol = FindCol(Order_invoer_FlexGrid, "Foto")
 
-            .Cols(1).StyleNew.Trimming = StringTrimming.EllipsisCharacter
-            '.Cols(1).CellButtonImage = System.Drawing.Image.FromFile("C:\dollar.bmp")
-            .CellButtonImage = IconList.Images(1)
+        aantalcol = FindCol(Order_invoer_FlexGrid, "Aantal")
+        GPcol = FindCol(Order_invoer_FlexGrid, "GP")
+        labelcol = FindCol(Order_invoer_FlexGrid, "Labelcode")
+        fustcol = FindCol(Order_invoer_FlexGrid, "Fust")
+        soortcol = FindCol(Order_invoer_FlexGrid, "Soort")
+        potmaatcol = FindCol(Order_invoer_FlexGrid, "Potmaat")
+        xcol = FindCol(Order_invoer_FlexGrid, "x")
 
-            .Cols(1).Caption = " + "
-            .Cols(1).DataType = System.Type.GetType("System.String")
-            .Cols(1).ComboList = "..."
-            .Cols(1).Width = 20
-            .Cols(1).AllowEditing = True
+        vestigingcol = FindCol(Order_invoer_FlexGrid, "Vestiging")
+        aanbodcol = FindCol(Order_invoer_FlexGrid, "Aanbod referentie")
+        prijscol = FindCol(Order_invoer_FlexGrid, "Prijs")
 
-            .Cols(2).Caption = "Aantal"
-            .Cols(2).DataType = System.Type.GetType("System.Int32")
-            .Cols(2).Width = 50
-            .Cols(2).AllowEditing = True
+        wpsfilter1col = FindCol(Order_invoer_FlexGrid, "Wps filter")
+        wpsfilter2col = FindCol(Order_invoer_FlexGrid, "wpsfilternr1")
+        wpsfilter3col = FindCol(Order_invoer_FlexGrid, "wpsfilternr2")
 
-            .Cols(3).Caption = " x "
-            .Cols(3).DataType = System.Type.GetType("System.String")
-            .Cols(3).Width = 30
-            .Cols(3).AllowEditing = False
+        pluscol = FindCol(Order_invoer_FlexGrid, "+")
+        opmerkingcol = FindCol(Order_invoer_FlexGrid, "Opmerking")
 
-            .Cols(4).Caption = "Soort"
-            .Cols(4).DataType = System.Type.GetType("System.String")
-            .Cols(4).Width = 120
-            Dim mcd_soort As New C1.Win.C1FlexGrid.MultiColumnDictionary(dtt_soortmix, "ID", cn, 0)
-            .Cols(4).DataMap = mcd_soort
+        kopercodecol = FindCol(Order_invoer_FlexGrid, "Koper referentie")
+        florecomnrcol = FindCol(Order_invoer_FlexGrid, "Florecom nr")
+        floridaynrcol = FindCol(Order_invoer_FlexGrid, "Floriday nr")
+        actiecol = FindCol(Order_invoer_FlexGrid, "Actie")
+        oldheadercol = FindCol(Order_invoer_FlexGrid, "oude headerId")
 
-            .Cols(5).Caption = "Prijs"
-            .Cols(5).DataType = System.Type.GetType("System.Double")
-            .Cols(5).Width = 60
-            .Cols(5).AllowEditing = True
-            .Cols(5).Format = "N2"
+        'Dim cn() As String = New String() {"desc"}
+        'With Order_invoer_FlexGrid
 
-            .Cols(6).Caption = "Fust"
-            .Cols(6).DataType = System.Type.GetType("System.String")
-            .Cols(6).Width = 80
-            Dim mcd_fust As New C1.Win.C1FlexGrid.MultiColumnDictionary(dtt_fust, "ID", cn, 0)
-            .Cols(6).DataMap = mcd_fust
+        '    .Clear()
+        '    .Cols.Count = 29
+        '    .Rows.Count = 1
 
-            Dim mcd_accessoire As New C1.Win.C1FlexGrid.MultiColumnDictionary(dt_accessoire, "ID", cn, 0)
-            .Cols(7).Caption = "Hoes"
-            .Cols(7).DataType = System.Type.GetType("System.String")
-            .Cols(7).Width = 80
-            .Cols(7).DataMap = mcd_accessoire
+        '    .Cols(0).Visible = False
+        '    .Cols(0).Width = 30
 
-            .Cols(8).Caption = "Rijpheid"
-            .Cols(8).DataType = System.Type.GetType("System.string")
-            .Cols(8).Width = 35
-            Dim mcd_Rijpheid As New C1.Win.C1FlexGrid.MultiColumnDictionary(dt_rijpheid, "ID", cn, 0)
-            .Cols(8).DataMap = mcd_Rijpheid
-            .Cols(8).AllowEditing = True
+        '    .Cols(1).StyleNew.Trimming = StringTrimming.EllipsisCharacter
+        '    '.Cols(1).CellButtonImage = System.Drawing.Image.FromFile("C:\dollar.bmp")
+        '    .CellButtonImage = IconList.Images(1)
 
-            .Cols(9).Caption = "Hoogte"
-            .Cols(9).DataType = System.Type.GetType("System.string")
-            .Cols(9).Width = 35
-            Dim mcd_hoogte As New C1.Win.C1FlexGrid.MultiColumnDictionary(dt_hoogte, "ID", cn, 0)
-            .Cols(9).DataMap = mcd_hoogte
-            .Cols(9).AllowEditing = True
+        '    .Cols(1).Caption = " + "
+        '    .Cols(1).DataType = System.Type.GetType("System.String")
+        '    .Cols(1).ComboList = "..."
+        '    .Cols(1).Width = 20
+        '    .Cols(1).AllowEditing = True
 
-            .Cols(10).Caption = "Diameter"
-            .Cols(10).DataType = System.Type.GetType("System.string")
-            Dim mcd_diameter As New C1.Win.C1FlexGrid.MultiColumnDictionary(dt_diameter, "ID", cn, 0)
-            .Cols(10).DataMap = mcd_diameter
-            .Cols(10).Width = 35
-            .Cols(10).AllowEditing = True
+        '    .Cols(2).Caption = "Aantal"
+        '    .Cols(2).DataType = System.Type.GetType("System.Int32")
+        '    .Cols(2).Width = 50
+        '    .Cols(2).AllowEditing = True
 
-            .Cols(11).Caption = "Accessoire 1"
-            .Cols(11).DataType = System.Type.GetType("System.String")
-            .Cols(11).Width = 120
-            .Cols(11).DataMap = mcd_accessoire
+        '    .Cols(3).Caption = " x "
+        '    .Cols(3).DataType = System.Type.GetType("System.String")
+        '    .Cols(3).Width = 30
+        '    .Cols(3).AllowEditing = False
 
-            .Cols(12).Caption = "Accessoire 2"
-            .Cols(12).DataType = System.Type.GetType("System.String")
-            .Cols(12).Width = 120
-            .Cols(12).DataMap = mcd_accessoire
+        '    .Cols(4).Caption = "Soort"
+        '    .Cols(4).DataType = System.Type.GetType("System.String")
+        '    .Cols(4).Width = 120
+        '    Dim mcd_soort As New C1.Win.C1FlexGrid.MultiColumnDictionary(dtt_soortmix, "ID", cn, 0)
+        '    .Cols(4).DataMap = mcd_soort
 
-            .Cols(13).Caption = "Kopercode"
-            .Cols(13).DataType = System.Type.GetType("System.String")
-            .Cols(13).Width = 80
-            .Cols(13).AllowEditing = True
+        '    .Cols(5).Caption = "Prijs"
+        '    .Cols(5).DataType = System.Type.GetType("System.Double")
+        '    .Cols(5).Width = 60
+        '    .Cols(5).AllowEditing = True
+        '    .Cols(5).Format = "N2"
 
-            .Cols(14).Caption = "Opmerking"
-            .Cols(14).DataType = System.Type.GetType("System.String")
-            .Cols(14).Width = 70
-            .Cols(14).AllowEditing = True
+        '    .Cols(6).Caption = "Fust"
+        '    .Cols(6).DataType = System.Type.GetType("System.String")
+        '    .Cols(6).Width = 80
+        '    Dim mcd_fust As New C1.Win.C1FlexGrid.MultiColumnDictionary(dtt_fust, "ID", cn, 0)
+        '    .Cols(6).DataMap = mcd_fust
 
-            .Cols(15).Caption = "Labelcode"
-            .Cols(15).DataType = System.Type.GetType("System.int32")
-            .Cols(15).ComboList = "..."
-            .Cols(15).Width = 60
-            .Cols(15).AllowEditing = True
+        '    Dim mcd_accessoire As New C1.Win.C1FlexGrid.MultiColumnDictionary(dt_accessoire, "ID", cn, 0)
+        '    .Cols(7).Caption = "Hoes"
+        '    .Cols(7).DataType = System.Type.GetType("System.String")
+        '    .Cols(7).Width = 80
+        '    .Cols(7).DataMap = mcd_accessoire
 
-            .Cols(16).Caption = "WPS Filternr"
-            .Cols(16).DataType = System.Type.GetType("System.String")
-            .Cols(16).Width = 150
-            .Cols(16).AllowEditing = True
+        '    .Cols(8).Caption = "Rijpheid"
+        '    .Cols(8).DataType = System.Type.GetType("System.string")
+        '    .Cols(8).Width = 35
+        '    Dim mcd_Rijpheid As New C1.Win.C1FlexGrid.MultiColumnDictionary(dt_rijpheid, "ID", cn, 0)
+        '    .Cols(8).DataMap = mcd_Rijpheid
+        '    .Cols(8).AllowEditing = True
 
-            .Cols(17).Caption = "Vestiging"
-            .Cols(17).DataType = System.Type.GetType("System.String")
-            Dim mcd_vestiging As New C1.Win.C1FlexGrid.MultiColumnDictionary(dt_vestiging, "ID", cn, 0)
-            .Cols(17).Width = 80
-            .Cols(17).DataMap = mcd_vestiging
+        '    .Cols(9).Caption = "Hoogte"
+        '    .Cols(9).DataType = System.Type.GetType("System.string")
+        '    .Cols(9).Width = 35
+        '    Dim mcd_hoogte As New C1.Win.C1FlexGrid.MultiColumnDictionary(dt_hoogte, "ID", cn, 0)
+        '    .Cols(9).DataMap = mcd_hoogte
+        '    .Cols(9).AllowEditing = True
 
-            .Cols(18).Caption = "Keurcode"
-            .Cols(18).DataType = System.Type.GetType("System.int32")
-            .Cols(18).Width = 80
-            Dim mcd_keurcode As New C1.Win.C1FlexGrid.MultiColumnDictionary(dtt_keurcode, "ID", cn, 0)
-            .Cols(18).DataMap = mcd_keurcode
+        '    .Cols(10).Caption = "Diameter"
+        '    .Cols(10).DataType = System.Type.GetType("System.string")
+        '    Dim mcd_diameter As New C1.Win.C1FlexGrid.MultiColumnDictionary(dt_diameter, "ID", cn, 0)
+        '    .Cols(10).DataMap = mcd_diameter
+        '    .Cols(10).Width = 35
+        '    .Cols(10).AllowEditing = True
 
-            .Cols(19).Caption = "Potmaat"
-            .Cols(19).DataType = System.Type.GetType("System.Double")
-            .Cols(19).Width = 50
-            .Cols(19).AllowEditing = True
+        '    .Cols(11).Caption = "Accessoire 1"
+        '    .Cols(11).DataType = System.Type.GetType("System.String")
+        '    .Cols(11).Width = 120
+        '    .Cols(11).DataMap = mcd_accessoire
 
-            .Cols(20).Caption = "Transp. hoogte"
-            .Cols(20).DataType = System.Type.GetType("System.Int32")
-            .Cols(20).Width = 40
-            .Cols(20).AllowEditing = True
+        '    .Cols(12).Caption = "Accessoire 2"
+        '    .Cols(12).DataType = System.Type.GetType("System.String")
+        '    .Cols(12).Width = 120
+        '    .Cols(12).DataMap = mcd_accessoire
 
-            .Cols(21).Caption = "GP"
-            .Cols(21).DataType = System.Type.GetType("System.String")
-            .Cols(21).Width = 40
-            Dim mcd_GP As New C1.Win.C1FlexGrid.MultiColumnDictionary(dtt_gp, "ID", cn, 0)
-            .Cols(21).DataMap = mcd_GP
+        '    .Cols(13).Caption = "Kopercode"
+        '    .Cols(13).DataType = System.Type.GetType("System.String")
+        '    .Cols(13).Width = 80
+        '    .Cols(13).AllowEditing = True
 
-            .Cols(22).Caption = "Accessoire 4"
-            .Cols(22).DataType = System.Type.GetType("System.String")
-            .Cols(22).Width = 100
-            .Cols(22).DataMap = mcd_accessoire
+        '    .Cols(14).Caption = "Opmerking"
+        '    .Cols(14).DataType = System.Type.GetType("System.String")
+        '    .Cols(14).Width = 70
+        '    .Cols(14).AllowEditing = True
 
-            .Cols(23).Caption = "Accessoire 5"
-            .Cols(23).DataType = System.Type.GetType("System.String")
-            .Cols(23).Width = 100
-            .Cols(23).DataMap = mcd_accessoire
+        '    .Cols(15).Caption = "Labelcode"
+        '    .Cols(15).DataType = System.Type.GetType("System.int32")
+        '    .Cols(15).ComboList = "..."
+        '    .Cols(15).Width = 60
+        '    .Cols(15).AllowEditing = True
 
-            .Cols(24).Caption = "Florecom nr"
-            .Cols(24).DataType = System.Type.GetType("System.String")
-            .Cols(24).Width = 80
-            .Cols(24).AllowEditing = False
+        '    .Cols(16).Caption = "WPS Filternr"
+        '    .Cols(16).DataType = System.Type.GetType("System.String")
+        '    .Cols(16).Width = 150
+        '    .Cols(16).AllowEditing = True
 
-            .Cols(25).Caption = "Eindklant Code"
-            .Cols(25).DataType = System.Type.GetType("System.String")
-            .Cols(25).Width = 80
-            Dim mcd_actie_type As New C1.Win.C1FlexGrid.MultiColumnDictionary(dtt_prijsactie, "ID", cn, 0)
-            .Cols(25).DataMap = mcd_actie_type
+        '    .Cols(17).Caption = "Vestiging"
+        '    .Cols(17).DataType = System.Type.GetType("System.String")
+        '    Dim mcd_vestiging As New C1.Win.C1FlexGrid.MultiColumnDictionary(dt_vestiging, "ID", cn, 0)
+        '    .Cols(17).Width = 80
+        '    .Cols(17).DataMap = mcd_vestiging
 
-            .Cols(26).Caption = "WpsFilter ID"
-            .Cols(26).DataType = System.Type.GetType("System.Int32")
-            .Cols(26).Width = 80
-            '.Cols(26).Visible = False 
+        '    .Cols(18).Caption = "Keurcode"
+        '    .Cols(18).DataType = System.Type.GetType("System.int32")
+        '    .Cols(18).Width = 80
+        '    Dim mcd_keurcode As New C1.Win.C1FlexGrid.MultiColumnDictionary(dtt_keurcode, "ID", cn, 0)
+        '    .Cols(18).DataMap = mcd_keurcode
 
-            .Cols(27).Caption = "WpsFilter ID2"
-            .Cols(27).DataType = System.Type.GetType("System.Int32")
-            .Cols(27).Width = 80
-            '.Cols(27).Visible = False 
+        '    .Cols(19).Caption = "Potmaat"
+        '    .Cols(19).DataType = System.Type.GetType("System.Double")
+        '    .Cols(19).Width = 50
+        '    .Cols(19).AllowEditing = True
 
-            .Cols(28).Caption = "Oude header_id"
-            .Cols(28).DataType = System.Type.GetType("System.Int32")
-            .Cols(28).Width = 80
-            .Cols(28).AllowEditing = False
-            .Cols(28).Visible = False
-        End With
+        '    .Cols(20).Caption = "Transp. hoogte"
+        '    .Cols(20).DataType = System.Type.GetType("System.Int32")
+        '    .Cols(20).Width = 40
+        '    .Cols(20).AllowEditing = True
+
+        '    .Cols(21).Caption = "GP"
+        '    .Cols(21).DataType = System.Type.GetType("System.String")
+        '    .Cols(21).Width = 40
+        '    Dim mcd_GP As New C1.Win.C1FlexGrid.MultiColumnDictionary(dtt_gp, "ID", cn, 0)
+        '    .Cols(21).DataMap = mcd_GP
+
+        '    .Cols(22).Caption = "Accessoire 4"
+        '    .Cols(22).DataType = System.Type.GetType("System.String")
+        '    .Cols(22).Width = 100
+        '    .Cols(22).DataMap = mcd_accessoire
+
+        '    .Cols(23).Caption = "Accessoire 5"
+        '    .Cols(23).DataType = System.Type.GetType("System.String")
+        '    .Cols(23).Width = 100
+        '    .Cols(23).DataMap = mcd_accessoire
+
+        '    .Cols(24).Caption = "Florecom nr"
+        '    .Cols(24).DataType = System.Type.GetType("System.String")
+        '    .Cols(24).Width = 80
+        '    .Cols(24).AllowEditing = False
+
+        '    .Cols(25).Caption = "Eindklant Code"
+        '    .Cols(25).DataType = System.Type.GetType("System.String")
+        '    .Cols(25).Width = 80
+        '    Dim mcd_actie_type As New C1.Win.C1FlexGrid.MultiColumnDictionary(dtt_prijsactie, "ID", cn, 0)
+        '    .Cols(25).DataMap = mcd_actie_type
+
+        '    .Cols(26).Caption = "WpsFilter ID"
+        '    .Cols(26).DataType = System.Type.GetType("System.Int32")
+        '    .Cols(26).Width = 80
+        '    '.Cols(26).Visible = False 
+
+        '    .Cols(27).Caption = "WpsFilter ID2"
+        '    .Cols(27).DataType = System.Type.GetType("System.Int32")
+        '    .Cols(27).Width = 80
+        '    '.Cols(27).Visible = False 
+
+        '    .Cols(28).Caption = "Oude header_id"
+        '    .Cols(28).DataType = System.Type.GetType("System.Int32")
+        '    .Cols(28).Width = 80
+        '    .Cols(28).AllowEditing = False
+        '    .Cols(28).Visible = False
+        'End With
     End Sub
     Private Sub Order_Aflevertijd9_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Order_Aflevertijd9_but.Click
         Order_Aflevertijd_combo.Text = "9:00"
@@ -16527,6 +17328,8 @@ next_fav:
 
 
         'herbereken prijzen
+
+
         If Order_invoer_FlexGrid.Rows.Count > 1 Then
             For rowloop = 1 To Order_invoer_FlexGrid.Rows.Count - 1
 
@@ -16534,19 +17337,19 @@ next_fav:
                     'locked orders,don't touch
                 Else
                     'alleen veranderen als aantal nog nul is.
-                    If Order_invoer_FlexGrid.Item(rowloop, 2) = 0 Then
+                    If Order_invoer_FlexGrid.Item(rowloop, aantalcol) = 0 Then
 
                         order_date = OrderDateTimePicker.Value
-                        Dim soortid As Integer = Order_invoer_FlexGrid.Item(rowloop, 4)
+                        Dim soortid As Integer = Order_invoer_FlexGrid.Item(rowloop, soortcol)
                         Dim koper_ean As String = Order_ean_lbl.Text
                         Dim datum As Date = OrderDateTimePicker.Value
                         Dim prijskleur As Integer = 0 'dummy
                         Dim actie_type As Integer = 0
-                        Dim accessoireId = Order_invoer_FlexGrid.Item(rowloop, 11)
+                        Dim accessoireId = Order_invoer_FlexGrid.Item(rowloop, acce1col)
                         Dim huidige_prijs As Double = ZoekPrijs(soortid, koper_ean, order_date, prijskleur, actie_type)
                         Dim prijs As Double = FindAccessoirePrijs(koper_ean, huidige_prijs, accessoireId, soortid, order_date, actie_type)
-                        Order_invoer_FlexGrid.Item(rowloop, 5) = prijs
-                        Order_invoer_FlexGrid.Item(rowloop, 23) = actie_type
+                        Order_invoer_FlexGrid.Item(rowloop, prijscol) = prijs
+                        Order_invoer_FlexGrid.Item(rowloop, actiecol) = actie_type
                     End If
                 End If
             Next rowloop
@@ -16674,10 +17477,12 @@ next_fav:
             TreeView1.CheckBoxes = False
         End If
     End Sub
+
     Private Function OrderAanpassen(Optional ByVal order_header_id As Integer = -1) As Boolean
 
         ResetOrderinvoer()
 
+        Dim aantalcol As Integer = FindCol(Order_invoer_FlexGrid, "Aantal")
         order_date = OrderDateTimePicker.Value
 
         'C1Tab.SelectedTab = C1Tab.TabPages(0)
@@ -16763,7 +17568,7 @@ next_fav:
                     OrderDateTimePicker.Value = afleverdatum.ToShortDateString
                     order_date = OrderDateTimePicker.Value
                     Dim prijsopslag As Double = CHdouble(Reader("prijs_opslag"))
-                    Order_prijsopslag_txt.Text = formatprijs(prijsopslag, 2)
+                    Order_prijsopslag_txt.Text = pformatprijs(prijsopslag, 2)
                     Order_OpmOrderinfo_txt.Text = Trim(CHstr(Reader("opmerking")))
                     Order_Pakboninfo_txt.Text = Trim(CHstr(Reader("pakbon_opmerking")))
                     order_contacts_combo.Text = CHstr(Reader("contact"))
@@ -16820,13 +17625,20 @@ next_fav:
                 SetMark(True, header_id)
                 Load_Favorites(1, Order_fustcat_cmb.SelectedValue, Order_hoescat_cmb.SelectedValue, Order_ean_lbl.Text)
                 Order_invoer_FlexGrid.Focus()
-                Order_invoer_FlexGrid.Select(1, 2, 1, 2)
+                Try
+                    Order_invoer_FlexGrid.Select(2, aantalcol, 2, aantalcol)
+                Catch ex As Exception
+
+                End Try
+
             End If
         End If
         Return True
     End Function
     Private Sub OrderAanpassen_LoadLines(ByVal orderline_db As String, ByVal orderheader_id As Integer, ByVal koper_ean As String, Optional ByVal save_header As Boolean = False)
         'fill grid 
+
+
 
         If Mid(koper_ean, 1, 12) = "900000000000" Then  'verzamelkar
             Order_invoer_FlexGrid.Enabled = False
@@ -16837,7 +17649,7 @@ next_fav:
 
 
         Dim Reader As OdbcDataReader
-        Dim gridfill1(28) As String
+        Dim gridfill1(60) As Object
 
         Try
             'Open Connection
@@ -16855,23 +17667,24 @@ next_fav:
                     ' fill list
                     Dim newfustid As Integer = CHint(Reader("fust_id"))
 
-                    gridfill1(0) = CHstr(Reader("orderline_id"))
-                    gridfill1(1) = "+"              'plus
-                    gridfill1(2) = CHstr(Reader("aantal"))              '
-                    gridfill1(3) = "x" + Str(fust(GID(fust, newfustid)).aantal_per_fust)
-                    gridfill1(4) = CHstr(Reader("Soort_id"))
-                    gridfill1(5) = Format(Reader("Prijs"), "0.00")
-                    gridfill1(6) = CHstr(newfustid)
-                    gridfill1(21) = CHstr(Reader("GP"))
+                    gridfill1(0) = CHint(Reader("orderline_id"))
+                    gridfill1(pluscol) = "+"              'plus
+                    gridfill1(aantalcol) = CHstr(Reader("aantal"))              '
+                    gridfill1(xcol) = "x" + Str(fust(GID(fust, newfustid)).aantal_per_fust)
+                    gridfill1(soortcol) = CHstr(Reader("Soort_id"))
+                    gridfill1(prijscol) = Format(Reader("Prijs"), "0.00")
+                    gridfill1(fustcol) = CHstr(newfustid)
+                    gridfill1(GPcol) = CHstr(Reader("GP"))
 
-                    gridfill1(8) = CHstr(Reader("Rijpheid"))
-                    gridfill1(9) = CHstr(Reader("Hoogte"))
-                    gridfill1(10) = CHstr(Reader("Diameter"))
-                    gridfill1(11) = CHstr(Reader("Accessoire1"))
-                    gridfill1(12) = CHstr(Reader("Accessoire2"))
-                    gridfill1(13) = CHstr(Reader("Kopercode"))
-                    gridfill1(14) = CHstr(Reader("Opmerking"))
-                    gridfill1(15) = CHstr(Reader("labelbericht_code"))
+                    gridfill1(rijpheidcol) = CHstr(Reader("Rijpheid"))
+                    gridfill1(hoogtecol) = CHstr(Reader("Hoogte"))
+                    gridfill1(diametercol) = CHstr(Reader("Diameter"))
+                    gridfill1(acce1col) = CHstr(Reader("Accessoire1"))
+                    gridfill1(acce2col) = CHstr(Reader("Accessoire2"))
+                    gridfill1(kopercodecol) = CHstr(Reader("Kopercode"))
+                    gridfill1(opmerkingcol) = CHstr(Reader("Opmerking"))
+                    gridfill1(labelcol) = CHstr(Reader("labelbericht_code"))
+                    gridfill1(fotocol) = CHstr(Reader("foto"))
 
                     Dim wpsfilternaam As String = ""
                     Dim wpsfilterid As Integer = CHint(Reader("Wps_filternr"))
@@ -16889,24 +17702,29 @@ next_fav:
                         End If
                     Next j
 
-                    gridfill1(16) = wpsfilternaam
-                    gridfill1(17) = CHstr(Reader("Vestiging"))
-                    gridfill1(18) = CHstr(Reader("Keurcode"))
-                    gridfill1(19) = Str(CHint(Reader("potmaat")) / 10)
-                    gridfill1(20) = CHstr(Reader("Transporthoogte"))
-                    gridfill1(7) = CHstr(Reader("Accessoire3"))
-                    gridfill1(22) = CHstr(Reader("Accessoire4"))
-                    gridfill1(23) = CHstr(Reader("Accessoire5"))
-                    gridfill1(24) = CHstr(Reader("florecom_nr"))
-                    gridfill1(25) = CHstr(Reader("actie_type"))
-                    gridfill1(26) = CHstr(Reader("Wps_filternr"))
-                    gridfill1(27) = CHstr(Reader("Wps_filternr2"))
+                    gridfill1(wpsfilter1col) = wpsfilternaam
+                    gridfill1(vestigingcol) = CHstr(Reader("Vestiging"))
+                    gridfill1(keurcodecol) = CHstr(Reader("Keurcode"))
+                    gridfill1(potmaatcol) = Str(CHint(Reader("potmaat")) / 10)
+                    gridfill1(transporthoogtecol) = CHstr(Reader("Transporthoogte"))
+                    gridfill1(hoescol) = CHstr(Reader("Accessoire3"))
+                    gridfill1(acce4col) = CHstr(Reader("Accessoire4"))
+                    gridfill1(acce5col) = CHstr(Reader("Accessoire5"))
+                    gridfill1(florecomnrcol) = CHstr(Reader("florecom_nr"))
+                    gridfill1(actiecol) = CHstr(Reader("actie_type"))
+                    gridfill1(wpsfilter2col) = CHstr(Reader("Wps_filternr"))
+                    gridfill1(wpsfilter3col) = CHstr(Reader("Wps_filternr2"))
                     If save_header = True Then
-                        gridfill1(28) = orderheader_id
+                        gridfill1(oldheadercol) = orderheader_id
                     Else
-                        gridfill1(28) = CHstr(Reader("old_header_id"))
+                        gridfill1(oldheadercol) = CHstr(Reader("old_header_id"))
                     End If
-
+                    gridfill1(acce6col) = CHstr(Reader("Accessoire6"))
+                    gridfill1(acce7col) = CHstr(Reader("Accessoire7"))
+                    gridfill1(acce8col) = CHstr(Reader("Accessoire8"))
+                    gridfill1(schermencol) = CHstr(Reader("Schermen"))
+                    gridfill1(aanbodcol) = CHstr(Reader("supplyref"))
+                    gridfill1(floridaynrcol) = CHstr(Reader("floridaynr"))
                     Order_invoer_FlexGrid.AddItem(gridfill1)
 
                 Loop
@@ -17646,72 +18464,17 @@ next_fav:
         Set_Database_reload()
     End Sub
 
-    Private Sub OrdersMenuInschuiven_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
-        With Order_invoer_FlexGrid
-
-            For currentrow = 1 To .Rows.Count - 1
-                For checkrow = 1 To .Rows.Count - 1
-                    If currentrow < checkrow Then
-
-                        If Order_Slot_Chk.Checked = True And .Item(currentrow, 0) > 0 Then
-                            ' row locked 
-                        Else
-                            ' unlocked row 
-                            Dim j As Integer
-                            Dim equalrows As Boolean = True
-                            For j = 3 To .Cols.Count - 1
-                                If .Item(currentrow, j) <> .Item(checkrow, j) Then
-                                    equalrows = False
-                                End If
-                            Next
-                            If equalrows = True Then
-                                .Item(currentrow, 2) = .Item(currentrow, 2) + .Item(checkrow, 2)  ' aantal1 = aantal1+aantal2
-                                .Item(checkrow, 0) = 0  ' reset id
-                                .Item(checkrow, 2) = 0  ' reset aantal
-                            End If
-                        End If
-                    End If
-                Next
-            Next
-        End With
-    End Sub
-    Private Sub Order_invoer_FlexGrid_MouseMove(ByVal sender As Object, ByVal e As System.EventArgs) Handles Order_invoer_FlexGrid.MouseMove
-        Dim o_mouserow As Integer = Order_invoer_FlexGrid.MouseRow
-        Dim o_mousecol As Integer = Order_invoer_FlexGrid.MouseCol
-        If o_mouserow > 0 And o_mousecol = 4 Then
-            'Dim tip As String
-            ToolTipOrderMix.Active = True
-            Static oldx As Integer
-            Static oldy As Integer
-            If oldx <> o_mousecol Or oldy <> o_mouserow Then
-
-                Dim soortid As Integer = Me.Order_invoer_FlexGrid.Item(o_mouserow, o_mousecol)
-                If soortid > 10000 Then
-
-                    '  tip = "Test" + vbCrLf + "Test2"
-                    '  ToolTipOrderMix.SetToolTip(Order_invoer_FlexGrid, tip)
-
-
-
-                End If
-            End If
-            oldx = o_mousecol
-            oldy = o_mouserow
-        Else
-            ToolTipOrderMix.Active = False
-        End If
-    End Sub
-    Private Sub KoperscodeKopierenToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) 
-        If Order_invoer_FlexGrid.Rows.Count > 1 Then
-            Dim row As Integer = Order_invoer_FlexGrid.Row
-            If row < 1 Then row = 1
-            Dim kopercode As String = Order_invoer_FlexGrid.Item(row, 13)
-            For i = 1 To Order_invoer_FlexGrid.Rows.Count - 1
-                If Order_invoer_FlexGrid.Item(i, 13) = "" Then
-                    Order_invoer_FlexGrid.Item(i, 13) = kopercode
-                End If
-            Next
-        End If
+    Private Sub KoperscodeKopierenToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
+        'If Order_invoer_FlexGrid.Rows.Count > 1 Then
+        '    Dim row As Integer = Order_invoer_FlexGrid.Row
+        '    If row < 1 Then row = 1
+        '    Dim kopercode As String = Order_invoer_FlexGrid.Item(row, 13)
+        '    For i = 1 To Order_invoer_FlexGrid.Rows.Count - 1
+        '        If Order_invoer_FlexGrid.Item(i, 13) = "" Then
+        '            Order_invoer_FlexGrid.Item(i, 13) = kopercode
+        '        End If
+        '    Next
+        'End If
     End Sub
     Private Sub OrderKopierenToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OrderKopierenToolStripMenuItem.Click
 
@@ -17756,16 +18519,18 @@ next_fav:
     
     Private Sub Order_herbereken_prijzen_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Order_herbereken_prijzen.Click
 
+
         For i = 1 To Order_invoer_FlexGrid.Rows.Count - 1
+
             Dim prijskleur = 0
             Dim actie_type As Integer
             Dim koper_ean As String = Order_ean_lbl.Text
-            Dim accessoire_id As Integer = Order_invoer_FlexGrid.Item(i, 11)
-            Dim soortid As Integer = Order_invoer_FlexGrid.Item(i, 4)
+            Dim accessoire_id As Integer = Order_invoer_FlexGrid.Item(i, acce1col)
+            Dim soortid As Integer = Order_invoer_FlexGrid.Item(i, soortcol)
             Dim huidige_prijs As Double = ZoekPrijs(soortid, koper_ean, order_date, prijskleur, actie_type)
             Dim nieuwe_prijs As Double = FindAccessoirePrijs(koper_ean, huidige_prijs, accessoire_id, soortid, order_date, actie_type)
-            Order_invoer_FlexGrid.Item(i, 5) = nieuwe_prijs
-            Order_invoer_FlexGrid.Item(i, 23) = Str(actie_type)
+            Order_invoer_FlexGrid.Item(i, prijscol) = nieuwe_prijs
+            Order_invoer_FlexGrid.Item(i, actiecol) = Str(actie_type)
             Order_invoer_FlexGrid.SetCellStyle(i, 5, "WarningColor")
 
         Next i
@@ -17773,36 +18538,40 @@ next_fav:
     End Sub
     Private Sub Order_Prijscor_plus_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Order_Prijscor_plus_but.Click
         Dim prijs As Double = Val(Order_Prijscor_prijs_txt.Text)
+        Dim prijscol As Integer = FindCol(Order_invoer_FlexGrid, "Prijs")
         With Order_invoer_FlexGrid
             For i = 1 To .Rows.Count - 1
-                .Item(i, 5) = .Item(i, 5) + prijs
+                .Item(i, prijscol) = .Item(i, prijscol) + prijs
             Next i
         End With
     End Sub
     Private Sub Order_Prijscor_min_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Order_Prijscor_min_but.Click
         Dim prijs As Double = Val(Order_Prijscor_prijs_txt.Text)
+        Dim prijscol As Integer = FindCol(Order_invoer_FlexGrid, "Prijs")
         With Order_invoer_FlexGrid
             For i = 1 To .Rows.Count - 1
-                .Item(i, 5) = .Item(i, 5) - prijs
+                .Item(i, prijscol) = .Item(i, prijscol) - prijs
             Next i
         End With
     End Sub
     Private Sub Order_Prijscor_minS_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Order_Prijscor_minS_but.Click
         Dim prijs As Double = Val(Order_Prijscor_prijs_txt.Text)
+
         With Order_invoer_FlexGrid
             For i = 1 To .Rows.Count - 1
-                If .IsCellSelected(i, 4) Or .IsCellSelected(i, 5) Then
-                    .Item(i, 5) = .Item(i, 5) - prijs
+                If .IsCellSelected(i, soortcol) Or .IsCellSelected(i, prijscol) Then
+                    .Item(i, prijscol) = .Item(i, prijscol) - prijs
                 End If
             Next i
         End With
     End Sub
     Private Sub Order_Prijscor_plusS_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Order_Prijscor_plusS_but.Click
         Dim prijs As Double = Val(Order_Prijscor_prijs_txt.Text)
+  
         With Order_invoer_FlexGrid
             For i = 1 To .Rows.Count - 1
-                If .IsCellSelected(i, 4) Or .IsCellSelected(i, 5) Then
-                    .Item(i, 5) = .Item(i, 5) + prijs
+                If .IsCellSelected(i, soortcol) Or .IsCellSelected(i, prijscol) Then
+                    .Item(i, prijscol) = .Item(i, prijscol) + prijs
                 End If
             Next i
         End With
@@ -18722,6 +19491,28 @@ next_fav:
     Private Sub Order_ean_lbl_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Order_ean_lbl.Click
         Clipboard.SetText(Order_ean_lbl.Text)
     End Sub
+    Private Sub Orders_PlusAccessoires_but_Click(sender As Object, e As EventArgs) Handles Orders_PlusAccessoires_but.Click
+
+        Dim acce1col As Integer = FindCol(Order_invoer_FlexGrid, "Accessoire1")
+        Dim acce2col As Integer = FindCol(Order_invoer_FlexGrid, "Accessoire2")
+        Dim acce4col As Integer = FindCol(Order_invoer_FlexGrid, "Accessoire4")
+        Dim acce5col As Integer = FindCol(Order_invoer_FlexGrid, "Accessoire5")
+        Dim acce6col As Integer = FindCol(Order_invoer_FlexGrid, "Accessoire6")
+        Dim acce7col As Integer = FindCol(Order_invoer_FlexGrid, "Accessoire7")
+        Dim acce8col As Integer = FindCol(Order_invoer_FlexGrid, "Accessoire8")
+
+        If Order_invoer_FlexGrid.Cols(acce4col).Visible = False Then
+            Order_invoer_FlexGrid.Cols(acce4col).Visible = True
+        ElseIf Order_invoer_FlexGrid.Cols(acce5col).Visible = False Then
+            Order_invoer_FlexGrid.Cols(acce5col).Visible = True
+        ElseIf Order_invoer_FlexGrid.Cols(acce6col).Visible = False Then
+            Order_invoer_FlexGrid.Cols(acce6col).Visible = True
+        ElseIf Order_invoer_FlexGrid.Cols(acce7col).Visible = False Then
+            Order_invoer_FlexGrid.Cols(acce7col).Visible = True
+        ElseIf Order_invoer_FlexGrid.Cols(acce8col).Visible = False Then
+            Order_invoer_FlexGrid.Cols(acce8col).Visible = True
+        End If
+    End Sub
 
 #End Region
 
@@ -19463,7 +20254,7 @@ next_fav:
         '  Else
         ' klokprijzen ook opsturen imv klokvoorverkoop
 
-        Dim stringprijs As String = formatprijs(PRI_prijs, 3)
+        Dim stringprijs As String = pformatprijs(PRI_prijs, 3)
         es = es + "PRI+INV:" + stringprijs + "::AAJ:1:1'" + lf
         'Dim testprijs As String = "PRI+INV:" + stringprijs + "::AAJ:1:1'" + lf
         ' End If
@@ -19866,7 +20657,7 @@ next_fav:
         '  Else
         ' klokprijzen ook opsturen imv klokvoorverkoop
 
-        Dim stringprijs As String = formatprijs(PRI_prijs, 3)
+        Dim stringprijs As String = pformatprijs(PRI_prijs, 3)
         es = es + "PRI+INV:" + stringprijs + "::AAJ:1:1'" + lf
         'Dim testprijs As String = "PRI+INV:" + stringprijs + "::AAJ:1:1'" + lf
         ' End If
@@ -20622,7 +21413,7 @@ next_fav:
         '  Else
         ' klokprijzen ook opsturen imv klokvoorverkoop
 
-        Dim stringprijs As String = formatprijs(PRI_prijs, 3)
+        Dim stringprijs As String = pformatprijs(PRI_prijs, 3)
         es = es + "PRI+INV:" + stringprijs + "::AAJ:1:1'" + lf
         'Dim testprijs As String = "PRI+INV:" + stringprijs + "::AAJ:1:1'" + lf
         ' End If
@@ -20677,7 +21468,7 @@ next_fav:
         End If
         Return es
     End Function
-    Public Function formatprijs(ByVal prijs As Double, ByVal decimals As Integer) As String
+    Public Function pformatprijs(ByVal prijs As Double, ByVal decimals As Integer) As String
         Dim stringprijs As String = ""
 
         If decimals = 2 Then
@@ -20859,9 +21650,15 @@ next_fav:
                 Dim scan_flagtrue As Boolean = 0
                 Dim scan_flagfalse As Boolean = 0
 
+
                 Dim vervoer_flagtrue As Boolean = 0
                 Dim vervoer_flagfalse As Boolean = 0
 
+
+                Dim floriday_done As Boolean = True
+                Dim floriday_clear As Boolean = True
+                Dim floriday_error As Boolean = False
+                Dim floriday_printflag As Integer = 0
                 Dim sdf_flag As Boolean
                 Dim scan_flag As Boolean
                 Dim vervoer_flag As Boolean
@@ -20872,12 +21669,19 @@ next_fav:
                     sdf_flag = CHbool(Reader("sdf_flag"))
                     vervoer_flag = CHbool(Reader("vervoer_flag"))
                     scan_flag = CHbool(Reader("scan_flag"))
+                    floriday_printflag = CHint(Reader("floriday_printflag"))
+
+                    If floriday_printflag > 0 Then sdf_flag = True
 
                     If sdf_flag = True Then
                         sdf_flagtrue = True
                     End If
                     If sdf_flag = False Then
                         sdf_flagfalse = True
+                    End If
+
+                    If floriday_printflag > 90 Then
+                        floriday_error = True
                     End If
 
                     If scan_flag = True Then
@@ -20921,6 +21725,7 @@ next_fav:
 
                     End Select
                 Loop
+
                 Reader.Close()
                 Dim sdf_done As Boolean = False
                 If sdf_flagtrue = True And sdf_flagfalse = True Then
@@ -20937,6 +21742,8 @@ next_fav:
                     newstatus = 41  'sdf compleet
                     sdf_done = True
                 End If
+
+
 
                 '  wps berekenen
 
@@ -21062,6 +21869,10 @@ next_fav:
                     If stickers = 11 Then
                         newstatus = 25
                     End If
+                End If
+
+                If floriday_error = True Then
+                    newstatus = 48
                 End If
 
                 If agenda_mark = 1 Then
@@ -21219,7 +22030,7 @@ next_fav:
 
     End Sub
 
-    Private Sub Order_ScanKlaar_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Order_ScanKlaar.Click
+    Private Sub Order_PrintBriefFloriday_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Order_PrintBriefFloriday.Click
         Dim mark_idlist(101) As Integer
 
         Dim id_counter As Integer = 1
@@ -21253,28 +22064,190 @@ next_fav:
 
         If id_counter = 1 Then Exit Sub
 
-        Dim orderyear As String = Trim(Str(Year(Order_MonthCalendar.SelectionStart)))
-        If staticyear = True Then orderyear = ""
-        Dim orderkarlines_db As String = "OrderKarLines" + orderyear
+        For i = 1 To id_counter - 1
+
+            Dim header_id As Integer = mark_idlist(i)
+            PrintBriefFloriday(header_id, 0)
+        Next i
+
+
+    End Sub
+
+
+    Private Sub PrintBriefFloriday(header_id As Integer, kar_id As Integer)
 
         Dim id As Integer = 0
         Try
             'Open Connection
             Using Conn As New OdbcConnection(ConnString)
                 Conn.Open()
-                Dim cmdstring6 As String = ""
-                Dim Cmd As New OdbcCommand(cmdstring6, Conn)
-                For i = 1 To id_counter - 1
-                    Cmd.CommandText = "UPDATE orderkarren SET scan_flag=1 WHERE header_id = " + Trim(Str(mark_idlist(i)))
-                    Cmd.ExecuteNonQuery()
-                Next
+
+                Dim Cmd As New OdbcCommand("", Conn)
+                Dim reader As OdbcDataReader
+
+                Dim Cmd2 As New OdbcCommand("", Conn)
+                Dim reader2 As OdbcDataReader
+
+                Dim print_ok As Boolean = True
+                'check of alle trade-items zijn ingevuld bij klokbrieven via floriday
+                'is het een klok order?
+                Dim klok As Boolean = False
+                Cmd.CommandText = "SELECT koper_ean from orderheaders WHERE header_id = " + Trim(Str(header_id))
+                reader = Cmd.ExecuteReader()
+                If reader.HasRows Then
+                    reader.Read()
+                    Dim koper_ean As String = CHstr(reader("koper_ean"))
+                    If Val(koper_ean) >= 1000 And Val(koper_ean) < 2000 Then
+                        klok = True
+                    End If
+                End If
+                reader.Close()
+
+                If klok = True Then
+                    Cmd.CommandText = "SELECT * from orderlines WHERE OrderHeader_id = " + Trim(Str(header_id))
+                    reader = Cmd.ExecuteReader()
+                    Do While reader.Read()
+                        Dim soort_id As Integer = CHint(reader("soort_id"))
+                        Dim fotopath As String = CHstr(reader("foto"))
+
+                        If soort_id < 10000 Then
+                            Cmd2.CommandText = "SELECT * from soorten3 WHERE id = " + Trim(Str(soort_id))
+                            reader2 = Cmd2.ExecuteReader()
+                            If reader2.HasRows Then
+                                reader2.Read()
+                                Dim tradeitem_klok As Integer = CHint(reader2("tradeitem_klok"))
+                                Dim soortnaam As String = CHstr(reader2("soortnaam"))
+                                If tradeitem_klok > 0 Then
+                                    'ok
+                                Else
+                                    MsgBox("Van deze klokbrief is " + soortnaam + " niet voorzien van een trade-item (Database->Soorten->Tradeitem klok), de brief kan niet worden geprint")
+                                    print_ok = False
+                                End If
+                            End If
+                            reader2.Close()
+                        Else
+                            Cmd2.CommandText = "SELECT * from mixen WHERE id = " + Trim(Str(soort_id - 10000))
+                            reader2 = Cmd2.ExecuteReader()
+                            If reader2.HasRows Then
+                                reader2.Read()
+                                Dim tradeitem_klok As Integer = CHint(reader2("tradeitem_klok"))
+                                Dim naam As String = CHstr(reader2("naam"))
+                                If tradeitem_klok > 0 Then
+                                    'ok
+                                Else
+                                    MsgBox("Van deze klokbrief is " + naam + " niet voorzien van een trade-item (Database->Mixen->Tradeitem klok), de brief kan niet worden geprint")
+                                    print_ok = False
+                                End If
+                            End If
+                            reader2.Close()
+                        End If
+
+                        If fotopath = "" Then
+                            MsgBox("Van enkele orderlines is de foto nog niet toegevoegd, brief kan niet geprint worden")
+                            Exit Sub
+                        End If
+
+                    Loop
+                    reader.Close()
+                Else
+                    'BB check for floriday 
+
+                    Cmd2.CommandText = "SELECT * from orderlines WHERE orderheader_id = " + Trim(Str(header_id))
+                    reader2 = Cmd2.ExecuteReader()
+                    If reader2.HasRows Then
+                        reader2.Read()
+                        Dim FloridayNr As String = CHstr(reader2("Floridaynr"))
+
+                        If FloridayNr <> "" Then
+                            print_ok = True
+                        Else
+                            MsgBox("Van deze BB brief zijn niet alle orderlines afkomstig van Floriday, de brief kan niet worden geprint")
+                            print_ok = False
+
+                        End If
+                    End If
+                    reader2.Close()
+
+                End If
+
+                If print_ok = True Then
+
+                    If kar_id > 0 Then
+
+                        Cmd2.CommandText = "SELECT * from orderkarren WHERE kar_id = " + Trim(Str(kar_id))
+                        reader2 = Cmd2.ExecuteReader()
+                        If reader2.HasRows Then
+                            reader2.Read()
+                            Dim floriday_printflag As Integer = CHint(reader2("floriday_printflag"))
+
+                            If floriday_printflag = 0 Then   'eerste keer printen
+                                Cmd.CommandText = "UPDATE orderkarren Set floriday_printflag=1 WHERE kar_id = " + Str(kar_id)
+                                Cmd.ExecuteNonQuery()
+                                SetNewStatusFlag(Now, header_id)
+                            End If
+                            If floriday_printflag >= 2 Then  ' nogmaals printen
+
+                                Cmd.CommandText = "INSERT INTO afleverscan(datumtijd,kar_id,lagen,kar,status,barcode,vestiging,pagina) VALUES (?,?,?,?,?,?,?,?)"
+                                Cmd.Parameters.Clear()
+                                Cmd.Parameters.AddWithValue("", Format(Now, "yy-MM-dd HH:mm:ss"))
+                                Cmd.Parameters.AddWithValue("", kar_id)
+                                Cmd.Parameters.AddWithValue("", -1)
+                                Cmd.Parameters.AddWithValue("", -1)
+                                Cmd.Parameters.AddWithValue("", 4) 'print handmatig
+                                Cmd.Parameters.AddWithValue("", "")
+                                Cmd.Parameters.AddWithValue("", TreeviewVestiging)  'vestiging afhankelijk van boek
+                                Cmd.Parameters.AddWithValue("", 1)
+                                Cmd.ExecuteNonQuery()
+                                SetNewStatusFlag(Now, header_id)
+                            End If
+                        End If
+
+
+                    Else
+                        Cmd2.CommandText = "SELECT * from orderkarren WHERE header_id = " + Trim(Str(header_id))
+                        reader2 = Cmd2.ExecuteReader()
+                        Do While reader2.Read()
+                            Dim floriday_printflag As Integer = CHint(reader2("floriday_printflag"))
+                            Dim karrun_id As Integer = CHint(reader2("kar_id"))
+
+                            If floriday_printflag = 0 Then   'eerste keer printen
+                                Cmd.CommandText = "UPDATE orderkarren Set floriday_printflag=1 WHERE kar_id = " + Str(karrun_id)
+                                Cmd.ExecuteNonQuery()
+                                SetNewStatusFlag(Now, header_id)
+                            End If
+
+                            If floriday_printflag >= 2 Then  ' nogmaals printen
+
+                                Cmd.CommandText = "INSERT INTO afleverscan(datumtijd,kar_id,lagen,kar,status,barcode,vestiging,pagina) VALUES (?,?,?,?,?,?,?,?)"
+                                Cmd.Parameters.Clear()
+                                Cmd.Parameters.AddWithValue("", Format(Now, "yy-MM-dd HH:mm:ss"))
+                                Cmd.Parameters.AddWithValue("", kar_id)
+                                Cmd.Parameters.AddWithValue("", -1)
+                                Cmd.Parameters.AddWithValue("", -1)
+                                Cmd.Parameters.AddWithValue("", 3) 'print handmatig
+                                Cmd.Parameters.AddWithValue("", "")
+                                Cmd.Parameters.AddWithValue("", TreeviewVestiging)  'vestiging afhankelijk van boek
+                                Cmd.Parameters.AddWithValue("", 1)
+                                Cmd.ExecuteNonQuery()
+                                SetNewStatusFlag(Now, header_id)
+
+                            End If
+
+
+                        Loop
+                        reader2.Close()
+                    End If
+
+                End If
+
+
             End Using
         Catch ex As Exception
-            MsgBox("Fout opslag wpsklaar: " + ex.Message, MsgBoxStyle.OkOnly)
+            MsgBox("Fout print floriday brieven: " + ex.Message, MsgBoxStyle.OkOnly)
         End Try
-        For i = 1 To id_counter - 1
-            SetNewStatusFlag(Order_MonthCalendar.SelectionStart, mark_idlist(i))
-        Next
+
+        SetNewStatusFlag(Order_MonthCalendar.SelectionStart, kar_id)
+
     End Sub
 
     Private Sub TimerBarcodeServer_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles TimerBarcodeServer.Tick
@@ -22749,10 +23722,10 @@ search_on:
                     addline("", "", "", "#FFFFFF")
 
                     If boekprijs = 0 Then
-                        addline("Prijs aanbod", "PRIJSAANBOD", formatprijs(boekprijs, 2), "#FF0000")
+                        addline("Prijs aanbod", "PRIJSAANBOD", pformatprijs(boekprijs, 2), "#FF0000")
                         double_warning = True
                     Else
-                        addline("Prijs aanbod", "PRIJSAANBOD", formatprijs(boekprijs, 2), "#FFFFFF")
+                        addline("Prijs aanbod", "PRIJSAANBOD", pformatprijs(boekprijs, 2), "#FFFFFF")
                     End If
 
 
@@ -22775,7 +23748,7 @@ search_on:
                     Dim lb_opslag As Double = 0
                     If labelberichtopslag >= 0 Then
                         lb_opslag = labelberichtopslag / 100
-                        addline("Prijs sticker", "", formatprijs(lb_opslag, 2), "#FFFFFF")
+                        addline("Prijs sticker", "", pformatprijs(lb_opslag, 2), "#FFFFFF")
 
                         Dim CmdString21 = "UPDATE edi2_lines SET label_status = 1 WHERE id = " + Str(line_id)  'save line status
                         Dim Cmd21 As New OdbcCommand(CmdString21, Conn)
@@ -22788,27 +23761,27 @@ search_on:
                     Dim jp_opslag As Double = 0
                     If jpkorting > 0 Then
                         jp_opslag = -jpkorting / 100
-                        addline("Korting", "", formatprijs(jp_opslag, 2), "#FFFFFF")
+                        addline("Korting", "", pformatprijs(jp_opslag, 2), "#FFFFFF")
                     End If
 
                     boekprijs = boekprijs + lb_opslag + jp_opslag
                     If boekprijs = 0 Then
-                        addline("Totaal prijs", "TOTPRIJS", formatprijs(boekprijs, 2), "#FF9999")
+                        addline("Totaal prijs", "TOTPRIJS", pformatprijs(boekprijs, 2), "#FF9999")
                         'warning = True
                     Else
-                        addline("Totaal prijs", "TOTPRIJS", formatprijs(boekprijs, 2), "#FFFFFF")
+                        addline("Totaal prijs", "TOTPRIJS", pformatprijs(boekprijs, 2), "#FFFFFF")
                     End If
 
                     Dim prijs As Double = Val(CHstr(Reader("PRI_INV_Price_Amount")))
 
                     If CInt(prijs * 1000) < CInt(boekprijs * 1000) Then
-                        addline("Prijs koper", "PRIJS", formatprijs(prijs, 2), "#FF0000", formatprijs(prijs, 2))
+                        addline("Prijs koper", "PRIJS", pformatprijs(prijs, 2), "#FF0000", pformatprijs(prijs, 2))
                         warning = True
                         double_warning = True
                     ElseIf CInt(prijs * 1000) > CInt(boekprijs * 1000) Then
-                        addline("Prijs koper", "PRIJS", formatprijs(prijs, 2), "#00FF00", formatprijs(prijs, 2))
+                        addline("Prijs koper", "PRIJS", pformatprijs(prijs, 2), "#00FF00", pformatprijs(prijs, 2))
                     Else
-                        addline("Prijs koper", "PRIJS", formatprijs(prijs, 2), "#FFFFFF", formatprijs(prijs, 2))
+                        addline("Prijs koper", "PRIJS", pformatprijs(prijs, 2), "#FFFFFF", pformatprijs(prijs, 2))
                     End If
                     ' TimePassed("Part6")
                     If actie_type > 0 And boekprijs = prijs Then
@@ -23123,7 +24096,7 @@ search_on:
 
                     Dim rprijs As Double = Val(CHstr(Reader("PRI_AAE_Price_Amount")))
                     If rprijs > 0 Then
-                        addline("Retail prijs", "", formatprijs(rprijs, 2), "#FFFFFF")
+                        addline("Retail prijs", "", pformatprijs(rprijs, 2), "#FFFFFF")
                         Dim rprijsvoorwaarde As String = ReadSQLData("data_elementen", "date_element_code", 5387, "date_element_value", CHstr(Reader("PRI_AAE_Price_specification_code")), "date_element_value_description")
                         addline("Prijsvoorwaarde", "", rprijsvoorwaarde, "#FFFFFF")
                         addline("Munteenheid", "", CHstr(Reader("CUX_AAE")), "#FFFFFF")
@@ -24270,7 +25243,7 @@ search_on:
             accessoire1naam = accessoire(GID(accessoire, accessoire1)).naam
         End If
 
-        LabelWindow.Init(labelnummer, soort_id, aantal_boek, fust_id, row, koper_ean, koper_naam, opmerking, accessoire1naam)
+        LabelWindow.Init(labelnummer, soort_id, aantal_boek, fust_id, row, koper_ean, koper_naam, opmerking, accessoire1naam, 1)
 
         LabelWindow.Show()
         'global labeledit
@@ -24802,7 +25775,7 @@ search_on:
                     If Val(Fc_LineCombo.SelectedValue) > 0 Then
                         'Dim prijsstr As String = Fc_LineCombo.SelectedValue
                         If CVal(Fc_LineCombo.SelectedValue) > 0 Then
-                            SaveLineData("PRI_INV_Price_Amount", formatprijs(Fc_LineCombo.SelectedValue, 2))
+                            SaveLineData("PRI_INV_Price_Amount", pformatprijs(Fc_LineCombo.SelectedValue, 2))
                         Else
                             MsgBox("Fout:  Prijs <= 0")
                         End If
@@ -24812,7 +25785,7 @@ search_on:
                             If puntpos > 0 Then
                                 Fc_LineCombo.Text = Mid(Fc_LineCombo.Text, 1, puntpos - 1) + "," + Mid(Fc_LineCombo.Text, puntpos + 1, 3)
                             End If
-                            SaveLineData("PRI_INV_Price_Amount", formatprijs(Fc_LineCombo.Text, 2))
+                            SaveLineData("PRI_INV_Price_Amount", pformatprijs(Fc_LineCombo.Text, 2))
                         Else
                             MsgBox("Fout:  Prijs <= 0")
                         End If
@@ -25347,7 +26320,7 @@ search_on:
                     If linecode = "TOTPRIJS" Then
                         Dim prijs As Double = CVal(Fc_Flexgrid_LineData.Item(i, 2))
 
-                        SaveLineData("PRI_INV_Price_Amount", formatprijs(prijs, 2))
+                        SaveLineData("PRI_INV_Price_Amount", pformatprijs(prijs, 2))
                         ShowLineData(FC_CurrentEditLine, True)
                         Exit For
                     End If
@@ -26096,7 +27069,6 @@ exit_verwerk:
 
 #Region "Karindeling"
 
-
     Private Sub Maak_Karindeling(ByVal lock As Boolean, ByVal kartype_id As Integer, ByVal header_id As Integer, ByVal order_datum As Date, Optional ByVal indeling As Integer = 0)
 
         If jenptenhave = True Then
@@ -26133,6 +27105,7 @@ exit_verwerk:
 
                 If lock = True Then
                     ' load locked kar-info & lines
+
 
                     Dim CmdKarString As String = "select * from " + orderkarren_db + " WHERE  Header_id = " + Str(header_id)
                     Dim CmdKar As New OdbcCommand(CmdKarString, Conn)
@@ -26322,6 +27295,10 @@ exit_verwerk:
 
                 If jenptenhave = True Then
                     maxlagen = maxlagenjenp
+
+                    'gloxen?
+
+
                 End If
 
 
@@ -26601,6 +27578,8 @@ exit_verwerk:
                     koper_ean = CHstr(Reader8("koper_ean"))
                     If Mid(koper_ean, 1, 4) = "0000" Then
                         klok_order = True
+
+                        Kar_markeer_chk.Checked = False  'j en p check uitzetten bij klok
                     End If
                 End If
 
@@ -26861,6 +27840,7 @@ exit_verwerk:
                     KarHeaders(karcounter).scan_flag = CHbool(KarrenReader("scan_flag"))
                     KarHeaders(karcounter).overgooien_naar = CHstr(KarrenReader("overgooien_naar"))
                     KarHeaders(karcounter).overgooien_hierop = CHstr(KarrenReader("overgooien_hierop"))
+                    KarHeaders(karcounter).floriday_printflag = CHint(KarrenReader("floriday_printflag"))
                     'load kar  lines
                     Dim CmdKarLineString As String = "select * from " + orderkarlines_db + " WHERE  kar_id = " + Str(kar_id)
                     Dim CmdKarlines As New OdbcCommand(CmdKarLineString, Conn)
@@ -26876,6 +27856,7 @@ exit_verwerk:
                         KarLines(linecounter).header_id = CHint(KarLineReader("header_id"))
                         KarLines(linecounter).kar_nummerref = 0
                         KarLines(linecounter).sorteren = CHint(KarLineReader("sorteren"))
+                        KarLines(linecounter).line_id = CHint(KarLineReader("id"))
                         'load extra lineinfo 
                         'load kar  lines
                         Dim CmdInfoLineString As String = "select * from " + orderlines_db + " WHERE  OrderLine_id = " + Str(KarLines(linecounter).Orderline_id)
@@ -26950,10 +27931,40 @@ exit_verwerk:
         kar_overgooien3_naar_but.BackColor = Color.FromKnownColor(KnownColor.Control)
         kar_overgooien4_naar_but.BackColor = Color.FromKnownColor(KnownColor.Control)
 
+        Dim karlock As Boolean = False
+        For i = 1 To UBound(KarHeaders)
+            If KarHeaders(i).floriday_printflag > 0 Then
+                karlock = True
+            End If
+        Next
+
+        If karlock = True Then
+            Kar_allesop1_but.Enabled = False
+            Kar_SortMartin_but.Enabled = False
+            Kar_verdelenals2_but.Enabled = False
+            Kar_opnieuwberekenen_but.Enabled = False
+            Kar_opnieuwberekeneninvoer_but.Enabled = False
+            Kar_plus1_but.Enabled = False
+            Kar_plus2_but.Enabled = False
+            Kar_plus3_but.Enabled = False
+            Kar_plus4_but.Enabled = False
+        Else
+            Kar_allesop1_but.Enabled = True
+            Kar_SortMartin_but.Enabled = True
+            Kar_verdelenals2_but.Enabled = True
+            Kar_opnieuwberekenen_but.Enabled = True
+            Kar_opnieuwberekeneninvoer_but.Enabled = True
+            Kar_plus1_but.Enabled = True
+            Kar_plus2_but.Enabled = True
+            Kar_plus3_but.Enabled = True
+            Kar_plus4_but.Enabled = True
+        End If
+
+
         Dim fixedloop As Integer = 1
         For karloop = startkar To startkar + 3
-            If KarHeaders(karloop).tag = True Then
 
+            If KarHeaders(karloop).tag = True Then
 
                 ' aantal lagen invullen 
                 Dim karlist = GID(kar, KarHeaders(karloop).kar_type)
@@ -27053,25 +28064,47 @@ exit_verwerk:
                         Kar_vervoer1_chk.Checked = KarHeaders(karloop).vervoer_flag
                         Kar_barcode1_txt.Text = KarHeaders(karloop).barcode
                         Kar_rfid1_txt.Text = KarHeaders(karloop).cc_rfid
+                        If KarHeaders(karloop).floriday_printflag = 0 Then
+                            Kar_fdverzonden1_chk.Checked = False
+                        Else
+                            Kar_fdverzonden1_chk.Checked = True
+                        End If
                     Case 2
                         Kar_sdfverzonden2_chk.Checked = KarHeaders(karloop).sdf_flag
                         'Kar_scanready2_chk.Checked = KarHeaders(karloop).scan_flag
                         Kar_vervoer2_chk.Checked = KarHeaders(karloop).vervoer_flag
                         Kar_barcode2_txt.Text = KarHeaders(karloop).barcode
                         Kar_rfid2_txt.Text = KarHeaders(karloop).cc_rfid
+                        If KarHeaders(karloop).floriday_printflag = 0 Then
+                            Kar_fdverzonden2_chk.Checked = False
+                        Else
+                            Kar_fdverzonden2_chk.Checked = True
+                        End If
                     Case 3
                         Kar_sdfverzonden3_chk.Checked = KarHeaders(karloop).sdf_flag
                         'Kar_scanready3_chk.Checked = KarHeaders(karloop).scan_flag
                         Kar_vervoer3_chk.Checked = KarHeaders(karloop).vervoer_flag
                         Kar_barcode3_txt.Text = KarHeaders(karloop).barcode
                         Kar_rfid3_txt.Text = KarHeaders(karloop).cc_rfid
+                        If KarHeaders(karloop).floriday_printflag = 0 Then
+                            Kar_fdverzonden3_chk.Checked = False
+                        Else
+                            Kar_fdverzonden3_chk.Checked = True
+                        End If
                     Case 4
                         Kar_sdfverzonden4_chk.Checked = KarHeaders(karloop).sdf_flag
                         'Kar_scanready4_chk.Checked = KarHeaders(karloop).scan_flag
                         Kar_vervoer4_chk.Checked = KarHeaders(karloop).vervoer_flag
                         Kar_barcode4_txt.Text = KarHeaders(karloop).barcode
                         Kar_rfid4_txt.Text = KarHeaders(karloop).cc_rfid
+                        If KarHeaders(karloop).floriday_printflag = 0 Then
+                            Kar_fdverzonden4_chk.Checked = False
+                        Else
+                            Kar_fdverzonden4_chk.Checked = True
+                        End If
                 End Select
+
+
 
                 ' karlagen lock 
                 Select Case fixedloop
@@ -27313,8 +28346,13 @@ exit_verwerk:
         If C1Tab.TabPages(0).Enabled = True Then  'order invoer
             C1Tab.SelectedTab = C1Tab.TabPages(0)
         End If
-        If C1Tab.TabPages(2).Enabled = True Then  'florecom
+
+        If C1Tab.TabPages(2).Enabled = True Then  'floriday
             C1Tab.SelectedTab = C1Tab.TabPages(2)
+        End If
+
+        If C1Tab.TabPages(3).Enabled = True Then  'florecom
+            C1Tab.SelectedTab = C1Tab.TabPages(3)
         End If
 
         'zoek eerste header
@@ -27413,6 +28451,13 @@ exit_verwerk:
             Exit Sub
         End If
 
+        Dim karlock As Boolean = False
+        For i = 1 To UBound(KarHeaders)
+            If KarHeaders(i).floriday_printflag > 0 Then
+                karlock = True
+            End If
+        Next
+
         Try
             'Open Connection
             Using Conn As New OdbcConnection(ConnString)
@@ -27430,121 +28475,164 @@ exit_verwerk:
                     gpaantal = CHint(reader15("gp"))
                 End If
 
-                ' delete kar-info & lines from database 
-                ' delete all non-locked karinfo
-                Dim DelString As String = "DELETE FROM " + orderkarren_db + " WHERE header_id='" + Str(header_id) + "'"
-                Dim DelCmd As New OdbcCommand(DelString, Conn)
-                DelCmd.ExecuteNonQuery()
 
-                ' delete all kar-line info
-                Dim DelString2 As String = "DELETE FROM " + orderkarlines_db + " WHERE header_id='" + Str(header_id) + "'"
-                Dim DelCmd2 As New OdbcCommand(DelString2, Conn)
-                DelCmd2.ExecuteNonQuery()
+                If karlock = False Then   'nieuwe karindeling opslaan
 
-                For karcounter = 1 To Max_Kar_Headers
-                    If KarHeaders(karcounter).tag = True Then
+                    ' delete kar-info & lines from database 
+                    ' delete all non-locked karinfo
+                    Dim DelString As String = "DELETE FROM " + orderkarren_db + " WHERE header_id='" + Str(header_id) + "'"
+                    Dim DelCmd As New OdbcCommand(DelString, Conn)
+                    DelCmd.ExecuteNonQuery()
 
-                        'extra check, heeft deze kar nog wel lagen?
-                        Dim linecheck As Boolean = False
-                        For karlinecounter = 0 To Max_Kar_Lines
-                            If KarLines(karlinecounter).tag = True And KarLines(karlinecounter).kar_id = KarHeaders(karcounter).kar_id Then
-                                linecheck = True
-                                Exit For
-                            End If
-                        Next karlinecounter
-                        If linecheck = True Then
+                    ' delete all kar-line info
+                    Dim DelString2 As String = "DELETE FROM " + orderkarlines_db + " WHERE header_id='" + Str(header_id) + "'"
+                    Dim DelCmd2 As New OdbcCommand(DelString2, Conn)
+                    DelCmd2.ExecuteNonQuery()
 
-                            'Execute Query
-                            Dim cmdstring As String = "SELECT * FROM " + orderkarren_db + " WHERE 1=0"
-                            Dim Cmd As New OdbcCommand(cmdstring, Conn)
-                            With Cmd
+                    For karcounter = 1 To Max_Kar_Headers
+                        If KarHeaders(karcounter).tag = True Then
 
-                                .CommandText = "INSERT INTO " + orderkarren_db + "(header_id,kar_type,aantal_lagen,aantal_lagenlock,sdf_flag,wps_status,vervoer_flag,barcode,cc_rfid,scan_flag,overgooien_naar,overgooien_hierop)" _
-                                                & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)"
-                                .Parameters.Clear()
-                                .Parameters.AddWithValue("", header_id)
-                                .Parameters.AddWithValue("", KarHeaders(karcounter).kar_type)
-                                .Parameters.AddWithValue("", KarHeaders(karcounter).aantal_lagen)
-                                .Parameters.AddWithValue("", KarHeaders(karcounter).aantal_lagenlock)
-                                .Parameters.AddWithValue("", KarHeaders(karcounter).sdf_flag)
-                                .Parameters.AddWithValue("", KarHeaders(karcounter).wps_status)
-                                .Parameters.AddWithValue("", KarHeaders(karcounter).vervoer_flag)
-                                .Parameters.AddWithValue("", KarHeaders(karcounter).barcode)
-                                .Parameters.AddWithValue("", KarHeaders(karcounter).cc_rfid)
-                                .Parameters.AddWithValue("", KarHeaders(karcounter).scan_flag)
-                                .Parameters.AddWithValue("", KarHeaders(karcounter).overgooien_naar)
-                                .Parameters.AddWithValue("", KarHeaders(karcounter).overgooien_hierop)
-
-                                .ExecuteNonQuery()
-
-                                KarHeaders(karcounter).kar_nummer = KarHeaders(karcounter).kar_id    'oude id opslaan om karlines te koppelen 
-                                ' fetch header
-                                If postgress = True Then
-                                    Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('orderkarren','kar_id'))", Conn)
-                                    KarHeaders(karcounter).kar_id = Convert.ToInt32(Cmd5.ExecuteScalar())
-                                Else
-                                    Dim Cmd5 As New OdbcCommand("SELECT LAST_INSERT_ID()", Conn)
-                                    KarHeaders(karcounter).kar_id = Convert.ToInt32(Cmd5.ExecuteScalar())
-                                End If
-                            End With
-                        End If
-                    End If
-                Next karcounter
-
-                'karlines opslaan
-
-                Dim cmdstring6 As String = "SELECT * FROM " + orderkarlines_db + " WHERE 1=0"
-                For karlinecounter = 0 To Max_Kar_Lines
-                    If KarLines(karlinecounter).tag = True Then
-
-                        'Execute Query
-                        Dim Cmd As New OdbcCommand(cmdstring6, Conn)
-                        With Cmd
-
-                            'Get new SDF barcode
-                            Dim sdfbarcode2 As Integer = 0
-                            Dim reader5 As OdbcDataReader
-                            Dim Cmd2 As New OdbcCommand("SELECT sdfbarcode2 from instellingen", Conn)
-                            reader5 = Cmd2.ExecuteReader()
-                            If reader5.HasRows Then
-                                reader5.Read()
-                                sdfbarcode2 = CHint(reader5("sdfbarcode2"))
-                                sdfbarcode2 = sdfbarcode2 + 1
-                                If sdfbarcode2 >= 100000000 Then sdfbarcode2 = 1
-                                reader5.Close()
-                                Cmd2.CommandText = "UPDATE instellingen SET sdfbarcode2 = ?"
-                                Cmd2.Parameters.Clear()
-                                Cmd2.Parameters.AddWithValue("", sdfbarcode2)
-                                Cmd2.ExecuteNonQuery()
-                            End If
-
-
-                            .CommandText = "INSERT INTO " + orderkarlines_db + "(kar_id,aantal,Orderline_id,wps_flag,wps17_flag,header_id,sorteren,sdfbarcode2)" _
-                                            & "VALUES(?,?,?,?,?,?,?,?)"
-
-                            ' line id's van nieuwe karren koppelen aan kar id's 
-                            For karcounter2 = 1 To Max_Kar_Headers
-                                KarHeaders(karcounter2).tag = True
-                                If KarHeaders(karcounter2).kar_nummer = KarLines(karlinecounter).kar_id Then
-                                    KarLines(karlinecounter).kar_id = KarHeaders(karcounter2).kar_id
+                            'extra check, heeft deze kar nog wel lagen?
+                            Dim linecheck As Boolean = False
+                            For karlinecounter = 0 To Max_Kar_Lines
+                                If KarLines(karlinecounter).tag = True And KarLines(karlinecounter).kar_id = KarHeaders(karcounter).kar_id Then
+                                    linecheck = True
                                     Exit For
                                 End If
-                            Next
-                            .Parameters.Clear()
-                            .Parameters.AddWithValue("", KarLines(karlinecounter).kar_id)
-                            .Parameters.AddWithValue("", KarLines(karlinecounter).aantal)
-                            .Parameters.AddWithValue("", KarLines(karlinecounter).Orderline_id)
-                            .Parameters.AddWithValue("", KarLines(karlinecounter).wps_flag)
-                            .Parameters.AddWithValue("", KarLines(karlinecounter).wps17_flag)
-                            .Parameters.AddWithValue("", header_id)
-                            .Parameters.AddWithValue("", KarLines(karlinecounter).sorteren)
-                            .Parameters.AddWithValue("", sdfbarcode2)
-                            .ExecuteNonQuery()
+                            Next karlinecounter
+                            If linecheck = True Then
 
-                        End With
+                                'Execute Query
+                                Dim cmdstring As String = "SELECT * FROM " + orderkarren_db + " WHERE 1=0"
+                                Dim Cmd As New OdbcCommand(cmdstring, Conn)
+                                With Cmd
 
-                    End If
-                Next karlinecounter
+                                    .CommandText = "INSERT INTO " + orderkarren_db + "(header_id,kar_type,aantal_lagen,aantal_lagenlock,sdf_flag,wps_status,vervoer_flag,barcode,cc_rfid,scan_flag,overgooien_naar,overgooien_hierop)" _
+                                                    & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)"
+                                    .Parameters.Clear()
+                                    .Parameters.AddWithValue("", header_id)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).kar_type)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).aantal_lagen)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).aantal_lagenlock)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).sdf_flag)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).wps_status)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).vervoer_flag)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).barcode)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).cc_rfid)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).scan_flag)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).overgooien_naar)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).overgooien_hierop)
+
+                                    .ExecuteNonQuery()
+
+                                    KarHeaders(karcounter).kar_nummer = KarHeaders(karcounter).kar_id    'oude id opslaan om karlines te koppelen 
+                                    ' fetch header
+                                    If postgress = True Then
+                                        Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('orderkarren','kar_id'))", Conn)
+                                        KarHeaders(karcounter).kar_id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                    Else
+                                        Dim Cmd5 As New OdbcCommand("SELECT LAST_INSERT_ID()", Conn)
+                                        KarHeaders(karcounter).kar_id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                    End If
+                                End With
+                            End If
+                        End If
+                    Next karcounter
+
+                    'karlines opslaan
+
+                    Dim cmdstring6 As String = "SELECT * FROM " + orderkarlines_db + " WHERE 1=0"
+                    For karlinecounter = 0 To Max_Kar_Lines
+                        If KarLines(karlinecounter).tag = True Then
+
+                            'Execute Query
+                            Dim Cmd As New OdbcCommand(cmdstring6, Conn)
+                            With Cmd
+
+                                'Get new SDF barcode
+                                Dim sdfbarcode2 As Integer = 0
+                                Dim reader5 As OdbcDataReader
+                                Dim Cmd2 As New OdbcCommand("SELECT sdfbarcode2 from instellingen", Conn)
+                                reader5 = Cmd2.ExecuteReader()
+                                If reader5.HasRows Then
+                                    reader5.Read()
+                                    sdfbarcode2 = CHint(reader5("sdfbarcode2"))
+                                    sdfbarcode2 = sdfbarcode2 + 1
+                                    If sdfbarcode2 >= 100000000 Then sdfbarcode2 = 1
+                                    reader5.Close()
+                                    Cmd2.CommandText = "UPDATE instellingen SET sdfbarcode2 = ?"
+                                    Cmd2.Parameters.Clear()
+                                    Cmd2.Parameters.AddWithValue("", sdfbarcode2)
+                                    Cmd2.ExecuteNonQuery()
+                                End If
+
+
+                                .CommandText = "INSERT INTO " + orderkarlines_db + "(kar_id,aantal,Orderline_id,wps_flag,wps17_flag,header_id,sorteren,sdfbarcode2)" _
+                                                & "VALUES(?,?,?,?,?,?,?,?)"
+
+                                ' line id's van nieuwe karren koppelen aan kar id's 
+                                For karcounter2 = 1 To Max_Kar_Headers
+                                    KarHeaders(karcounter2).tag = True
+                                    If KarHeaders(karcounter2).kar_nummer = KarLines(karlinecounter).kar_id Then
+                                        KarLines(karlinecounter).kar_id = KarHeaders(karcounter2).kar_id
+                                        Exit For
+                                    End If
+                                Next
+                                .Parameters.Clear()
+                                .Parameters.AddWithValue("", KarLines(karlinecounter).kar_id)
+                                .Parameters.AddWithValue("", KarLines(karlinecounter).aantal)
+                                .Parameters.AddWithValue("", KarLines(karlinecounter).Orderline_id)
+                                .Parameters.AddWithValue("", KarLines(karlinecounter).wps_flag)
+                                .Parameters.AddWithValue("", KarLines(karlinecounter).wps17_flag)
+                                .Parameters.AddWithValue("", header_id)
+                                .Parameters.AddWithValue("", KarLines(karlinecounter).sorteren)
+                                .Parameters.AddWithValue("", sdfbarcode2)
+                                .ExecuteNonQuery()
+
+                            End With
+
+                        End If
+                    Next karlinecounter
+
+
+                Else    'Karren zijn gelocked , alleen update opslaan
+                    Dim Cmd As New OdbcCommand("", Conn)
+                    For karcounter = 1 To Max_Kar_Headers
+                        If KarHeaders(karcounter).tag = True Then
+
+                            'Execute Query
+                            Cmd.CommandText = "UPDATE orderkarren SET aantal_lagen=?,aantal_lagenlock=?,sdf_flag=?,wps_status=?,vervoer_flag=?,barcode=?,overgooien_naar=?,overgooien_hierop=? WHERE kar_id=?"
+                            Cmd.Parameters.Clear()
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).aantal_lagen)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).aantal_lagenlock)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).sdf_flag)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).wps_status)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).vervoer_flag)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).barcode)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).overgooien_naar)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).overgooien_hierop)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).kar_id)
+                            Cmd.ExecuteNonQuery()
+
+                        End If
+
+                    Next karcounter
+
+                    'karlines opslaan
+
+                    For karlinecounter = 0 To Max_Kar_Lines
+                        If KarLines(karlinecounter).tag = True Then
+                            Cmd.CommandText = "UPDATE orderkarlines SET wps_flag=?,wps17_flag=?,sorteren=? WHERE id=?"
+                            Cmd.Parameters.Clear()
+                            Cmd.Parameters.AddWithValue("", KarLines(karlinecounter).wps_flag)
+                            Cmd.Parameters.AddWithValue("", KarLines(karlinecounter).wps17_flag)
+                            Cmd.Parameters.AddWithValue("", KarLines(karlinecounter).sorteren)
+                            Cmd.Parameters.AddWithValue("", KarLines(karlinecounter).line_id)
+                            Cmd.ExecuteNonQuery()
+                        End If
+                    Next karlinecounter
+
+                End If
 
                 'header overzicht berekenen voor snel overzicht.
 
@@ -29051,21 +30139,9 @@ exit_verwerk:
         End If
         Return aantal_lagen
     End Function
-    Private Sub Kar_sdfversturen_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Kar_sdfversturen1_but.Click, Kar_sdfversturen2_but.Click, Kar_sdfversturen3_but.Click, Kar_sdfversturen4_but.Click
-        Dim btn As Button
-        Dim karnr As Integer = 0
-        btn = CType(sender, Button)
-        Dim selectie = Val(btn.Tag)
-        Select Case selectie
-            Case 1
-                karnr = Val(Kar_nummer1_lbl.Text)
-            Case 2
-                karnr = Val(Kar_nummer2_lbl.Text)
-            Case 3
-                karnr = Val(Kar_nummer3_lbl.Text)
-            Case 4
-                karnr = Val(Kar_nummer4_lbl.Text)
-        End Select
+
+
+    Private Sub PrintViaSDF(karnr As Integer)
 
         Kar_opslaanMain()
 
@@ -29240,23 +30316,8 @@ exit_verwerk:
         Return barcode_str
 
     End Function
-    Private Sub Kar_pakbonprint_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Kar_pakbonprint1_but.Click, Kar_pakbonprint2_but.Click, Kar_pakbonprint3_but.Click, Kar_pakbonprint4_but.Click
-        Dim btn As Button
-        Dim karnr As Integer = -1
-        btn = CType(sender, Button)
-        Dim selectie = Val(btn.Tag)
-        Select Case selectie
-            Case 1
-                karnr = Val(Kar_nummer1_lbl.Text)
-            Case 2
-                karnr = Val(Kar_nummer2_lbl.Text)
-            Case 3
-                karnr = Val(Kar_nummer3_lbl.Text)
-            Case 4
-                karnr = Val(Kar_nummer4_lbl.Text)
-        End Select
 
-        If karnr = -1 Then Exit Sub
+    Private Sub PrintPakbon(karnr As Integer)
 
         Dim kar_id As Integer
         kar_id = KarHeaders(karnr).kar_id
@@ -29301,6 +30362,7 @@ exit_verwerk:
 
 
     End Sub
+
     Private Sub kar_aanvulling_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles kar_aanvulling1_but.Click, kar_aanvulling2_but.Click, kar_aanvulling3_but.Click, kar_aanvulling4_but.Click
         Dim btn As Button
         btn = CType(sender, Button)
@@ -29415,8 +30477,6 @@ exit_verwerk:
         Show_Karindeling(header_id)
     End Sub
 
-    'j en p 
-
     Private Sub kar_wissel_vestiging_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles kar_wissel_vestiging_but.Click
 
         Dim header_id = -1
@@ -29525,6 +30585,7 @@ exit_verwerk:
         Dim kar_id = KarHeaders(karnr).kar_id
         If Not (overgooier = "" Or overgooier = "-") Then  'global saved in overgooien_naar
             KarHeaders(karnr).overgooien_hierop = overgooier
+            Dim barcode As String = KarHeaders(karnr).barcode
             Try
                 'Open Connection
                 Using Conn As New OdbcConnection(ConnString)
@@ -29538,7 +30599,7 @@ exit_verwerk:
 
                     Dim Cmd2 As New OdbcCommand("UPDATE orderkarren SET overgooien_naar=? WHERE barcode=?", Conn)
                     Cmd2.Parameters.Clear()
-                    Cmd2.Parameters.AddWithValue("", overgooier)
+                    Cmd2.Parameters.AddWithValue("", barcode)
                     Cmd2.Parameters.AddWithValue("", overgooier)
                     Cmd2.ExecuteNonQuery()
 
@@ -29590,12 +30651,12 @@ exit_verwerk:
                 Conn.Open()
 
                 If Not (overgooien_naar = "" Or overgooien_naar = "-") Then
-                    Dim Cmd3 As New OdbcCommand("UPDATE orderkarren SET overgooien_hierop='', overgooien_naar='' WHERE overgooien_naar=?", Conn)
+                    Dim Cmd3 As New OdbcCommand("UPDATE orderkarren SET overgooien_hierop='', overgooien_naar='' WHERE kar_id=?", Conn)
                     Cmd3.Parameters.Clear()
-                    Cmd3.Parameters.AddWithValue("", overgooien_naar)
+                    Cmd3.Parameters.AddWithValue("", kar_id)
                     Cmd3.ExecuteNonQuery()
 
-                    Dim Cmd2 As New OdbcCommand("UPDATE orderkarren SET overgooien_hierop='', overgooien_naar='' WHERE overgooien_hierop=?", Conn)
+                    Dim Cmd2 As New OdbcCommand("UPDATE orderkarren SET overgooien_hierop='', overgooien_naar='' WHERE barcode=?", Conn)
                     Cmd2.Parameters.Clear()
                     Cmd2.Parameters.AddWithValue("", overgooien_naar)
                     Cmd2.ExecuteNonQuery()
@@ -29604,12 +30665,12 @@ exit_verwerk:
                 End If
 
                 If Not (overgooien_hierop = "" Or overgooien_hierop = "-") Then
-                    Dim Cmd3 As New OdbcCommand("UPDATE orderkarren SET overgooien_hierop='', overgooien_naar='' WHERE overgooien_naar=?", Conn)
+                    Dim Cmd3 As New OdbcCommand("UPDATE orderkarren SET overgooien_hierop='', overgooien_naar='' WHERE kar_id=?", Conn)
                     Cmd3.Parameters.Clear()
-                    Cmd3.Parameters.AddWithValue("", overgooien_hierop)
+                    Cmd3.Parameters.AddWithValue("", kar_id)
                     Cmd3.ExecuteNonQuery()
 
-                    Dim Cmd2 As New OdbcCommand("UPDATE orderkarren SET overgooien_hierop='', overgooien_naar='' WHERE overgooien_hierop=?", Conn)
+                    Dim Cmd2 As New OdbcCommand("UPDATE orderkarren SET overgooien_hierop='', overgooien_naar='' WHERE barcode=?", Conn)
                     Cmd2.Parameters.Clear()
                     Cmd2.Parameters.AddWithValue("", overgooien_hierop)
                     Cmd2.ExecuteNonQuery()
@@ -29714,6 +30775,620 @@ exit_verwerk:
 
         End If
     End Sub
+
+    Private Sub KarCommand1_but_Click(sender As Object, e As EventArgs) Handles KarCommand1_but.Click, KarCommand2_but.Click, KarCommand3_but.Click, KarCommand4_but.Click
+
+        Dim btn As Button
+        Dim karnr As Integer = -1
+        btn = CType(sender, Button)
+        Dim selectie = Val(btn.Tag)
+        Dim CommandText As String = ""
+        Dim aantal_lagen As Integer = 0
+        Select Case selectie
+            Case 1
+                karnr = Val(Kar_nummer1_lbl.Text)
+                CommandText = KarCommand1_cmb.Text.ToLower
+                aantal_lagen = CInt(Val(Kar_lagen1_txt.Text))
+            Case 2
+                karnr = Val(Kar_nummer2_lbl.Text)
+                CommandText = KarCommand2_cmb.Text.ToLower
+                aantal_lagen = CInt(Val(Kar_lagen2_txt.Text))
+            Case 3
+                karnr = Val(Kar_nummer3_lbl.Text)
+                CommandText = KarCommand3_cmb.Text.ToLower
+                aantal_lagen = CInt(Val(Kar_lagen3_txt.Text))
+            Case 4
+                karnr = Val(Kar_nummer4_lbl.Text)
+                CommandText = KarCommand4_cmb.Text.ToLower
+                aantal_lagen = CInt(Val(Kar_lagen4_txt.Text))
+        End Select
+
+        If karnr = -1 Then Exit Sub
+
+        Dim kar_id As Integer = KarHeaders(karnr).kar_id
+        Dim header_id As Integer = KarHeaders(karnr).header_id
+        Dim kar_type As Integer = KarHeaders(karnr).kar_type
+
+        'Print pakbon
+        'Print brief via Floriday
+        'Print brief via SDF
+        'Fd kar aanpassing 
+        'Fd brief verwijderen
+        'Floriday rapport
+        'Reset floriday error
+
+        Select Case CommandText
+            Case "" : MsgBox("Selecteer een optie om uit te voeren")
+            Case "print pakbon" : PrintPakbon(karnr)
+            Case "print brief via floriday" : PrintBriefFloriday(header_id, kar_id)
+            Case "print brief via sdf" : PrintViaSDF(karnr)
+            Case "fd lagen aanpassing" : Floriday_KarLagenAanpassen(header_id, kar_id, kar_type, aantal_lagen)
+            Case "fd brief verwijderen" : Floriday_BriefVerwijderen(header_id, kar_id)
+            Case "floriday rapport" : PrintFloridayErrorReport(kar_id)
+            Case "reset floriday fout" : Resetfloridayerror(kar_id)
+        End Select
+
+
+    End Sub
+
+    Private Sub Floriday_BriefVerwijderen(orderheader_id As Integer, kar_id As Integer)
+
+        Dim answer As MsgBoxResult = MsgBox("Gebruik deze optie om brieven te annuleren als ze naar floriday zijn verstuurd.  Kar annuleren?", vbYesNo)
+        If answer = vbYes Then
+            Dim query As String = ""
+            Try
+                'Open Connection
+                Using Conn As New OdbcConnection(ConnString)
+                    Conn.Open()
+
+                    Dim reader As OdbcDataReader
+                    Dim reader2 As OdbcDataReader
+                    Dim cmd As New OdbcCommand("", Conn)
+                    Dim cmd2 As New OdbcCommand("", Conn)
+                    Dim cmd3 As New OdbcCommand("", Conn)
+
+                    'check of kar al verstuurd is......
+                    Dim taskrun_id As Integer = 0
+                    Dim fulfillmentOrderId As String = ""
+                    Dim deliveryOrderId As String = ""
+                    Dim pdf_saved As Boolean = False
+                    Dim briefnummer As String = ""
+                    query = "SELECT * From floriday_taskrun WHERE kar_id = " + Str(kar_id)
+                    cmd.CommandText = query
+                    reader = cmd.ExecuteReader()
+                    If reader.HasRows Then
+                        taskrun_id = CHint(reader("id"))
+                        fulfillmentOrderId = CHstr(reader("fulfillmentOrderId"))
+                        deliveryOrderId = CHstr(reader("deliveryOrderId"))
+                        pdf_saved = CHbool(reader("pdf_saved"))
+                        briefnummer = CHstr(reader("briefnummer"))
+                        Dim fulfillment_STATUS As String = CHstr(reader("fulfillment_STATUS"))
+                        If fulfillment_STATUS <> "ACCEPTED" Then
+                            MsgBox("Verwijderen is pas mogelijk als de veiling de brief heeft verwerkt.")
+                            Exit Sub
+                        End If
+                        If pdf_saved = False Or briefnummer = "" Then
+                            MsgBox("Een brief die nog niet geprint is, kan niet verwijderd worden.")
+                            Exit Sub
+                        End If
+                    Else
+                        MsgBox("Karinfo niet gevonden, het is niet mogelijk om deze order te verwijderen.")
+                        Exit Sub
+                    End If
+                    reader.Close()
+
+                    Dim koper_ean As String = ""
+                    Dim klok As Boolean = False
+                    query = "SELECT * FROM orderheaders WHERE  Header_id=" + Str(orderheader_id)
+                    reader = cmd.ExecuteReader
+                    If reader.HasRows Then
+                        reader.Read()
+                        koper_ean = CHstr(reader("koper_ean"))
+                        If Mid(koper_ean, 1, 4) = "0000" Then
+                            klok = True
+                        End If
+                    End If
+
+                    If klok = True Then
+                        'FFO en Delivery verwijderen
+                        Dim FFPostID As Integer = InsertTask(0, 95, "DELETE", "fulfillment-orders", fulfillmentOrderId, "", "", "", "", "", "", "", taskrun_id)
+                        Dim FFPostID2 As Integer = InsertTask(60, 95, "DELETE", "delivery-orders", deliveryOrderId, "auction", "", "", "", "", "", "", taskrun_id)
+                        'header status aanpassen
+
+                        query = "UPDATE floriday_taskrun SET kar_id=? WHERE kar_id=" + Str(kar_id)
+                        cmd3.Parameters.Clear()
+                        cmd3.Parameters.AddWithValue("", -kar_id)
+                        cmd3.CommandText = query
+                        cmd3.ExecuteNonQuery()
+
+                        query = "UPDATE orderkarren SET floriday_printflag=0 WHERE kar_id=" + Str(kar_id)
+                        cmd3.CommandText = query
+                        cmd3.ExecuteNonQuery()
+
+                        SetNewStatusFlag(Now, orderheader_id, True)
+
+
+                    Else
+                        'BB -> FFO Verwijderen, reset aantallen in order
+                        Dim FFPostID As Integer = InsertTask(0, 95, "DELETE", "fulfillment-orders", fulfillmentOrderId)
+
+                        query = "SELECT * From orderkarlines WHERE kar_id =" + Str(kar_id)
+                        cmd.CommandText = query
+                        reader = cmd.ExecuteReader()
+                        Do While reader.Read()
+                            Dim aantal As Integer = CHint(reader("aantal"))
+                            Dim orderline_id As Integer = CHint(reader("orderline_id"))
+
+                            query = "SELECT * From floriday_salesorders_boek WHERE boek_orderlineId=" + Str(orderline_id)
+                            cmd2.CommandText = query
+                            reader2 = cmd2.ExecuteReader()
+                            If reader2.HasRows Then
+                                reader2.Read()
+                                Dim packages_to_fullfill As Integer = CHint(reader2("packages_to_fullfill"))
+
+                                query = "UPDATE floriday_salesorders_boek SET packages_to_fullfill=? WHERE boek_orderlineId=?"
+                                cmd3.CommandText = query
+                                cmd3.Parameters.Clear()
+                                cmd3.Parameters.AddWithValue("", packages_to_fullfill + aantal)
+                                cmd3.Parameters.AddWithValue("", orderline_id)
+                                cmd3.ExecuteNonQuery()
+
+                            End If
+                            reader2.Close()
+                        Loop
+                        reader.Close()
+
+                        query = "UPDATE floriday_taskrun SET kar_id=? WHERE kar_id=" + Str(kar_id)
+                        cmd3.Parameters.Clear()
+                        cmd3.Parameters.AddWithValue("", -kar_id)
+                        cmd3.CommandText = query
+                        cmd3.ExecuteNonQuery()
+
+                        query = "UPDATE orderkarren SET floriday_printflag=0 WHERE kar_id=" + Str(kar_id)
+                        cmd3.CommandText = query
+                        cmd3.ExecuteNonQuery()
+
+                        SetNewStatusFlag(Now, orderheader_id, True)
+
+                    End If
+
+
+
+                End Using
+            Catch ex As Exception
+                ErrorLog("Fout: FD Error reporter " + ex.Message)
+                MessageBox.Show("Fout: FD Error reporter" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+            End Try
+
+        End If
+
+    End Sub
+
+    Private Sub Floriday_KarLagenAanpassen(header_id As Integer, kar_id As Integer, kar_type As Integer, aantal_lagen As Integer)
+        Dim answer As MsgBoxResult = MsgBox("Gebruik deze optie om kar-lagen opnieuw te versturen als de brief al gemaakt is.  informatie opnieuw opsturen?", vbYesNo)
+        If answer = vbYes Then
+
+
+            Dim query As String = ""
+            Try
+                'Open Connection
+                Using Conn As New OdbcConnection(ConnString)
+                    Conn.Open()
+
+                    Dim reader As OdbcDataReader
+                    Dim cmd As New OdbcCommand("", Conn)
+                    Dim cmd2 As New OdbcCommand("", Conn)
+
+                    'check of kar al verstuurd is......
+                    Dim taskrun_id As Integer = 0
+                    Dim fulfillmentOrderId As String = ""
+                    Dim pdf_saved As Boolean = False
+                    Dim briefnummer As String = ""
+                    query = "SELECT * From floriday_taskrun WHERE kar_id = " + Str(kar_id)
+                    cmd.CommandText = query
+                    Reader = cmd.ExecuteReader()
+                    If Reader.HasRows Then
+                        taskrun_id = CHint(reader("id"))
+                        fulfillmentOrderId = CHstr(reader("fulfillmentOrderId"))
+                        pdf_saved = CHbool(reader("pdf_saved"))
+                        briefnummer = CHstr(reader("briefnummer"))
+                        Dim fulfillment_STATUS As String = CHstr(reader("fulfillment_STATUS"))
+                        If fulfillment_STATUS <> "ACCEPTED" Then
+                            MsgBox("Correcties zijn pas mogelijk als de veiling de brief heeft verwerkt.")
+                            Exit Sub
+                        End If
+                        If pdf_saved = False Or briefnummer = "" Then
+                            MsgBox("Correcties zijn alleen nodig voor brieven die al geprint zijn.")
+                            Exit Sub
+                        End If
+                    Else
+                        MsgBox("Karinfo niet gevonden, het is niet mogelijk om deze order te corrigeren.")
+                        Exit Sub
+                    End If
+                    reader.Close()
+
+                    If aantal_lagen = 0 Then
+                        kar_type = 8  ' Kar naar NVT/NONE
+                    End If
+                    'kar type en aantal lagen
+                    Dim kar_enum As String = "AUCTION_TROLLEY"
+                    Dim extralagen As Integer = 1
+                    Select Case kar_type
+                        Case 1, 2
+                            kar_enum = "DANISH_TROLLEY"
+                            extralagen = aantal_lagen - 1
+                        Case 3, 13, 14, 15
+                            kar_enum = "AUCTION_TROLLEY"
+                            extralagen = aantal_lagen
+                        Case 4, 5, 8, 9, 10, 11, 12 : kar_enum = "NONE"
+                        Case 6 : kar_enum = "PALLET"
+                        Case 7 : kar_enum = "EURO_PALLET"
+                        Case 16 : kar_enum = "EURO_TROLLEY"
+                    End Select
+
+                    query = "INSERT INTO floriday_fulfillmentorders_corrections(correctionId,status,creationDateTime,lastModifiedDateTime,crc,crc_delete) VALUES (?,?,?,?,?,?)"
+                    cmd2.CommandText = query
+                    cmd2.Parameters.Clear()
+
+                    Dim newid As String = System.Guid.NewGuid().ToString()
+
+                    cmd2.Parameters.AddWithValue("", newid)
+                    cmd2.Parameters.AddWithValue("", "")
+                    cmd2.Parameters.AddWithValue("", Format(Now, "yy-MM-dd HH:mm:ss"))
+                    cmd2.Parameters.AddWithValue("", Format(Now, "yy-MM-dd HH:mm:ss"))
+                    cmd2.Parameters.AddWithValue("", 0)
+                    cmd2.Parameters.AddWithValue("", 0)
+                    cmd2.ExecuteNonQuery()
+
+                    cmd2.CommandText = "SELECT LAST_INSERT_ID()"
+                    Dim id As Integer = Convert.ToInt32(cmd2.ExecuteScalar())
+
+                    query = "INSERT INTO floriday_fulfillmentorders_corrections_loadcarriercorrections(logisticLabelCode,loadCarrierType,numberOfAdditionalLayers,crc,crc_delete,parent_id) VALUES (?,?,?,?,?,?)"
+                    cmd2.CommandText = query
+                    cmd2.Parameters.Clear()
+
+                    cmd2.Parameters.AddWithValue("", briefnummer)
+                    cmd2.Parameters.AddWithValue("", kar_enum)
+                    cmd2.Parameters.AddWithValue("", extralagen)
+                    cmd2.Parameters.AddWithValue("", 0)
+                    cmd2.Parameters.AddWithValue("", 0)
+                    cmd2.Parameters.AddWithValue("", id)
+                    cmd2.ExecuteNonQuery()
+
+
+                    InsertTask(0, 95, "PUT", "fulfillment-orders", fulfillmentOrderId, "corrections", "", "", "", "", "", "", id)
+                    InsertTask(5, 95, "GET", "fulfillment-orders", fulfillmentOrderId)
+
+                    Dim FFPostID As Integer = InsertTask(10, 95, "GET", "fulfillment-orders", fulfillmentOrderId, "logistic-labels", "", "", "", "", "", "", taskrun_id)
+
+                    MsgBox("Het aantal lagen wordt gecorrigeerd")
+
+                    'Dim answer2 As MsgBoxResult = MsgBox("Het aantal lagen is gecorrigeerd, brief opnieuw printen?", vbYesNo)
+                    'If answer2 = vbYes Then
+
+                    '    query = "UPDATE floriday_taskrun SET done=0, pdf_saved=0, floridayfulfillmentFlag=4, fulfillment_labelcodes_POST_id=? WHERE Id=" + Str(taskrun_id)
+                    '    cmd2.CommandText = query
+                    '    cmd2.Parameters.Clear()
+                    '    cmd2.Parameters.AddWithValue("", FFPostID)
+                    '    cmd2.ExecuteNonQuery()
+
+                    'End If
+
+                End Using
+            Catch ex As Exception
+                ErrorLog("Fout: FD karlagen veranderen " + ex.Message)
+                MessageBox.Show("Fout: FD karlagen veranderen" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+            End Try
+
+
+        End If
+
+    End Sub
+
+    Private Sub Resetfloridayerror(kar_id As Integer)
+
+        Dim query As String = ""
+
+        Try
+            'Open Connection
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                Dim reader As OdbcDataReader
+                Dim reader2 As OdbcDataReader
+
+                Dim cmd As New OdbcCommand("", Conn)
+                Dim cmd2 As New OdbcCommand("", Conn)
+                Dim cmd3 As New OdbcCommand("", Conn)
+
+                Dim orderheaderid As Integer = 0
+                Dim barcode As String = ""
+                query = "SELECT * From orderkarren WHERE kar_id =" + Str(kar_id)
+                cmd.CommandText = query
+                reader = cmd.ExecuteReader()
+                Dim floriday_printflag As Integer = 0
+                If reader.HasRows Then
+                    reader.Read()
+                    floriday_printflag = CHint(reader("floriday_printflag"))
+                    orderheaderid = CHint(reader("header_id"))
+                    barcode = CHstr(reader("barcode"))
+                Else
+                    MsgBox("Deze brief is nog niet verwerkt, dus kan nog niet gereset worden")
+                    Exit Sub
+                End If
+                reader.Close()
+
+                If floriday_printflag = 99 Then   'Error
+
+                    query = "SELECT * From floriday_taskrun WHERE kar_id =" + Str(kar_id)
+                    cmd.CommandText = query
+                    reader = cmd.ExecuteReader()
+                    Dim floridayFulfillmentFlag As Integer = 0
+                    If reader.HasRows Then
+                        reader.Read()
+                        floridayFulfillmentFlag = CHint(reader("floridayFulfillmentFlag"))
+                    End If
+                    reader.Close()
+
+                    If floridayFulfillmentFlag > 1 Then
+
+                        query = "SELECT * From orderkarlines WHERE kar_id =" + Str(kar_id)
+                        cmd.CommandText = query
+                        reader = cmd.ExecuteReader()
+                        Do While reader.Read()
+                            Dim aantal As Integer = CHint(reader("aantal"))
+                            Dim orderline_id As Integer = CHint(reader("orderline_id"))
+
+                            query = "SELECT * From floriday_salesorders_boek WHERE boek_orderlineId=" + Str(orderline_id)
+                            cmd2.CommandText = query
+                            reader2 = cmd2.ExecuteReader()
+                            If reader2.HasRows Then
+                                reader2.Read()
+                                Dim packages_to_fullfill As Integer = CHint(reader2("packages_to_fullfill"))
+
+                                query = "UPDATE floriday_salesorders_boek SET packages_to_fullfill=? WHERE boek_orderlineId=?"
+                                cmd3.CommandText = query
+                                cmd3.Parameters.Clear()
+                                cmd3.Parameters.AddWithValue("", packages_to_fullfill + aantal)
+                                cmd3.Parameters.AddWithValue("", orderline_id)
+                                cmd3.ExecuteNonQuery()
+
+                            End If
+                            reader2.Close()
+                        Loop
+                        reader.Close()
+
+                        query = "UPDATE floriday_taskrun SET kar_id=? WHERE kar_id=" + Str(kar_id)
+                        cmd3.Parameters.Clear()
+                        cmd3.Parameters.AddWithValue("", -kar_id)
+                        cmd3.CommandText = query
+                        cmd3.ExecuteNonQuery()
+
+                        query = "UPDATE orderkarren SET floriday_printflag=0 WHERE kar_id=" + Str(kar_id)
+                        cmd3.CommandText = query
+                        cmd3.ExecuteNonQuery()
+
+                        SetNewStatusFlag(Now, orderheaderid, True)
+
+                        MsgBox("De kar kan opnieuw worden geprint.")
+
+                    Else
+
+                        query = "UPDATE floriday_taskrun SET kar_id=? WHERE kar_id=" + Str(kar_id)  'Reset TAsk
+                        cmd3.Parameters.Clear()
+                        cmd3.Parameters.AddWithValue("", -kar_id)
+                        cmd3.CommandText = query
+                        cmd3.ExecuteNonQuery()
+
+                        query = "UPDATE orderkarren SET floriday_printflag=0 WHERE kar_id=" + Str(kar_id)
+                        cmd3.CommandText = query
+                        cmd3.ExecuteNonQuery()
+
+                        SetNewStatusFlag(Now, orderheaderid, True)
+
+                        MsgBox("De kar kan opnieuw worden geprint.")
+                        Exit Sub
+                    End If
+                Else
+                    MsgBox("Deze kar heeft geen foutmeldingen om gereset te worden.")
+                End If
+
+            End Using
+        Catch ex As Exception
+            ErrorLog("Fout: FD Error reset " + ex.Message)
+            MessageBox.Show("Fout: FD Error reset" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
+
+    End Sub
+
+    Private Sub PrintFloridayErrorReport(kar_id As Integer)
+
+        Form13.text_txt.Text = "Floriday brief afhandeling rapport" + vbNewLine + vbNewLine
+        Dim query As String = ""
+
+        Try
+            'Open Connection
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                Dim reader As OdbcDataReader
+                Dim reader2 As OdbcDataReader
+
+                Dim cmd As New OdbcCommand("", Conn)
+                Dim cmd2 As New OdbcCommand("", Conn)
+                Dim cmd3 As New OdbcCommand("", Conn)
+                Dim cmd4 As New OdbcCommand("", Conn)
+                Dim cmd5 As New OdbcCommand("", Conn)
+
+
+                Dim count As Integer
+
+                query = "SELECT COUNT(*) as 'COUNT' FROM floriday_tasks WHERE status=0"
+                cmd.CommandText = query
+                reader = cmd.ExecuteReader()
+                If reader.HasRows Then
+                    count = CHint(reader.Item("COUNT"))
+                    Form13.text_txt.Text = Form13.text_txt.Text + "Serverstatus : " + Str(count) + " opdrachten in de wachtrij" + vbNewLine
+                End If
+                reader.Close()
+
+                query = "SELECT * From orderkarren WHERE kar_id =" + Str(kar_id)
+                cmd2.CommandText = query
+                reader2 = cmd2.ExecuteReader()
+                Dim floriday_printflag As Integer = 0
+                If reader2.HasRows Then
+                    reader2.Read()
+                    floriday_printflag = CHint(reader2("floriday_printflag"))
+
+                    If floriday_printflag = 0 Then Form13.text_txt.Text = Form13.text_txt.Text + "Deze kar heeft nog geen print-commando ontvangen (status=0)" + vbNewLine
+                    If floriday_printflag = 1 Then Form13.text_txt.Text = Form13.text_txt.Text + "Deze kar heeft het print commando ontvangen, maar de server heeft het nog niet verwerkt. (status=1)." + vbNewLine
+                    If floriday_printflag = 2 Then Form13.text_txt.Text = Form13.text_txt.Text + "Deze kar heeft het print commando ontvangen, de server is bezig met verwerking (status=2)." + vbNewLine
+                    If floriday_printflag = 99 Then Form13.text_txt.Text = Form13.text_txt.Text + "Deze kar heeft het print commando ontvangen, maar er is iets fout gegaan in het proces (status=99)." + vbNewLine
+
+                End If
+                reader2.Close()
+
+                query = "SELECT * From floriday_taskrun WHERE kar_id=" + Str(kar_id)
+                cmd.CommandText = query
+                reader = cmd.ExecuteReader()
+                If reader.HasRows Then
+                    reader.Read()
+
+                    Dim id As Integer = CHint(reader("id"))
+                    Dim pakbonnummer As String = CHstr(reader("barcode"))
+                    Dim kopernaam As String = CHstr(reader("koper_naam"))
+                    Dim dataflag As Integer = CHint(reader("dataflag"))
+                    Dim floridayTradeitemFlag As Integer = CHint(reader("floridayTradeitemFlag"))
+                    Dim floridayBatchFlag As Integer = CHint(reader("floridayBatchFlag"))
+                    Dim floridayDeliveryFlag As Integer = CHint(reader("floridayDeliveryFlag"))
+                    Dim floridayFulfillmentFlag As Integer = CHint(reader("floridayFulfillmentFlag"))
+                    Dim printFlag As Integer = CHint(reader("printFlag"))
+                    Dim klok As Boolean = CHbool(reader("klokorder"))
+                    Dim timeout As Integer = CHint(reader("timeout"))
+                    Dim fulfillment_STATUS As String = CHstr(reader("fulfillment_STATUS"))
+                    Dim data_error As String = CHstr(reader("data_error"))
+
+                    Dim delivery_POST_id As Integer = CHint(reader("delivery_POST_id"))
+                    Dim delivery_POST_reply As Integer = CHint(reader("delivery_POST_reply"))
+                    Dim delivery_POST_error As String = CHstr(reader("delivery_POST_error"))
+                    Dim delivery_GET_id As Integer = CHint(reader("delivery_GET_id"))
+                    Dim delivery_GET_reply As Integer = CHint(reader("delivery_GET_reply"))
+                    Dim delivery_GET_error As String = CHstr(reader("delivery_GET_error"))
+                    Dim fulfillment_POST_id As Integer = CHint(reader("fulfillment_POST_id"))
+                    Dim fulfillment_POST_reply As Integer = CHint(reader("fulfillment_POST_reply"))
+                    Dim fulfillment_POST_error As String = CHstr(reader("fulfillment_POST_error"))
+
+                    Dim deliveryOrderId As String = CHstr(reader("deliveryOrderId"))
+                    Dim fulfillmentOrderId As String = CHstr(reader("fulfillmentOrderId"))
+                    reader.Close()
+
+                    If dataflag = 1 Then
+                        Form13.text_txt.Text = Form13.text_txt.Text + "Data-check is bezig" + vbNewLine
+                    ElseIf dataflag = 99 Then
+                        Form13.text_txt.Text = Form13.text_txt.Text + "Er is een fout geconstateerd in de data :" + data_error + vbNewLine
+                    Else
+                        Form13.text_txt.Text = Form13.text_txt.Text + "De Data-informatie is in orde" + vbNewLine + vbNewLine
+                    End If
+
+                    query = "SELECT * From floriday_taskrun_lines WHERE taskrun_id=" + Str(id)
+                    cmd.CommandText = query
+                    reader = cmd.ExecuteReader()
+                    Do While reader.Read()
+                        kar_id = CHint(reader("kar_id"))
+                        Dim tradeItemId As String = CHstr(reader("new_tradeItemId"))
+                        Dim tradeitem_POST_id As Integer = CHint(reader("tradeitem_POST_id"))
+                        Dim tradeitem_POST_reply As Integer = CHint(reader("tradeitem_POST_reply"))
+                        Dim tradeitem_POST_error As String = CHstr(reader("tradeitem_POST_error"))
+                        Dim tradeitem_GET_id As Integer = CHint(reader("tradeitem_GET_id"))
+                        Dim tradeitem_GET_reply As Integer = CHint(reader("tradeitem_GET_reply"))
+                        Dim tradeitem_GET_error As String = CHstr(reader("tradeitem_GET_error"))
+
+                        Form13.text_txt.Text = Form13.text_txt.Text + "Trade-item: " + tradeItemId + vbNewLine
+                        If tradeitem_POST_reply = 202 Then Form13.text_txt.Text = Form13.text_txt.Text + "Trade-item variant correct verzonden" + vbNewLine
+                        If tradeitem_POST_reply > 202 Then
+                            Form13.text_txt.Text = Form13.text_txt.Text + "Trade-item variant niet correct verzonden:" + tradeitem_POST_error + vbNewLine
+                        End If
+                        If tradeitem_GET_reply = 200 Then Form13.text_txt.Text = Form13.text_txt.Text + "Trade-item variant correct gevonden op floriday" + vbNewLine
+                        If tradeitem_GET_reply > 200 Then
+                            Form13.text_txt.Text = Form13.text_txt.Text + "Trade-item variant niet gevonden op floriday:" + tradeitem_GET_error + vbNewLine
+                        End If
+                    Loop
+                    reader.Close()
+                    Form13.text_txt.Text = Form13.text_txt.Text + vbNewLine
+
+                    query = "SELECT * From floriday_taskrun_lines WHERE taskrun_id=" + Str(id)
+                    cmd.CommandText = query
+                    reader = cmd.ExecuteReader()
+                    Do While reader.Read()
+                        Dim batch_id As String = CHstr(reader("batchId"))
+                        Dim batch_POST_id As Integer = CHint(reader("batch_POST_id"))
+                        Dim batch_POST_reply As Integer = CHint(reader("batch_POST_reply"))
+                        Dim batch_POST_error As String = CHstr(reader("new_tradeItemId"))
+                        Dim batch_GET_id As Integer = CHint(reader("batch_GET_id"))
+                        Dim batch_GET_reply As Integer = CHint(reader("batch_GET_reply"))
+                        Dim batch_GET_error As String = CHstr(reader("batch_GET_error"))
+
+                        Form13.text_txt.Text = Form13.text_txt.Text + "Partij aangemaakt: " + batch_id + vbNewLine
+                        If batch_POST_reply = 202 Then Form13.text_txt.Text = Form13.text_txt.Text + "Partij correct verzonden" + vbNewLine
+                        If batch_POST_reply > 202 Then
+                            Form13.text_txt.Text = Form13.text_txt.Text + "Partij niet correct verzonden:" + batch_POST_error + vbNewLine
+                        End If
+                        If batch_GET_reply = 200 Then Form13.text_txt.Text = Form13.text_txt.Text + "Partij correct gevonden op floriday" + vbNewLine
+                        If batch_GET_reply > 200 Then
+                            Form13.text_txt.Text = Form13.text_txt.Text + "Partij niet gevonden op floriday:" + batch_GET_error + vbNewLine
+                        End If
+                    Loop
+                    reader.Close()
+
+                    Form13.text_txt.Text = Form13.text_txt.Text + vbNewLine
+
+                    Form13.text_txt.Text = Form13.text_txt.Text + "Delivery aangemaakt: " + deliveryOrderId + vbNewLine
+                    If delivery_POST_reply = 202 Then Form13.text_txt.Text = Form13.text_txt.Text + "Delivery correct verzonden" + vbNewLine
+                    If delivery_POST_reply > 202 Then
+                        Form13.text_txt.Text = Form13.text_txt.Text + "Delivery niet correct verzonden:" + delivery_POST_error + vbNewLine
+                    End If
+                    If delivery_GET_reply = 200 Then Form13.text_txt.Text = Form13.text_txt.Text + "Delivery correct gevonden op floriday" + vbNewLine
+                    If delivery_GET_reply > 200 Then
+                        Form13.text_txt.Text = Form13.text_txt.Text + "Delivery niet gevonden op floriday:" + delivery_GET_error + vbNewLine
+                    End If
+
+                    Form13.text_txt.Text = Form13.text_txt.Text + vbNewLine
+
+                    Form13.text_txt.Text = Form13.text_txt.Text + "Fulfillment aangemaakt: " + fulfillmentOrderId + vbNewLine
+                    If fulfillment_POST_reply = 202 Then Form13.text_txt.Text = Form13.text_txt.Text + "fulfillment correct verzonden" + vbNewLine
+                    If fulfillment_POST_reply > 202 Then
+                        Form13.text_txt.Text = Form13.text_txt.Text + "Fulfillment niet correct verzonden:" + fulfillment_POST_error + vbNewLine
+                    End If
+                    Form13.text_txt.Text = Form13.text_txt.Text + "Fulfillment status : " + fulfillment_STATUS + vbNewLine + vbNewLine
+
+                    If fulfillmentOrderId <> "" Then
+                        query = "SELECT * From floriday_fulfillmentorderssync_json WHERE fulfillmentOrderId='" + fulfillmentOrderId + "'"
+                        cmd.CommandText = query
+                        reader = cmd.ExecuteReader()
+                        If reader.HasRows Then
+                            reader.Read()
+                            Dim json As String = CHstr(reader("json"))
+                            Form13.text_txt.Text = Form13.text_txt.Text + json
+                        End If
+                        reader.Close()
+
+                    End If
+
+                End If
+
+            End Using
+        Catch ex As Exception
+            ErrorLog("Fout: FD Error reporter " + ex.Message)
+            MessageBox.Show("Fout: FD Error reporter" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
+
+
+        Form13.StartPosition = FormStartPosition.CenterScreen
+        Form13.Show()
+
+
+    End Sub
+
 
 #End Region
 
@@ -34452,8 +36127,102 @@ exit_verwerk:
     End Sub
 #End Region
 
-#Region "Floriday"
-    Private Sub FdMenu_ordersophalen_but_Click(sender As Object, e As EventArgs) Handles FdMenu_ordersophalen_but.Click
+#Region "FloridayOrders"
+
+    Private Sub FloridayOrders_flx_Click(sender As Object, e As EventArgs) Handles FloridayOrders_flx.Click
+        Dim selectedcol As Integer = FloridayOrders_flx.ColSel
+        Dim selectedrow As Integer = FloridayOrders_flx.RowSel
+        Dim boektijdcol As Integer = FindCol(FloridayOrders_flx, "Boek datum/tijd")
+
+        If selectedrow >= 1 And selectedcol <> boektijdcol Then
+            CheckOrderlines(True, selectedrow)
+        End If
+    End Sub
+
+    Private Sub FloridayOrderLines_flx_Click(sender As Object, e As EventArgs) Handles FloridayOrderLines_flx.Click
+
+        Dim selectedcol As Integer = FloridayOrderLines_flx.ColSel
+        Dim selectedrow As Integer = FloridayOrderLines_flx.RowSel
+
+
+        Dim wpscol As Integer = FindCol(FloridayOrderLines_flx, "wpsfilter")
+        If selectedcol = wpscol Then
+            FillWpsFilterCombo(selectedrow, selectedcol)
+
+        End If
+
+
+        If selectedrow >= 1 Then
+            ShowOrderInfo(FloridayOrderLines_flx.Item(selectedrow, 0))
+        End If
+    End Sub
+
+    Private Sub FillWpsFilterCombo(selectedrow As Integer, selectedcol As Integer)
+        Dim style As C1.Win.C1FlexGrid.CellStyle = Fc_Flexgrid_LineData.Styles.Add("newGridStyle")
+        FDLineCombo.DataMode = C1.Win.C1List.DataModeEnum.Normal
+
+        Dim dt_fd As New DataTable
+        dt_fd.Columns.Add("Naam", GetType(String))
+        dt_fd.Columns.Add("Code", GetType(String))
+
+        Dim cn() As String = New String() {"Naam", "Code"}
+        dt_fd.Clear()
+
+        '*********** LIJST GENEREREN **************************
+
+        Dim soortcol As Integer = FindCol(FloridayOrderLines_flx, "soort")
+        Dim soort_id As Integer = CInt(FloridayOrderLines_flx.Item(selectedrow, soortcol))
+
+
+        If soort_id < 10000 Then   'niet bij mixen
+            Dim wps_soort_id = soorten(GID(soorten, soort_id)).wps_code
+            Dim potmaat = soorten(GID(soorten, soort_id)).potmaat
+
+            Dim filterfound As Boolean = False
+            For i = 0 To UBound(wpsfilter)
+                If potmaat = 190 Then potmaat = 170
+                If wps_soort_id = wpsfilter(i).wps_soortnummer And potmaat = wpsfilter(i).potmaat Then
+                    dt_fd.Rows.Add(New String() {wpsfilter(i).filternaam, wpsfilter(i).filternummer})
+                End If
+            Next i
+            If filterfound = False And soort_id < 10000 Then
+                dt_fd.Rows.Add(New String() {999999, "Niet via WPS"})
+            End If
+
+            FDLineCombo.DataSource = dt_fd
+            FDLineCombo.DisplayMember = "Naam"
+            FDLineCombo.ValueMember = "Code"
+            FDLineCombo.Splits(0).DisplayColumns(1).Visible = False  ' id
+            FDLineCombo.ComboStyle = 2  'combo style list
+
+            FDLineCombo.DropDownWidth = 400
+            FDLineCombo.ColumnWidth = 390
+            FDLineCombo.MaxDropDownItems = 15
+
+            style.Editor = FDLineCombo
+            FloridayOrderLines_flx.SetCellStyle(selectedrow, selectedcol, style)
+            '  FloridayOrderLines_flx.StartEditing(selectedrow, 2)
+
+            '' FDLineCombo.DroppedDown = True
+
+            ' CODE OPSLAAN NAAST NAAM
+        End If
+
+
+    End Sub
+
+    Private Function CheckOrderlines(show As Boolean, selectedrow As Integer) As Integer
+        Dim warningcode As Integer = 0
+
+        If show = True Then
+            FloridayOrderLines_flx.Rows.Count = 1
+            fd_orderlinetable = BuildTable("floridayorderlines", FloridayOrderLines_flx)
+            ClearStyles(FloridayOrderLines_flx)
+        End If
+
+        Dim idlist As String = CStr(FloridayOrders_flx.GetData(selectedrow, FindCol(FloridayOrders_flx, "idlist")))
+        Dim ids() As String = idlist.Split(New Char() {";"c})
+
         Dim query As String = ""
         Try
             Using Conn As New OdbcConnection(ConnString)
@@ -34465,8 +36234,1005 @@ exit_verwerk:
                 Dim Cmd2 As New OdbcCommand(query, Conn)
                 Dim Reader2 As OdbcDataReader
 
+                Dim Cmd3 As New OdbcCommand(query, Conn)
+                Dim Reader3 As OdbcDataReader
+
+                Dim Cmd4 As New OdbcCommand(query, Conn)
+                Dim Reader4 As OdbcDataReader
+
+                For idloop = 0 To UBound(ids)                     'Execute Query
+                    query = "SELECT * FROM floriday_salesorders WHERE id=?"
+                    Cmd.Parameters.Clear()
+                    Cmd.Parameters.AddWithValue("", ids(idloop))
+                    Cmd.CommandText = query
+                    Reader = Cmd.ExecuteReader()
+                    If Reader.HasRows Then
+                        Reader.Read()
+
+                        Dim orderLineId As String = CHstr(Reader("orderLineId"))
+                        Dim salesChannelOrderId As String = CHstr(Reader("salesChannelOrderId"))
+                        Dim customerOrderId As String = CHstr(Reader("customerOrderId"))
+                        Dim customerOrganizationId As String = CHstr(Reader("customerOrganizationId"))
+                        Dim supplyLineId As String = CHstr(Reader("supplyLineId"))
+                        Dim tradeItemId As String = CHstr(Reader("tradeItemId"))
+                        Dim salesChannel As String = CHstr(Reader("salesChannel"))
+                        Dim numberOfPieces As Integer = CHint(Reader("numberOfPieces"))
+                        Dim tradeInstrument As String = CHstr(Reader("tradeInstrument"))
+                        Dim selectedPackingConfiguration_piecesPerPackage As Integer = CHint(Reader("selectedPackingConfiguration_piecesPerPackage"))
+                        Dim selectedPackingConfiguration_bunchesPerPackage As Integer = CHint(Reader("selectedPackingConfiguration_bunchesPerPackage"))
+                        Dim selectedPackingConfiguration_package_vbnPackageCode As Integer = CHint(Reader("selectedPackingConfiguration_package_vbnPackageCode"))
+                        Dim selectedPackingConfiguration_package_customPackageId As String = CHstr(Reader("selectedPackingConfiguration_package_customPackageId"))
+                        Dim selectedPackingConfiguration_loadCarrier As String = CHstr(Reader("selectedPackingConfiguration_loadCarrier"))
+                        Dim selectedPackingConfiguration_additionalPricePerPiece_currency As String = CHstr(Reader("selectedPackingConfiguration_additionalPricePerPiece_currency"))
+                        Dim selectedPackingConfiguration_additionalPricePerPiece_value As Double = CHdouble(Reader("selectedPackingConfiguration_additionalPricePerPiece_value"))
+                        Dim selectedPackingConfiguration_photoUrl As String = CHstr(Reader("selectedPackingConfiguration_photoUrl"))
+                        Dim orderDateTime As DateTime = CHDate2(Reader("orderDateTime"), Now)
+                        Dim pricePerPiece_currency As String = CHstr(Reader("pricePerPiece_currency"))
+                        Dim pricePerPiece_value As Double = CHdouble(Reader("pricePerPiece_value"))
+                        Dim delivery_deliveryConditionId As String = CHstr(Reader("delivery_deliveryConditionId"))
+                        Dim delivery_latestDeliveryDateTime As DateTime = CHDate2(Reader("delivery_latestDeliveryDateTime"), Now)
+                        Dim delivery_regionGln As String = CHstr(Reader("delivery_regionGln"))
+                        Dim delivery_location_gln As String = CHstr(Reader("delivery_location_gln"))
+                        Dim delivery_location_address_addressLine As String = CHstr(Reader("delivery_location_address_addressLine"))
+                        Dim delivery_location_address_city As String = CHstr(Reader("delivery_location_address_city"))
+                        Dim delivery_location_address_countryCode As String = CHstr(Reader("delivery_location_address_countryCode"))
+                        Dim delivery_location_address_postalCode As String = CHstr(Reader("delivery_location_address_postalCode"))
+                        Dim delivery_location_address_stateOrProvince As String = CHstr(Reader("delivery_location_address_stateOrProvince"))
+                        Dim cancellationDeadline As DateTime = CHDate2(Reader("cancellationDeadline"), Now)
+                        Dim status As String = CHstr(Reader("status"))
+                        Dim tradeItemName As String = "Onbekend"
+                        query = "SELECT tradeItemName_nl FROM floriday_tradeitem WHERE tradeItemId='" + tradeItemId + "'"
+                        Cmd2.CommandText = query
+                        Reader2 = Cmd2.ExecuteReader()
+                        If Reader2.HasRows Then
+                            Reader2.Read()
+                            tradeItemName = CHstr(Reader2("tradeItemName_nl"))
+                        End If
+                        Reader2.Close()
+
+                        Dim fd_koper_ean As String = ""
+                        Dim niet_accumuleren As Boolean = False
+                        query = "SELECT * FROM floriday_organizations WHERE organizationId='" + customerOrganizationId + "'"
+                        Cmd2.CommandText = query
+                        Reader2 = Cmd2.ExecuteReader()
+                        If Reader2.HasRows Then
+                            fd_koper_ean = CHstr(Reader2("companyGln"))
+                        End If
+                        Reader2.Close()
+
+                        query = "SELECT * FROM klanten where ean = " + fd_koper_ean
+                        Cmd2.CommandText = query
+                        Reader2 = Cmd2.ExecuteReader()
+                        If Reader2.HasRows Then
+                            niet_accumuleren = CHbool(Reader2("nietaccumuleren"))
+                        End If
+                        Reader2.Close()
+
+                        Dim soort_id As Integer = 0
+                        Dim fust_id As Integer = 0
+                        Dim hoes_id As Integer = 0
+                        Dim accessoire1 As Integer = 0
+                        Dim accessoire2 As Integer = 0
+                        Dim accessoire3 As Integer = 0
+                        Dim accessoire4 As Integer = 0
+                        Dim accessoire5 As Integer = 0
+                        Dim accessoire6 As Integer = 0
+                        Dim accessoire7 As Integer = 0
+                        Dim accessoire8 As Integer = 0
+                        Dim decorum As Boolean = False
+
+
+                        Dim soortwarning As Integer = 0
+                        Dim fustwarning As Integer = 0
+                        Dim hoeswarning As Integer = 0
+                        Dim acce1warning As Integer = 0
+                        Dim acce2warning As Integer = 0
+                        Dim acce3warning As Integer = 0
+                        Dim acce4warning As Integer = 0
+                        Dim acce5warning As Integer = 0
+                        Dim acce6warning As Integer = 0
+                        Dim acce7warning As Integer = 0
+                        Dim acce8warning As Integer = 0
+                        Dim filterstoegepast As String = ""
+
+                        'preset data ophalen voor tradeitem
+
+                        query = "SELECT * FROM floriday_tradeitem_boek WHERE tradeItemId='" + tradeItemId + "'"
+                        Cmd2.CommandText = query
+                        Reader2 = Cmd2.ExecuteReader()
+                        If Reader2.HasRows Then
+                            Reader2.Read()
+                            soort_id = CHint(Reader2("boek_soortcode"))      '<- nog wel omrekenen naar andere mix als er ander fust is gegeven
+                            hoes_id = CHint(Reader2("boek_hoes"))
+                            accessoire1 = CHint(Reader2("boek_accessoire1"))
+                            accessoire2 = CHint(Reader2("boek_accessoire2"))
+                            accessoire3 = CHint(Reader2("boek_accessoire3"))
+                            accessoire4 = CHint(Reader2("boek_accessoire4"))
+                            decorum = CHbool(Reader2("decorum"))
+                        Else
+                            soortwarning = 1
+                            fustwarning = 1
+                        End If
+                        Reader2.Close()
+                        ' soort via interne code (voor mixen)
+                        Dim soortfound As Boolean = False
+                        Dim fustfound As Boolean = False
+
+                        If soort_id >= 10000 Then
+                            Dim interne_code As String = mixen(GID(mixen, soort_id - 10000)).interne_code
+                            fust_id = mixen(GID(mixen, soort_id - 10000)).fust
+                            If fust(GID(fust, fust_id)).fustcode_florecom <> selectedPackingConfiguration_package_vbnPackageCode Then
+                                For i = 0 To UBound(mixen)
+                                    Dim mixfustid = mixen(i).fust
+                                    If mixen(i).interne_code = interne_code Then
+                                        If fust(GID(fust, mixfustid)).fustcode_florecom = selectedPackingConfiguration_package_vbnPackageCode Then
+                                            If fust(GID(fust, mixfustid)).aantal_per_fust = selectedPackingConfiguration_piecesPerPackage Then
+                                                soort_id = mixen(i).id + 10000
+                                                fust_id = mixen(i).fust
+                                                soortfound = True
+                                                fustfound = True
+                                                Exit For
+                                            End If
+                                        End If
+                                    End If
+                                Next
+                                If soortfound = False Then
+                                    soort_id = 0
+                                    fust_id = 0
+                                End If
+                            Else
+                                soortfound = True
+                                fustfound = True
+                            End If
+                        Else
+                            'soort actief?
+                            For i = 0 To UBound(soorten)
+                                If soorten(i).actief = True And soorten(i).id = soort_id Then
+                                    soortfound = True
+                                    Exit For
+                                End If
+                            Next
+                            'gewone soort / fust bepalen
+                            If decorum = True Then    'deco fust zoeken
+                                For i = 1 To UBound(fust)
+                                    If fust(i).decorum = True And fust(i).fustcode = selectedPackingConfiguration_package_vbnPackageCode Then
+                                        fustfound = True
+                                        fust_id = fust(i).id
+                                        Exit For
+                                    End If
+                                Next
+                            End If
+                            If fustfound = False Then   'normaal fust zoeken
+                                For i = 1 To UBound(fust)
+                                    If fust(i).fustcode = selectedPackingConfiguration_package_vbnPackageCode Then
+                                        fustfound = True
+                                        fust_id = fust(i).id
+                                        Exit For
+                                    End If
+                                Next
+                            End If
+                        End If
+                        If fustfound = False Then fustwarning = 1
+                        If soortfound = False Then soortwarning = 1
+
+                        If selectedPackingConfiguration_additionalPricePerPiece_value < 0 Then selectedPackingConfiguration_additionalPricePerPiece_value = 0
+                        Dim prijs As Double = pricePerPiece_value + selectedPackingConfiguration_additionalPricePerPiece_value
+
+
+                        ' aanbod lijn ophalen voor referentie
+                        Dim agreementReference_code As String = ""
+                        Dim agreementReference_description As String = ""
+                        query = "SELECT * FROM floriday_supply WHERE supplyLineId='" + supplyLineId + "'"
+                        Cmd2.CommandText = query
+                        Reader2 = Cmd2.ExecuteReader()
+                        If Reader2.HasRows Then
+                            Reader2.Read()
+                            agreementReference_code = CHstr(Reader2("agreementReference_code"))
+                            agreementReference_description = CHstr(Reader2("agreementReference_description"))
+                        End If
+                        Reader2.Close()
+
+
+                        'additional services
+                        Dim stikkerstatus As Integer = 0
+                        query = "SELECT * FROM floriday_salesorders_additionalservices WHERE parent_id=?"
+                        Cmd3.CommandText = query
+                        Cmd3.Parameters.Clear()
+                        Cmd3.Parameters.AddWithValue("", ids(idloop))
+                        Reader3 = Cmd3.ExecuteReader()
+                        Do While Reader3.Read
+                            Dim additionalServiceId As String = CHstr(Reader3("additionalServiceId"))
+                            Dim price_currency As String = CHstr(Reader3("price_currency"))
+                            Dim price_value As Double = CHdouble(Reader3("price_value"))
+                            Dim unit As String = CHstr(Reader3("unit"))
+                            If unit = "PIECE" Then
+                                prijs = prijs + price_value
+                            End If
+
+                            query = "SELECT * FROM floriday_additionalservices_boek WHERE additionalServiceId='" + additionalServiceId + "'"
+                            Cmd4.CommandText = query
+                            Reader4 = Cmd4.ExecuteReader()
+                            If Reader4.HasRows Then
+                                Reader4.Read()
+                                Dim as_accessoire1 As Integer = CHint(Reader4("boek_accessoire1"))
+                                Dim as_accessoire2 As Integer = CHint(Reader4("boek_accessoire2"))
+                                Dim ordernietverwerken As Boolean = CHbool(Reader4("ordernietverwerken"))
+                                Dim labelstatus As Integer = CHint(Reader4("labelstatus"))
+                                If labelstatus > 0 Then stikkerstatus = labelstatus
+                                If as_accessoire1 > 0 Then
+                                    If accessoire1 = 0 Then
+                                        accessoire1 = as_accessoire1
+                                        If ordernietverwerken = True Then acce1warning = 1
+                                    ElseIf accessoire2 = 0 Then
+                                        accessoire2 = as_accessoire1
+                                        If ordernietverwerken = True Then acce2warning = 1
+                                    ElseIf accessoire3 = 0 Then
+                                        accessoire3 = as_accessoire1
+                                        If ordernietverwerken = True Then acce3warning = 1
+                                    ElseIf accessoire4 = 0 Then
+                                        accessoire4 = as_accessoire1
+                                        If ordernietverwerken = True Then acce4warning = 1
+                                    ElseIf accessoire5 = 0 Then
+                                        accessoire5 = as_accessoire1
+                                        If ordernietverwerken = True Then acce5warning = 1
+                                    ElseIf accessoire6 = 0 Then
+                                        accessoire6 = as_accessoire1
+                                        If ordernietverwerken = True Then acce6warning = 1
+                                    ElseIf accessoire7 = 0 Then
+                                        accessoire7 = as_accessoire1
+                                        If ordernietverwerken = True Then acce7warning = 1
+                                    ElseIf accessoire8 = 0 Then
+                                        accessoire8 = as_accessoire1
+                                        If ordernietverwerken = True Then acce8warning = 1
+                                    Else
+                                        acce8warning = 1
+                                    End If
+                                End If
+                                If as_accessoire2 > 0 Then
+                                    If accessoire1 = 0 Then
+                                        accessoire1 = as_accessoire2
+                                        If ordernietverwerken = True Then acce1warning = 1
+                                    ElseIf accessoire2 = 0 Then
+                                        accessoire2 = as_accessoire2
+                                        If ordernietverwerken = True Then acce2warning = 1
+                                    ElseIf accessoire3 = 0 Then
+                                        accessoire3 = as_accessoire2
+                                        If ordernietverwerken = True Then acce3warning = 1
+                                    ElseIf accessoire4 = 0 Then
+                                        accessoire4 = as_accessoire2
+                                        If ordernietverwerken = True Then acce4warning = 1
+                                    ElseIf accessoire5 = 0 Then
+                                        accessoire5 = as_accessoire2
+                                        If ordernietverwerken = True Then acce5warning = 1
+                                    ElseIf accessoire6 = 0 Then
+                                        accessoire6 = as_accessoire2
+                                        If ordernietverwerken = True Then acce6warning = 1
+                                    ElseIf accessoire7 = 0 Then
+                                        accessoire7 = as_accessoire2
+                                        If ordernietverwerken = True Then acce7warning = 1
+                                    ElseIf accessoire8 = 0 Then
+                                        accessoire8 = as_accessoire2
+                                        If ordernietverwerken = True Then acce8warning = 1
+                                    Else
+                                        acce8warning = 1
+                                    End If
+                                End If
+                            End If
+                            Reader4.Close()
+                        Loop
+                        Reader3.Close()
+
+                        Dim Aantal As Integer = CInt(numberOfPieces / selectedPackingConfiguration_piecesPerPackage)
+                        Dim xapf As Integer = selectedPackingConfiguration_piecesPerPackage
+
+
+                        Dim opmerking As String = ""
+                        Dim stikkercode As Integer = 0
+                        Dim wpsfilter As Integer = 0
+                        Dim boekstatus As Integer = 0
+                        Dim selectie As Boolean = True
+                        'Opslaan orderinfo voor edits.
+
+
+                        query = "SELECT * FROM floriday_salesorders_boek WHERE orderLineId='" + orderLineId + "'"
+                        Cmd2.CommandText = query
+                        Reader2 = Cmd2.ExecuteReader()
+                        If Reader2.HasRows Then
+                            Reader2.Read()  'oude data ophalen
+                            Dim testsoort_id As Integer = CHint(Reader2("boek_soortId"))
+                            If testsoort_id > 0 Then  'als soort_id = 0 -> kans geven nieuwe definitie aan te maken en de volgende keer wel bekend
+                                soort_id = testsoort_id
+                                hoes_id = CHint(Reader2("boek_hoesId"))
+                                accessoire1 = CHint(Reader2("boek_accessoire1"))
+                                accessoire2 = CHint(Reader2("boek_accessoire2"))
+                                accessoire3 = CHint(Reader2("boek_accessoire3"))
+                                accessoire4 = CHint(Reader2("boek_accessoire4"))
+                                accessoire5 = CHint(Reader2("boek_accessoire5"))
+                                accessoire6 = CHint(Reader2("boek_accessoire6"))
+                                accessoire7 = CHint(Reader2("boek_accessoire7"))
+                                accessoire8 = CHint(Reader2("boek_accessoire8"))
+                                opmerking = CHstr(Reader2("boek_opmerking"))
+                                wpsfilter = CHint(Reader2("boek_wpsfilter"))
+                                boekstatus = CHint(Reader2("boek_status"))
+                                fust_id = CHint(Reader2("boek_fustid"))
+                                stikkercode = CHint(Reader2("boek_stikkercode"))
+                                stikkerstatus = CHint(Reader2("boek_stikkerstatus"))
+                                filterstoegepast = CHstr(Reader2("filterstoegepast"))
+                                selectie = CHbool(Reader2("selectie"))
+                                Reader2.Close()
+                            Else
+                                Reader2.Close()
+                                query = "UPDATE floriday_salesorders_boek SET boek_soortId=?,boek_hoesId=?,boek_accessoire1=?," _
+                                      & "boek_accessoire2=?,boek_accessoire3=?,boek_accessoire4=?,boek_accessoire5=?,boek_accessoire6=?,boek_accessoire7=?," _
+                                      & "boek_accessoire8=?,boek_opmerking=?,boek_wpsfilter=?,boek_status=?,boek_fustid=?,boek_stikkercode=?,selectie=?" _
+                                      & " WHERE orderLineId=?"
+                                Cmd2.CommandText = query
+                                Cmd2.Parameters.Clear()
+                                Cmd2.Parameters.AddWithValue("", soort_id)
+                                Cmd2.Parameters.AddWithValue("", hoes_id)
+                                Cmd2.Parameters.AddWithValue("", accessoire1)
+                                Cmd2.Parameters.AddWithValue("", accessoire2)
+                                Cmd2.Parameters.AddWithValue("", accessoire3)
+                                Cmd2.Parameters.AddWithValue("", accessoire4)
+                                Cmd2.Parameters.AddWithValue("", accessoire5)
+                                Cmd2.Parameters.AddWithValue("", accessoire6)
+                                Cmd2.Parameters.AddWithValue("", accessoire7)
+                                Cmd2.Parameters.AddWithValue("", accessoire8)
+
+                                Cmd2.Parameters.AddWithValue("", Mid(opmerking, 1, 79))
+                                Cmd2.Parameters.AddWithValue("", wpsfilter)
+                                Cmd2.Parameters.AddWithValue("", 0) 'status
+                                Cmd2.Parameters.AddWithValue("", fust_id)
+                                Cmd2.Parameters.AddWithValue("", stikkercode)
+                                Cmd2.Parameters.AddWithValue("", selectie)
+                                Cmd2.Parameters.AddWithValue("", orderLineId)
+                                Cmd2.ExecuteNonQuery()
+
+                            End If
+                        Else
+                            Reader2.Close()
+                            'save orderlines
+                            query = "INSERT INTO floriday_salesorders_boek(orderLineId,boek_soortId,boek_hoesId,boek_accessoire1," _
+                                & "boek_accessoire2,boek_accessoire3,boek_accessoire4,boek_accessoire5,boek_accessoire6,boek_accessoire7," _
+                                & "boek_accessoire8,boek_opmerking,boek_wpsfilter,boek_status,boek_fustid,boek_stikkercode,boek_aantal,customerOrganizationId," _
+                                & "org_soortId,org_hoesId,org_fustId,org_accessoire1,org_accessoire2,org_accessoire3," _
+                                & "org_accessoire4,org_accessoire5,org_accessoire6,org_accessoire7,org_accessoire8,tradeItemName,tradeItemId,selectie," _
+                                & "boek_stikkerstatus,packages_to_fullfill)" _
+                                & " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                            Cmd2.CommandText = query
+                            Cmd2.Parameters.Clear()
+                            Cmd2.Parameters.AddWithValue("", orderLineId)
+                            Cmd2.Parameters.AddWithValue("", soort_id)
+                            Cmd2.Parameters.AddWithValue("", hoes_id)
+                            Cmd2.Parameters.AddWithValue("", accessoire1)
+                            Cmd2.Parameters.AddWithValue("", accessoire2)
+                            Cmd2.Parameters.AddWithValue("", accessoire3)
+                            Cmd2.Parameters.AddWithValue("", accessoire4)
+                            Cmd2.Parameters.AddWithValue("", accessoire5)
+                            Cmd2.Parameters.AddWithValue("", accessoire6)
+                            Cmd2.Parameters.AddWithValue("", accessoire7)
+                            Cmd2.Parameters.AddWithValue("", accessoire8)
+
+                            Cmd2.Parameters.AddWithValue("", Mid(opmerking, 1, 79))
+                            Cmd2.Parameters.AddWithValue("", wpsfilter)
+                            Cmd2.Parameters.AddWithValue("", 0) 'status
+                            Cmd2.Parameters.AddWithValue("", fust_id)
+                            Cmd2.Parameters.AddWithValue("", stikkercode)
+                            Cmd2.Parameters.AddWithValue("", numberOfPieces)
+                            Cmd2.Parameters.AddWithValue("", customerOrganizationId)
+
+                            Cmd2.Parameters.AddWithValue("", soort_id)
+                            Cmd2.Parameters.AddWithValue("", hoes_id)
+                            Cmd2.Parameters.AddWithValue("", fust_id)
+                            Cmd2.Parameters.AddWithValue("", accessoire1)
+                            Cmd2.Parameters.AddWithValue("", accessoire2)
+                            Cmd2.Parameters.AddWithValue("", accessoire3)
+                            Cmd2.Parameters.AddWithValue("", accessoire4)
+                            Cmd2.Parameters.AddWithValue("", accessoire5)
+                            Cmd2.Parameters.AddWithValue("", accessoire6)
+                            Cmd2.Parameters.AddWithValue("", accessoire7)
+                            Cmd2.Parameters.AddWithValue("", accessoire8)
+                            Cmd2.Parameters.AddWithValue("", tradeItemName)
+                            Cmd2.Parameters.AddWithValue("", tradeItemId)
+                            Cmd2.Parameters.AddWithValue("", 1)  'selectie aan by default
+                            Cmd2.Parameters.AddWithValue("", stikkerstatus)
+                            If selectedPackingConfiguration_piecesPerPackage < 1 Then selectedPackingConfiguration_piecesPerPackage = 1
+                            Dim aantalfust As Integer = CInt(numberOfPieces / selectedPackingConfiguration_piecesPerPackage)
+                            Cmd2.Parameters.AddWithValue("", aantalfust)
+                            Cmd2.ExecuteNonQuery()
+
+                            filterstoegepast = CheckFloridayFilter(orderLineId)
+
+                        End If
+
+                        If show = True Then
+
+                            Dim flexfill As New Dictionary(Of String, Object)
+                            flexfill.Add("Id", ids(idloop))
+                            flexfill.Add("selectie", selectie)
+                            flexfill.Add("aantal", Aantal)
+                            flexfill.Add("xapf", "x " + Tstr(xapf))
+                            flexfill.Add("soort", soort_id)
+                            flexfill.Add("fust", fust_id)
+                            flexfill.Add("hoes", hoes_id)
+                            flexfill.Add("accessoire1", accessoire1)
+                            flexfill.Add("accessoire2", accessoire2)
+                            flexfill.Add("accessoire3", accessoire3)
+                            flexfill.Add("accessoire4", accessoire4)
+                            flexfill.Add("accessoire5", accessoire5)
+                            flexfill.Add("accessoire6", accessoire6)
+                            flexfill.Add("accessoire7", accessoire7)
+                            flexfill.Add("accessoire8", accessoire8)
+                            flexfill.Add("prijs", Format(prijs, "#0.000"))
+                            If agreementReference_code <> "" Or agreementReference_description <> "" Then
+                                flexfill.Add("aanbodreferentie", agreementReference_code + ":" + agreementReference_description)
+                            End If
+
+                            flexfill.Add("opmerking", opmerking)
+                            flexfill.Add("stikkercode", stikkercode)
+                            flexfill.Add("wpsfilter", wpsfilter)
+                            flexfill.Add("orderLineId", orderLineId)
+                            flexfill.Add("stikkerstatus", stikkerstatus)
+                            flexfill.Add("fdfilter", filterstoegepast)
+
+
+                            Dim flexwarning As New Dictionary(Of String, Object)
+                            If soortwarning > 0 Then flexwarning.Add("soort", 1)
+                            If fustwarning > 0 Then flexwarning.Add("fust", 1)
+                            If hoeswarning > 0 Then flexwarning.Add("hoes", 1)
+                            If acce1warning > 0 Then flexwarning.Add("accessoire1", 1)
+                            If acce2warning > 0 Then flexwarning.Add("accessoire2", 1)
+                            If acce3warning > 0 Then flexwarning.Add("accessoire3", 1)
+                            If acce4warning > 0 Then flexwarning.Add("accessoire4", 1)
+                            If acce5warning > 0 Then flexwarning.Add("accessoire5", 1)
+                            If acce6warning > 0 Then flexwarning.Add("accessoire6", 1)
+                            If acce7warning > 0 Then flexwarning.Add("accessoire7", 1)
+                            If acce8warning > 0 Then flexwarning.Add("accessoire8", 1)
+                            If filterstoegepast <> "" Then flexwarning.Add("fdfilter", 2)
+                            'If agreementReference_code <> "" Then flexwarning.Add("aanbodreferentie", 1)
+
+                            FlexgridAddTree(FloridayOrderLines_flx, fd_orderlinetable, flexfill, flexwarning, niet_accumuleren)
+                        End If
+                        warningcode = warningcode + soortwarning + fustwarning + hoeswarning + acce1warning + acce2warning + acce3warning + acce4warning + acce5warning + acce6warning + acce7warning + acce8warning
+
+                    End If
+                    Reader.Close()
+
+                Next
+
+
+                If show = True Then
+
+                    ' alle accesoires en hoes uitzetten als ze niet gevuld zijn
+
+                    Dim hoesfound As Boolean = False
+                    Dim col As Integer = 0
+
+                    col = FindCol(FloridayOrderLines_flx, "Hoes")
+                    For i = 1 To FloridayOrderLines_flx.Rows.Count - 1
+                        If FloridayOrderLines_flx.Item(i, col) > 0 Then hoesfound = True
+                    Next
+                    If hoesfound = False Then FloridayOrderLines_flx.Cols(col).Visible = False
+
+                    Dim accefound As Boolean = False
+                    Dim firstempty As Boolean = False
+                    col = FindCol(FloridayOrderLines_flx, "Accessoire1")
+                    For colrun = col To col + 7
+                        For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                            If FloridayOrderLines_flx.Item(i, colrun) > 0 Then accefound = True
+                        Next
+                        If accefound = False And firstempty = True Then FloridayOrderLines_flx.Cols(colrun).Visible = False
+                        If firstempty = False And accefound = False Then firstempty = True
+                        accefound = False
+                    Next
+
+                    For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                        If FloridayOrderLines_flx.Rows(i).IsNode Then
+                            FloridayOrderLines_flx.Rows(i).Style = FloridayOrderLines_flx.Styles("EDIT")
+                            FloridayOrderLines_flx.Rows(i).Node.Collapsed = True
+                        End If
+                    Next
+
+                    ' selecties in tree goed zetten
+
+                    ' node selectie -> parent aanpassen?
+                    Dim selectiecol As Integer = FindCol(FloridayOrderLines_flx, "Selectie")
+                    Dim parentcol As Integer = FindCol(FloridayOrderLines_flx, "parentrow")
+                    Dim parentid As Integer = 0
+                    For nodeloop = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                        If FloridayOrderLines_flx.Rows(nodeloop).IsNode Then
+                            parentid = FloridayOrderLines_flx(nodeloop, parentcol)
+                        Else
+                            Dim childstatus As Boolean = FloridayOrderLines_flx.Item(nodeloop, col)
+                            Dim selectedchildfound As Boolean = False
+                            Dim notselectedchildfound As Boolean = False
+                            For i = 2 To FloridayOrderLines_flx.Rows.Count - 1  'als alle childnodes dezelfde status hebben -> parent aanpassen
+                                If FloridayOrderLines_flx(i, parentcol) = parentid And Not FloridayOrderLines_flx.Rows(i).IsNode Then
+                                    If FloridayOrderLines_flx(i, selectiecol) = True Then selectedchildfound = True
+                                    If FloridayOrderLines_flx(i, selectiecol) = False Then notselectedchildfound = True
+                                End If
+                            Next
+                            'set parent
+                            If selectedchildfound = True And notselectedchildfound = False Then
+                                For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                                    If FloridayOrderLines_flx(i, parentcol) = parentid And FloridayOrderLines_flx.Rows(i).IsNode Then
+                                        FloridayOrderLines_flx(i, selectiecol) = True
+                                    End If
+                                Next
+                            Else
+                                For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                                    If FloridayOrderLines_flx(i, parentcol) = parentid And FloridayOrderLines_flx.Rows(i).IsNode Then
+                                        FloridayOrderLines_flx(i, selectiecol) = False
+                                    End If
+                                Next
+                            End If
+                        End If
+                    Next
+
+                End If
+
+            End Using
+        Catch ex As Exception
+
+            MessageBox.Show("Fout bij floriday orderlines ophalen " + ex.ToString, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
+        Return warningcode
+    End Function
+
+    Private Sub FlexgridAddTree(flexgrid As C1FlexGrid, dbtable() As tablelayout, ByRef flexfill As Dictionary(Of String, Object), Optional flexwarning As Dictionary(Of String, Object) = Nothing, Optional DontStack As Boolean = False)
+        flexgrid.Tree.Style = TreeStyleFlags.SimpleLeaf
+        flexgrid.Tree.LineColor = Color.DarkBlue
+        flexgrid.Tree.Column = 2
+
+        'search all existing rows for items with same values 1
+        Dim parentline As Integer = -1
+        Dim newrow As Integer = -1
+        Dim samerowfound As Boolean = False
+        If DontStack = False Then
+            For row = 2 To flexgrid.Rows.Count - 1
+                Dim valuecompare As Object = Nothing
+                Dim differencefound As Boolean = False
+                If Not flexgrid.Rows(row).IsNode Then
+                    For i = 0 To dbtable.Count - 1  'col loop
+                        Dim col As String = dbtable(i).columnname
+                        If (col <> "") And (Not col = "orderLineId") And (Not col = "selectie") And (Not col = "aantal") Then
+                            If (flexfill.TryGetValue(col, valuecompare)) Then
+                                If CStr(flexgrid.Item(row, i + 2)) <> CStr(valuecompare) Then
+                                    differencefound = True
+                                End If
+                            End If
+                        End If
+                        If col = "parentrow" Then parentline = flexgrid.Item(row, i + 2)
+                    Next
+                    If differencefound = False Then
+                        'new node and row
+                        flexgrid.Rows.Insert(row)
+                        newrow = row
+                        samerowfound = True
+                        Exit For
+                    End If
+                End If
+            Next row
+        End If
+        If samerowfound = False Then
+            'add new parent node
+            flexgrid.Rows.Count = flexgrid.Rows.Count + 1
+            newrow = flexgrid.Rows.Count - 1
+            flexgrid.Rows(newrow).IsNode = True
+            flexgrid.Rows(newrow).Node.Level = 1
+
+            'fill parent row
+            Dim pvalue As Object = Nothing
+            For i = 0 To dbtable.Count - 1  'make new parent node
+                Dim col As String = dbtable(i).columnname
+                If col <> "" Then
+                    If col = "aantal" Then
+                        flexgrid.Item(newrow, i + 2) = 0
+                        'ElseIf col = "orderLineId" Then
+                        'flexgrid.Item(newrow, i + 2) = ""
+                    Else
+                        If (flexfill.TryGetValue(col, pvalue)) Then
+                            flexgrid.Item(newrow, i + 2) = pvalue
+                        End If
+                    End If
+                    If col = "parentrow" Then
+                        flexgrid.Item(newrow, i + 2) = newrow
+                        parentline = newrow
+                    End If
+                    'If col = "selectie" Then
+                    'flexgrid.Item(newrow, i + 2) = True
+                    'End If
+                End If
+            Next
+            'add empty row
+            flexgrid.Rows.Count = flexgrid.Rows.Count + 1
+            newrow = flexgrid.Rows.Count - 1
+        End If
+
+        'fill row
+
+        Dim value As Object = Nothing
+        If (flexfill.TryGetValue("Id", value)) Then 'save id column
+            flexgrid.Item(newrow, 0) = value
+        End If
+        For i = 0 To dbtable.Count - 1  'save other columns
+            Dim col As String = dbtable(i).columnname
+            If col <> "" Then
+                If (flexfill.TryGetValue(col, value)) Then
+                    flexgrid.Item(newrow, i + 2) = value
+                End If
+            End If
+            If col = "parentrow" Then
+                flexgrid.Item(newrow, i + 2) = parentline
+            End If
+            'If col = "SELECT" Then
+            'flexgrid.Item(newrow, i + 2) = True
+            'End If
+        Next
+        Dim aantalcol As Integer = FindCol(flexgrid, "Aantal")
+        Dim parentcol As Integer = FindCol(flexgrid, "parentrow")
+
+        For row = 2 To flexgrid.Rows.Count - 1
+            If flexgrid.Rows(row).IsNode Then
+                If flexgrid.Item(newrow, parentcol) = flexgrid.Item(row, parentcol) Then
+                    flexgrid.Item(row, aantalcol) = flexgrid.Item(row, aantalcol) + flexgrid.Item(newrow, aantalcol)
+                End If
+            End If
+        Next
+
+
+
+        If Not IsNothing(flexwarning) Then
+            For i = 0 To dbtable.Count - 1
+                Dim col As String = dbtable(i).columnname
+                If col <> "" Then
+                    If (flexwarning.TryGetValue(col, value)) Then
+                        If value > 0 Then
+
+                            Dim rs As C1.Win.C1FlexGrid.CellStyle
+                            Dim stylename As String = "STYLE" + Tstr(i)
+                            rs = flexgrid.Styles.Add(stylename)
+                            If value = 1 Then rs.BackColor = Color.LightCoral
+                            If value > 1 Then rs.BackColor = Color.Orange
+
+                            Dim celformat() = dbtable(i).type.Split(New Char() {";"c})
+                            If Trim(celformat(0)) <> "" Then
+                                rs.DataType = System.Type.GetType(celformat(0))
+                            End If
+                            If UBound(celformat) = 1 Then
+                                If Trim(celformat(1)) = "..." Then
+                                    rs.ComboList = "..."
+                                    rs.Format = ""
+                                Else
+                                    rs.Format = Trim(celformat(1))
+                                End If
+                            Else
+                                rs.Format = ""
+                            End If
+                            flexgrid.SetCellStyle(newrow, i + 2, stylename)
+                            Dim parentrow As Integer = flexgrid(newrow, parentcol)
+                            For j = 1 To flexgrid.Rows.Count - 1
+                                If flexgrid.Rows(j).IsNode And flexgrid.Item(j, parentcol) = parentrow Then
+                                    flexgrid.SetCellStyle(j, i + 2, stylename)
+                                End If
+                            Next j
+                        End If
+                    End If
+                End If
+            Next
+        End If
+
+        flexfill.Clear()
+
+
+    End Sub
+
+    Private Sub ShowOrderInfo(order_id As Integer)
+        Dim query As String = ""
+        Try
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                Dim Cmd As New OdbcCommand(query, Conn)
+                Dim Reader As OdbcDataReader
+
+                Dim Cmd2 As New OdbcCommand(query, Conn)
+                Dim Reader2 As OdbcDataReader
+
+                Dim Cmd3 As New OdbcCommand(query, Conn)
+                Dim Reader3 As OdbcDataReader
+
+                Dim Cmd4 As New OdbcCommand(query, Conn)
+                Dim Reader4 As OdbcDataReader
+
+                Dim flexfill As New Dictionary(Of String, Object)
+
+                FloridayOrderInfo_flx.Rows.Count = 1
+
+                Dim orderLineId As String = ""
+                Dim salesChannelOrderId As String = ""
+                Dim customerOrderId As String = ""
+                Dim customerOrganizationId As String = ""
+                Dim supplyLineId As String = ""
+                Dim tradeItemId As String = ""
+                Dim salesChannel As String = ""
+
+
+                query = "SELECT * FROM floriday_salesorders WHERE id=?"
+                Cmd.Parameters.Clear()
+                Cmd.Parameters.AddWithValue("", order_id)
+                Cmd.CommandText = query
+                Reader = Cmd.ExecuteReader()
+                If Reader.HasRows Then
+                    Reader.Read()
+
+                    orderLineId = CHstr(Reader("orderLineId"))
+                    salesChannelOrderId = CHstr(Reader("salesChannelOrderId"))
+                    customerOrderId = CHstr(Reader("customerOrderId"))
+                    customerOrganizationId = CHstr(Reader("customerOrganizationId"))
+                    supplyLineId = CHstr(Reader("supplyLineId"))
+                    tradeItemId = CHstr(Reader("tradeItemId"))
+                    salesChannel = CHstr(Reader("salesChannel"))
+                    Dim numberOfPieces As Integer = CHint(Reader("numberOfPieces"))
+                    Dim tradeInstrument As String = CHstr(Reader("tradeInstrument"))
+                    Dim selectedPackingConfiguration_piecesPerPackage As Integer = CHint(Reader("selectedPackingConfiguration_piecesPerPackage"))
+                    Dim selectedPackingConfiguration_bunchesPerPackage As Integer = CHint(Reader("selectedPackingConfiguration_bunchesPerPackage"))
+                    Dim selectedPackingConfiguration_package_vbnPackageCode As Integer = CHint(Reader("selectedPackingConfiguration_package_vbnPackageCode"))
+                    Dim selectedPackingConfiguration_package_customPackageId As String = CHstr(Reader("selectedPackingConfiguration_package_customPackageId"))
+                    Dim selectedPackingConfiguration_loadCarrier As String = CHstr(Reader("selectedPackingConfiguration_loadCarrier"))
+                    Dim selectedPackingConfiguration_additionalPricePerPiece_currency As String = CHstr(Reader("selectedPackingConfiguration_additionalPricePerPiece_currency"))
+                    Dim selectedPackingConfiguration_additionalPricePerPiece_value As Double = CHdouble(Reader("selectedPackingConfiguration_additionalPricePerPiece_value"))
+                    Dim selectedPackingConfiguration_photoUrl As String = CHstr(Reader("selectedPackingConfiguration_photoUrl"))
+                    Dim orderDateTime As DateTime = CHDate2(Reader("orderDateTime"), Now)
+                    Dim pricePerPiece_currency As String = CHstr(Reader("pricePerPiece_currency"))
+                    Dim pricePerPiece_value As Double = CHdouble(Reader("pricePerPiece_value"))
+                    Dim delivery_deliveryConditionId As String = CHstr(Reader("delivery_deliveryConditionId"))
+                    Dim delivery_latestDeliveryDateTime As DateTime = CHDate2(Reader("delivery_latestDeliveryDateTime"), Now)
+                    Dim delivery_regionGln As String = CHstr(Reader("delivery_regionGln"))
+                    Dim delivery_location_gln As String = CHstr(Reader("delivery_location_gln"))
+                    Dim delivery_location_address_addressLine As String = CHstr(Reader("delivery_location_address_addressLine"))
+                    Dim delivery_location_address_city As String = CHstr(Reader("delivery_location_address_city"))
+                    Dim delivery_location_address_countryCode As String = CHstr(Reader("delivery_location_address_countryCode"))
+                    Dim delivery_location_address_postalCode As String = CHstr(Reader("delivery_location_address_postalCode"))
+                    Dim delivery_location_address_stateOrProvince As String = CHstr(Reader("delivery_location_address_stateOrProvince"))
+                    Dim cancellationDeadline As DateTime = CHDate2(Reader("cancellationDeadline"), Now)
+                    Dim status As String = CHstr(Reader("status"))
+
+                    query = "SELECT * FROM floriday_tradeitem WHERE tradeItemId='" + tradeItemId + "'"
+                    Cmd2.CommandText = query
+                    Reader2 = Cmd2.ExecuteReader()
+                    If Reader2.HasRows Then
+                        Reader2.Read()
+                        Dim tr_id As Integer = CHint(Reader2("id"))
+                        Dim tradeItemReference As String = CHstr(Reader2("tradeItemReference"))
+                        Dim tradeItemVersion As Integer = CHint(Reader2("tradeItemVersion"))
+                        Dim isDeleted As Boolean = CHbool(Reader2("isDeleted"))
+                        Dim supplierArticleCode As String = CHstr(Reader2("supplierArticleCode"))
+                        Dim articleGtin As String = CHstr(Reader2("articleGtin"))
+                        Dim vbnProductCode As Integer = CHint(Reader2("vbnProductCode"))
+                        Dim tradeItemName_nl As String = CHstr(Reader2("tradeItemName_nl"))
+                        Dim tradeItemName_en As String = CHstr(Reader2("tradeItemName_en"))
+
+                        flexfill.Add("naam", "Trade-item naam")
+                        flexfill.Add("waarde", tradeItemName_nl)
+                        FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                        flexfill.Add("naam", "Trade-item eigen-code")
+                        flexfill.Add("waarde", supplierArticleCode)
+                        FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                        flexfill.Add("naam", "Trade-item VBN-code")
+                        flexfill.Add("waarde", vbnProductCode)
+                        FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                    Else
+                        flexfill.Add("naam", "FOUT")
+                        flexfill.Add("waarde", "Trade-item niet gevonden")
+                        FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+                    End If
+                    Reader2.Close()
+
+                    flexfill.Add("naam", "Aantal planten")
+                    flexfill.Add("waarde", numberOfPieces)
+                    FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                    flexfill.Add("naam", "Basis prijs")
+                    flexfill.Add("waarde", pricePerPiece_currency)
+                    flexfill.Add("prijs", Format(pricePerPiece_value, "#0.000"))
+                    FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                    Dim totaalprijs As Double = pricePerPiece_value
+
+                    query = "SELECT * FROM floriday_salesorders_additionalservices WHERE parent_id=?"
+                    Cmd3.CommandText = query
+                    Cmd3.Parameters.Clear()
+                    Cmd3.Parameters.AddWithValue("", order_id)
+                    Reader3 = Cmd3.ExecuteReader()
+                    Do While Reader3.Read()
+                        Dim additionalServiceId As String = CHstr(Reader3("additionalServiceId"))
+                        Dim price_currency As String = CHstr(Reader3("price_currency"))
+                        Dim price_value As Double = CHdouble(Reader3("price_value"))
+                        Dim unit As String = CHstr(Reader3("unit"))
+
+                        query = "SELECT * FROM floriday_additionalservices WHERE additionalServiceId='" + additionalServiceId + "'"
+                        Cmd4.CommandText = query
+                        Reader4 = Cmd4.ExecuteReader()
+                        If Reader4.HasRows Then
+                            Reader4.Read()
+
+                            Dim commercialServiceType_commercialServiceTypeId As String = CHstr(Reader4("commercialServiceType_commercialServiceTypeId"))
+                            Dim commercialServiceType_commercialServiceTypeName As String = CHstr(Reader4("commercialServiceType_commercialServiceTypeName"))
+                            Dim audience As String = CHstr(Reader4("audience"))
+                            Dim name As String = CHstr(Reader4("name"))
+                            Dim description As String = CHstr(Reader4("description"))
+                            Dim isAvailable As Boolean = CHbool(Reader4("isAvailable"))
+
+                            totaalprijs = totaalprijs + price_value
+
+                            flexfill.Add("naam", "Additional service")
+                            flexfill.Add("waarde", name)
+                            flexfill.Add("prijs", Format(price_value, "#0.000"))
+                            FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+                        End If
+                        Reader4.Close()
+
+                    Loop
+                    Reader3.Close()
+
+                    If selectedPackingConfiguration_additionalPricePerPiece_value > 0 Then
+                        flexfill.Add("naam", "Extra Fust prijs")
+                        flexfill.Add("waarde", pricePerPiece_currency)
+                        flexfill.Add("prijs", Format(selectedPackingConfiguration_additionalPricePerPiece_value, "#0.000"))
+                        totaalprijs = totaalprijs + selectedPackingConfiguration_additionalPricePerPiece_value
+                        FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+                    End If
+
+                    flexfill.Add("naam", "Totaal prijs")
+                    flexfill.Add("waarde", pricePerPiece_currency)
+                    flexfill.Add("prijs", Format(totaalprijs, "#0.000"))
+                    FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                    flexfill.Add("naam", "")
+                    flexfill.Add("waarde", "")
+                    FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                    flexfill.Add("naam", "Fust-code")
+                    flexfill.Add("waarde", selectedPackingConfiguration_package_vbnPackageCode)
+                    FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                    flexfill.Add("naam", "Aantal per fust")
+                    flexfill.Add("waarde", selectedPackingConfiguration_piecesPerPackage)
+                    FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                    If selectedPackingConfiguration_package_customPackageId <> "" Then
+                        flexfill.Add("naam", "Floriday packageID")
+                        flexfill.Add("waarde", selectedPackingConfiguration_package_customPackageId)
+                        FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+                    End If
+
+                    flexfill.Add("naam", "Ladingdrager")
+                    flexfill.Add("waarde", selectedPackingConfiguration_loadCarrier)
+                    FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+                End If
+
+
+                flexfill.Add("naam", "")
+                flexfill.Add("waarde", "")
+                FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                flexfill.Add("naam", "DBorderId")
+                flexfill.Add("waarde", order_id)
+                FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                flexfill.Add("naam", "orderLineId")
+                flexfill.Add("waarde", orderLineId)
+                FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                flexfill.Add("naam", "salesChannelOrderId")
+                flexfill.Add("waarde", salesChannelOrderId)
+                FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                flexfill.Add("naam", "customerOrderId")
+                flexfill.Add("waarde", customerOrderId)
+                FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                flexfill.Add("naam", "customerOrganizationId")
+                flexfill.Add("waarde", customerOrganizationId)
+                FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                flexfill.Add("naam", "supplyLineId")
+                flexfill.Add("waarde", supplyLineId)
+                FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                flexfill.Add("naam", "tradeItemId")
+                flexfill.Add("waarde", tradeItemId)
+                FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                flexfill.Add("naam", "salesChannel")
+                flexfill.Add("waarde", salesChannel)
+                FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+
+                Reader.Close()
+
+
+
+            End Using
+        Catch ex As Exception
+            'ErrorLog("Database niet gevonden")
+            MessageBox.Show("Fout bij floriday orderline info ophalen " + ex.ToString, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
+    End Sub
+
+    Dim fd_ordertable() As tablelayout
+    Dim fd_orderlinetable() As tablelayout
+    Dim fd_orderinfotable() As tablelayout
+    Private Sub SetupFloridayGrid()
+        fd_ordertable = BuildTable("floridayorders", FloridayOrders_flx)
+        fd_orderlinetable = BuildTable("floridayorderlines", FloridayOrderLines_flx)
+        fd_orderinfotable = BuildTable("floridayorderinfo", FloridayOrderInfo_flx)
+        SetTabPage("Floriday")
+    End Sub
+
+    Private Sub FloridayOrdersShow(Optional orderlineid As Integer = 0)
+        FloridayOrders_flx.Rows.Count = 1
+        Dim query As String = ""
+        Try
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                Dim Cmd As New OdbcCommand(query, Conn)
+                Dim Reader As OdbcDataReader
+
+                Dim Cmd2 As New OdbcCommand(query, Conn)
+                Dim Reader2 As OdbcDataReader
+
+
+                Dim Start_datum As Date = Floriday_Calendar.SelectionStart.Date
+                Dim End_datum As Date = Floriday_Calendar.SelectionEnd.Date
+                If Start_datum = Now.Date Then Start_datum = DateAdd("d", -14, Start_datum)
+                If End_datum < Start_datum Then
+                    End_datum = Start_datum
+                End If
+                Dim Start_DatumStr As String = Start_datum.ToString("yyyy/MM/dd")
+                Dim End_DatumStr As String = End_datum.ToString("yyyy/MM/dd")
+
                 'Execute Query
-                query = "SELECT *,SUM(numberOfPieces/selectedPackingConfiguration_piecesPerPackage) as totaalbakken, GROUP_CONCAT(id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders WHERE boekstatus=0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' GROUP BY customerOrganizationId,selectedPackingConfiguration_loadCarrier, delivery_location_gln, delivery_latestDeliveryDateTime ORDER BY delivery_latestDeliveryDateTime"
+
+                'nieuw of archief
+
+
+                If Fd_nieuweOrders_rb.Checked = True Then
+                    query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders WHERE boekstatus=0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' AND DATE(boektijd) >= '" + Start_DatumStr + "' AND DATE(boektijd) <= '" + End_DatumStr + "' GROUP BY customerOrganizationId,selectedPackingConfiguration_loadCarrier, delivery_location_gln, delivery_latestDeliveryDateTime ORDER BY delivery_latestDeliveryDateTime"
+                Else
+
+                    Start_DatumStr = Floriday_Calendar.SelectionStart.Date.ToString("yyyy/MM/dd")
+                    End_DatumStr = Floriday_Calendar.SelectionEnd.Date.ToString("yyyy/MM/dd")
+                    query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders WHERE boekstatus>0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' AND DATE(boektijd) >= '" + Start_DatumStr + "' AND DATE(boektijd) <= '" + End_DatumStr + "' GROUP BY boekstatus ORDER BY delivery_latestDeliveryDateTime"
+
+                    If FdMenu_Zoek_chk.Checked = True Then
+                        'zoeken
+                        query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(FLS.id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders AS FLS LEFT JOIN Floriday_Salesorders_Boek AS FSB ON FLS.OrderLineId=FSB.OrderlineId WHERE boekstatus>0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' AND DATE(boektijd) >= '" + Start_DatumStr + "' AND DATE(boektijd) <= '" + End_DatumStr + "' AND kopernaam LIKE '%" + FdMenu_Zoek_txt.Text + "%' GROUP BY boekstatus ORDER BY delivery_latestDeliveryDateTime"
+                    End If
+
+                    If FdMenu_ordernr_chk.Checked = True Then
+                        Dim fdnummer As Integer = 0
+                        Dim floridaynrstr As String = FdMenu_floridaynr_txt.Text.ToLower
+                        If Mid(floridaynrstr, 1, 2) = "fd" Then
+                            fdnummer = CInt(Val(Mid(floridaynrstr, 3, 8)))
+                        End If
+                        If fdnummer > 0 Then
+                            query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(FLS.id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders AS FLS LEFT JOIN Floriday_Salesorders_Boek AS FSB ON FLS.OrderLineId=FSB.OrderlineId WHERE boekstatus>0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' AND boek_floridaynr=" + Str(fdnummer) + " GROUP BY boekstatus ORDER BY delivery_latestDeliveryDateTime"
+                        Else
+                            MsgBox("Geen valide nummer niet gevonden")
+                        End If
+                    End If
+                End If
+
+                If orderlineid > 0 Then
+                    query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(FLS.id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders AS FLS LEFT JOIN Floriday_Salesorders_Boek AS FSB ON FLS.OrderLineId=FSB.OrderlineId WHERE FSB.boek_orderlineid=" + Str(orderlineid) + " ORDER BY delivery_latestDeliveryDateTime"
+                End If
+
                 Cmd.CommandText = query
                 Reader = Cmd.ExecuteReader()
                 Do While Reader.Read
@@ -34474,28 +37240,84 @@ exit_verwerk:
                     Dim customerOrganizationId As String = CHstr(Reader("customerOrganizationId"))
                     Dim supplyLineId As String = CHstr(Reader("supplyLineId"))
                     Dim numberOfTrays As Integer = CHint(Reader("totaalbakken"))
-                    Dim tradeInstrument As String = CHstr(Reader("grouped_ids"))
+                    Dim idlist As String = CHstr(Reader("grouped_ids"))
                     Dim delivery_latestDeliveryDateTime As DateTime = CHDate2(Reader("delivery_latestDeliveryDateTime"), Now)
                     Dim delivery_location_gln As String = CHstr(Reader("delivery_location_gln"))
-
+                    Dim orderdatetime As DateTime = CHDate2(Reader("orderdatetime"), Now)
+                    Dim databaseboektijd As DateTime = CHDate2(Reader("boektijd"), Now)
                     'kopernaam ophalen
                     Dim kopernaam As String = "Koper onbekend"
-                    query = "SELECT * FROM floriday_organizations WHERE organizationId='" + customerOrganizationId + "'"
+                    query = "SELECT name FROM floriday_organizations WHERE organizationId='" + customerOrganizationId + "'"
                     Cmd2.CommandText = query
                     Reader2 = Cmd2.ExecuteReader()
                     If Reader2.HasRows Then
                         kopernaam = CHstr(Reader2("name"))
+                    Else
+                        kopernaam = "Koper onbekend"
+                        InsertTask(0, 9, "GET", "organizations", customerOrganizationId)
                     End If
                     Reader2.Close()
 
+                    'locatie plaats ophalen
+                    Dim plaats As String = "Onbekend"
+                    query = "SELECT city_name FROM locatielijst WHERE GLN_location_code=?"
+                    Cmd2.CommandText = query
+                    Cmd2.Parameters.Clear()
+                    Cmd2.Parameters.AddWithValue("", delivery_location_gln)
+                    Reader2 = Cmd2.ExecuteReader()
+                    If Reader2.HasRows Then
+                        plaats = CHstr(Reader2("city_name"))
+                    End If
+                    Reader2.Close()
+
+                    'bereken boektijd
+                    Dim tijdwarning As Boolean = False
+                    Dim boektijd As DateTime
+                    Dim berekendeboektijd As DateTime
+
+                    If Fd_nieuweOrders_rb.Checked = True Then
+                        'nieuw
+                        BerekenBoektijdFloriday(Conn, delivery_latestDeliveryDateTime, plaats, berekendeboektijd, tijdwarning)
+
+                        If berekendeboektijd.Date > databaseboektijd.Date Then
+                            'upddate database tijd
+                            Dim ids() As String = idlist.Split(New Char() {";"c})
+                            For idloop = 0 To UBound(ids)
+                                Cmd2.CommandText = "UPDATE floriday_salesorders SET boektijd=? WHERE id=?"
+                                Cmd2.Parameters.Clear()
+                                Cmd2.Parameters.AddWithValue("", Format(berekendeboektijd, "yy-MM-dd HH:mm:ss"))
+                                Cmd2.Parameters.AddWithValue("", ids(idloop))
+                                Cmd2.ExecuteNonQuery()
+                            Next
+                            boektijd = berekendeboektijd
+                        Else
+                            boektijd = databaseboektijd
+                        End If
+                    Else
+                        'archief
+                        boektijd = databaseboektijd
+                    End If
+
+
                     Dim flexfill As New Dictionary(Of String, Object)
                     flexfill.Add("klantnaam", kopernaam)
-                    flexfill.Add("boekdt", Now)
+                    flexfill.Add("boekdt", boektijd)
                     flexfill.Add("leveringsdt", delivery_latestDeliveryDateTime)
                     flexfill.Add("aantalfust", numberOfTrays)
-                    flexfill.Add("leveringslocatie", delivery_location_gln)
-                    FlexgridAdd(FloridayOrders_flx, fd_ordertable, flexfill)
+                    flexfill.Add("leveringslocatie", plaats.ToLower)
+                    flexfill.Add("idlist", idlist)
+                    flexfill.Add("orderdatetime", orderdatetime)
+                    Dim flexwarning As New Dictionary(Of String, Object)
+                    If tijdwarning = True Then
+                        flexwarning.Add("leveringsdt", 1)
+                    End If
 
+                    FlexgridAdd(FloridayOrders_flx, fd_ordertable, flexfill, flexwarning)
+
+                    Dim warning As Boolean = CheckOrderlines(False, FloridayOrders_flx.Rows.Count - 1)
+                    If warning = True Then
+                        FloridayOrders_flx.Rows(FloridayOrders_flx.Rows.Count - 1).Style = FloridayOrders_flx.Styles("RED")
+                    End If
                 Loop
             End Using
         Catch ex As Exception
@@ -34505,17 +37327,1734 @@ exit_verwerk:
         End Try
     End Sub
 
-    Private Sub FdMenu_ArchiefVandaag_but_Click(sender As Object, e As EventArgs) Handles FdMenu_ArchiefVandaag_but.Click
+    Private Function GenerateNewID() As String
+        Dim newid As String = System.Guid.NewGuid().ToString()
+        Return newid
+    End Function
+
+    Public Function InsertTask(delay As Integer, priority As Integer, command As String, endpoint As String, Optional path As String = "", Optional additionalpath As String = "", Optional queryname1 As String = "", Optional queryvalue1 As String = "", Optional queryname2 As String = "", Optional queryvalue2 As String = "", Optional queryname3 As String = "", Optional queryvalue3 As String = "", Optional reference_id As Integer = 0, Optional runtime As DateTime = Nothing) As Integer
+        Dim insert_id As Integer = 0
+        Dim query As String = ""
+
+        If IsNothing(path) Then path = ""
+        If IsNothing(additionalpath) Then additionalpath = ""
+        If IsNothing(queryname1) Then queryname1 = ""
+        If IsNothing(queryvalue1) Then queryvalue1 = ""
+        If IsNothing(queryname2) Then queryname2 = ""
+        If IsNothing(queryvalue2) Then queryvalue2 = ""
+        If IsNothing(queryname3) Then queryname3 = ""
+        If IsNothing(queryvalue3) Then queryvalue3 = ""
+        If IsNothing(runtime) Then runtime = Now
+
+        Try
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+                Dim success As Boolean = False
+                Dim cmd As New OdbcCommand(query, Conn)
+                Dim reader As OdbcDataReader
+
+                Dim insertcommand As Boolean = True
+
+                If command = "GET" Then
+                    'staat er al een zelfde task in de taskrow die nog niet is uitgevoerd -> skip 
+                    query = "SELECT id FROM floriday_tasks WHERE delay=? AND command=? AND endpoint=? AND path=? AND additionalpath=? AND " _
+                    & "queryname1=? AND queryvalue1=? AND queryname2=? AND queryvalue2=? AND queryname3=? AND queryvalue3=? AND " _
+                    & "status=0"
+                    cmd.CommandText = query
+                    cmd.Parameters.Clear()
+                    cmd.Parameters.AddWithValue("", delay)
+                    cmd.Parameters.AddWithValue("", command)
+                    cmd.Parameters.AddWithValue("", endpoint)
+                    cmd.Parameters.AddWithValue("", path)
+                    cmd.Parameters.AddWithValue("", additionalpath)
+                    cmd.Parameters.AddWithValue("", queryname1)
+                    cmd.Parameters.AddWithValue("", queryvalue1)
+                    cmd.Parameters.AddWithValue("", queryname2)
+                    cmd.Parameters.AddWithValue("", queryvalue2)
+                    cmd.Parameters.AddWithValue("", queryname3)
+                    cmd.Parameters.AddWithValue("", queryvalue3)
+                    reader = cmd.ExecuteReader()
+                    If reader.HasRows Then
+
+                        insert_id = CHint(reader("id"))
+                        'GET command staat al in wachtrij.
+                        insertcommand = False
+                    End If
+                    reader.Close()
+                End If
+
+                If insertcommand = True Then
+
+                    query = "INSERT INTO floriday_tasks(delay,command,endpoint,path,additionalpath," _
+                            & "queryname1,queryvalue1,queryname2,queryvalue2,queryname3,queryvalue3," _
+                            & "reference_id,responce_code,status,errortext,runtime,priority,errorcount," _
+                            & "last_access,sequence,apitime,totaltime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    cmd.CommandText = query
+                    cmd.Parameters.Clear()
+                    cmd.Parameters.AddWithValue("", delay)
+                    cmd.Parameters.AddWithValue("", command)
+                    cmd.Parameters.AddWithValue("", endpoint)
+                    cmd.Parameters.AddWithValue("", path)
+                    cmd.Parameters.AddWithValue("", additionalpath)
+                    cmd.Parameters.AddWithValue("", queryname1)
+                    cmd.Parameters.AddWithValue("", queryvalue1)
+                    cmd.Parameters.AddWithValue("", queryname2)
+                    cmd.Parameters.AddWithValue("", queryvalue2)
+                    cmd.Parameters.AddWithValue("", queryname3)
+                    cmd.Parameters.AddWithValue("", queryvalue3)
+                    cmd.Parameters.AddWithValue("", reference_id)
+                    cmd.Parameters.AddWithValue("", 0)
+                    cmd.Parameters.AddWithValue("", 0)
+                    cmd.Parameters.AddWithValue("", "")
+                    cmd.Parameters.AddWithValue("", Format(runtime, "yy-MM-dd HH:mm:ss"))
+                    cmd.Parameters.AddWithValue("", priority)
+                    cmd.Parameters.AddWithValue("", 0)
+                    cmd.Parameters.AddWithValue("", Format(Now, "yy-MM-dd HH:mm:ss"))
+                    cmd.Parameters.AddWithValue("", 0)
+                    cmd.Parameters.AddWithValue("", 0)
+                    cmd.Parameters.AddWithValue("", 0)
+                    cmd.ExecuteNonQuery()
+
+                    cmd.CommandText = "SELECT LAST_INSERT_ID()"
+                    insert_id = Convert.ToInt32(cmd.ExecuteScalar())
+                End If
+
+
+            End Using
+        Catch ex As Exception
+            LogSQLErrors("Insert tasks:" + ex.Message, query)
+        End Try
+        Return insert_id
+
+    End Function
+
+
+    Private Sub FloridayOrders_flx_AfterEdit(sender As Object, e As RowColEventArgs) Handles FloridayOrders_flx.AfterEdit
+        Dim row As Integer = e.Row
+        Dim col As Integer = e.Col
+
+        Dim selectedcol As Integer = FloridayOrders_flx.ColSel
+        Dim selectedrow As Integer = FloridayOrders_flx.RowSel
+        Dim boektijdcol As Integer = FindCol(FloridayOrders_flx, "Boek datum/tijd")
+        Dim idlistcol As Integer = FindCol(FloridayOrders_flx, "idlist")
+        Dim newtime As DateTime = FloridayOrders_flx.Item(selectedrow, boektijdcol)
+        Dim idlist As String = FloridayOrders_flx.Item(selectedrow, idlistcol)
+
+        Dim query As String = ""
+        Try
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                Dim Cmd2 As New OdbcCommand(query, Conn)
+
+                Dim ids() As String = idlist.Split(New Char() {";"c})
+                For idloop = 0 To UBound(ids)
+                    Cmd2.CommandText = "UPDATE floriday_salesorders SET boektijd=? WHERE id=?"
+                    Cmd2.Parameters.Clear()
+                    Cmd2.Parameters.AddWithValue("", Format(newtime, "yy-MM-dd HH:mm:ss"))
+                    Cmd2.Parameters.AddWithValue("", ids(idloop))
+                    Cmd2.ExecuteNonQuery()
+                Next
+
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Fout bij floriday set date" + ex.ToString, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
 
     End Sub
 
-    Private Sub FdMenu_Archief_but_Click(sender As Object, e As EventArgs) Handles FdMenu_Archief_but.Click
+    Private Sub BerekenBoektijdFloriday(ByRef conn As OdbcConnection, ByVal deliverydate As Date, ByVal plaats As String, ByRef boektijd As DateTime, ByRef warning As Boolean)
+
+        'Dim datum As String = edi_datum.ToShortDateString
+        Dim dag As Integer = deliverydate.DayOfWeek
+        If dag = 0 Then dag = 7 'zondag
+        Dim uur As Integer = Val(Format(deliverydate, "HH"))
+        Dim minuut As Integer = Val(Format(deliverydate, "mm"))
+        If minuut > 30 Then uur = uur + 1
+        Dim fc_uur As String = "12:00"
+        Dim fc_datum As String = ""
+        Dim veiling As Integer
+        If plaats = "honselersdijk" Or plaats = "naaldwijk" Then
+            veiling = 1
+        Else
+            veiling = 2
+        End If
+
+        If deliverydate < Now Then
+            warning = True
+        End If
+
+        'fetch dag data from database
+        Dim checked(8) As Boolean
+        Dim check_tijd(8) As Integer
+        Dim subdag(8) As Integer
+        Dim boek_tijd(8) As String
+
+        checked(1) = True    'defaults
+        check_tijd(1) = 24
+        subdag(1) = 0
+        boek_tijd(1) = "12:00"
+
+        Dim Reader As OdbcDataReader
+        Dim Cmd As New OdbcCommand("SELECT * FROM vervoerstijden WHERE weekdag=? AND veiling=?", conn)
+        Cmd.Parameters.Clear()
+        Cmd.Parameters.AddWithValue("", dag)
+        Cmd.Parameters.AddWithValue("", veiling)
+        Reader = Cmd.ExecuteReader()
+        Dim positie As Integer = 1
+        Do While Reader.Read
+            checked(positie) = CHbool(Reader("checked"))
+            If checked(positie) = True Then
+                check_tijd(positie) = CHint(Reader("checktijd"))
+                subdag(positie) = CHint(Reader("subdag"))
+                boek_tijd(positie) = CHstr(Reader("boektijd"))
+            End If
+            positie = positie + 1
+        Loop
+        Reader.Close()
+
+        If checked(1) = True And uur < check_tijd(1) Then
+            deliverydate = DateAdd("d", subdag(1), deliverydate)
+            fc_uur = boek_tijd(1)
+        ElseIf checked(2) = True And uur < check_tijd(2) Then
+            deliverydate = DateAdd("d", subdag(2), deliverydate)
+            fc_uur = boek_tijd(2)
+        ElseIf checked(3) = True And uur < check_tijd(3) Then
+            deliverydate = DateAdd("d", subdag(3), deliverydate)
+            fc_uur = boek_tijd(3)
+        ElseIf checked(4) = True And uur < check_tijd(4) Then
+            deliverydate = DateAdd("d", subdag(4), deliverydate)
+            fc_uur = boek_tijd(4)
+        ElseIf checked(5) = True And uur < check_tijd(5) Then
+            deliverydate = DateAdd("d", subdag(5), deliverydate)
+            fc_uur = boek_tijd(5)
+        ElseIf checked(6) = True And uur < check_tijd(6) Then
+            deliverydate = DateAdd("d", subdag(6), deliverydate)
+            fc_uur = boek_tijd(6)
+        ElseIf checked(7) = True And uur < check_tijd(7) Then
+            deliverydate = DateAdd("d", subdag(7), deliverydate)
+            fc_uur = boek_tijd(7)
+        End If
+
+
+        fc_datum = deliverydate.ToShortDateString
+
+        boektijd = Date.Parse(fc_datum + " " + fc_uur)
+
+        If boektijd < Now Then
+            Dim boekdatum As String = Now.ToShortDateString
+            Dim currenttime As Integer = Val(Format(Now, "HH"))
+            Dim currentboektime As String = "12:00"
+            If currenttime <= 9 Then
+                currentboektime = "9:00"
+            ElseIf currenttime <= 12 Then
+                currentboektime = "12:00"
+            ElseIf currenttime <= 15 Then
+                If Now.DayOfWeek = 5 Then
+                    'warning = True
+                End If
+                currentboektime = "17:00"
+            ElseIf currenttime <= 24 Then
+                'warning = True
+                currentboektime = "17:00"
+            End If
+
+            Dim weekendtest As Integer = Now.DayOfWeek
+            If weekendtest = 0 Then 'zondag 
+                boekdatum = DateAdd("d", 1, boekdatum)
+            End If
+            If weekendtest = 6 Then 'zaterdag 
+                boekdatum = DateAdd("d", 2, boekdatum)
+            End If
+            boektijd = Date.Parse(boekdatum + " " + currentboektime)
+        End If
+
 
     End Sub
 
     Private Sub FdMenu_Verwerk_but_Click(sender As Object, e As EventArgs) Handles FdMenu_Verwerk_but.Click
 
+        FdMenu_Verwerk_but.Enabled = False
+        Application.DoEvents()
+
+        Dim fd_orderLineIdCol As Integer = FindCol(FloridayOrderLines_flx, "orderlineid")
+        Dim fd_selectieCol As Integer = FindCol(FloridayOrderLines_flx, "selectie")
+        Dim fd_soortCol As Integer = FindCol(FloridayOrderLines_flx, "soort")
+
+        Dim query As String = ""
+        Try
+            'Open Connection
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                Dim Cmd As New OdbcCommand("", Conn)
+                Dim reader As OdbcDataReader
+                'is de order nog steeds nieuw ? 
+
+
+                For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                    If FloridayOrderLines_flx.Item(i, fd_selectieCol) = True Then
+                        If FloridayOrderLines_flx.Rows(i).IsNode Then
+                            'no check
+                        Else
+                            Dim orderLineId As String = FloridayOrderLines_flx.Item(i, fd_orderLineIdCol)
+
+                            Cmd.CommandText = "select boekstatus from floriday_salesorders where  orderLineId='" + orderLineId + "'"
+                            reader = Cmd.ExecuteReader()
+                            If Reader.HasRows Then
+                                reader.Read()
+                                Dim boekstatus As Integer = CHint(reader("boekstatus"))
+                                If boekstatus <> 0 Then
+                                    MsgBox("Een gedeelte van deze order is al verwerkt, probeer opnieuw.")
+                                    FloridayOrderLines_flx.Rows.Count = 1
+                                    FloridayOrdersShow()
+                                    Exit Sub
+                                End If
+                            End If
+                            reader.Close()
+
+                            Cmd.CommandText = "SELECT * FROM floriday_salesorders_boek WHERE orderLineId='" + orderLineId + "'"
+                            reader = Cmd.ExecuteReader()
+                            If reader.HasRows Then
+                                reader.Read()
+                                Dim soort_id As Integer = CHint(reader("boek_soortId"))
+                                If soort_id = 0 Then
+                                    MsgBox("Soort niet bekend van een van de orderlines, probeer opnieuw")
+                                    FloridayOrderLines_flx.Rows.Count = 1
+                                    FloridayOrdersShow()
+                                    Exit Sub
+                                End If
+                            End If
+                            reader.Close()
+
+                        End If
+
+                    End If
+                Next
+
+
+            End Using
+        Catch ex As Exception
+            ErrorLog("Fout orderopslag fdcheck: " + ex.Message)
+            MsgBox("Fout orderopslag fdcheck: " + ex.Message, MsgBoxStyle.OkOnly)
+        End Try
+
+
+        Dim tweedevestiging As Boolean = False
+        Dim vestigingnummer As Integer = 0
+        Dim somethingselected As Boolean = False
+        For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+            If FloridayOrderLines_flx.Item(i, fd_selectieCol) = True Then
+                somethingselected = True
+                If FloridayOrderLines_flx.Rows(i).IsNode Then
+                    'no check
+                Else
+                    Dim SoortId As Integer = FloridayOrderLines_flx.Item(i, fd_soortCol)
+                    If SoortId < 1 Then
+                        MsgBox("Niet alle soorten zijn bekend, probeer opnieuw.")
+                        FloridayOrderLines_flx.Rows.Count = 1
+                        FloridayOrdersShow()
+                        Exit Sub
+                    End If
+
+                    Dim vestigingline As Integer = 1  '1 of 2 vestigingen
+                    If SoortId < 10000 Then
+                        vestigingline = soorten(GID(soorten, SoortId)).vestiging  'vestiging van line
+                    Else
+                        vestigingline = mixen(GID(mixen, SoortId - 10000)).vestiging
+                    End If
+                    If vestigingnummer = 0 Then
+                        vestigingnummer = vestigingline
+                    End If
+                    If vestigingline <> vestigingnummer Then
+                        'tweede vestiging gevonden
+                        tweedevestiging = True
+                    End If
+
+
+                End If
+            End If
+        Next
+        If somethingselected = True Then
+            If tweedevestiging = True Then
+                OpslaanFloriday(1)
+                OpslaanFloriday(2)
+            Else
+                OpslaanFloriday(vestigingnummer)
+            End If
+        Else
+            MsgBox("Maak eerst een selectie")
+        End If
+        FdMenu_Verwerk_but.Enabled = True
+
     End Sub
+
+    Private Sub OpslaanFloriday(vestigingnummer As Integer)
+
+        FormProgressBar.StartPosition = FormStartPosition.CenterScreen
+        FormProgressBar.Show()
+        FormProgressBar.DataProgressBar.Value = 5
+        Dim selectedrow As Integer = FloridayOrders_flx.RowSel
+
+
+        Dim query As String = ""
+        Try
+            'Open Connection
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                Dim Cmd As New OdbcCommand("", Conn)
+                Dim reader As OdbcDataReader
+
+                Dim Cmd2 As New OdbcCommand("", Conn)
+                Dim reader2 As OdbcDataReader
+
+                Dim header_id As Integer = 0
+
+                Dim fd_afleverdatum As DateTime = Now
+                Dim fd_koper_ean As String = "0000000000000"
+                Dim fd_kopernaam As String = "Koper onbekend"
+                Dim fd_afleverloc As String = ""
+                Dim fd_veilingbrief_id As Integer = 0
+                Dim fd_vervoerder As Integer = 0
+                Dim fd_floridaynr As Integer = 0
+                Dim fd_opmerking As String = ""
+                Dim fd_decorum As Boolean = False
+                Dim fd_kar_id As Integer = 0
+                Dim fd_locatie_ean As String = ""
+                Dim koppelnummer As Integer = 0
+                Dim labelcode_header As Integer = 0
+
+                Cmd.CommandText = "SELECT order_counter from floriday_settings"
+                reader = Cmd.ExecuteReader()
+                If reader.HasRows Then
+                    reader.Read()
+                    fd_floridaynr = CHint(reader("order_counter"))
+                End If
+                fd_floridaynr = fd_floridaynr + 1
+                reader.Close()
+                Cmd.CommandText = "UPDATE floriday_settings SET order_counter=?"
+                Cmd.Parameters.Clear()
+                Cmd.Parameters.AddWithValue("", fd_floridaynr)
+                Cmd.ExecuteNonQuery()
+                koppelnummer = fd_floridaynr
+
+
+                Dim idlist As String = CStr(FloridayOrders_flx.GetData(selectedrow, FindCol(FloridayOrders_flx, "idlist")))
+                Dim ids() As String = idlist.Split(New Char() {";"c})
+
+                query = "SELECT * FROM floriday_salesorders WHERE id=?"
+                Cmd.Parameters.Clear()
+                Cmd.Parameters.AddWithValue("", ids(0))
+                Cmd.CommandText = query
+                reader = Cmd.ExecuteReader()
+                If reader.HasRows Then
+                    reader.Read()
+
+                    fd_afleverdatum = CHDate2(reader("boektijd"), Now)
+                    Dim customerOrganizationId As String = CHstr(reader("customerOrganizationId"))
+                    fd_afleverloc = CHstr(reader("delivery_location_gln"))
+                    Dim loadCarrier As String = CHstr(reader("selectedPackingConfiguration_loadCarrier"))
+                    reader.Close()
+
+                    Select Case loadCarrier
+                        Case "NONE" : fd_kar_id = 8
+                        Case "AUCTION_TROLLEY" : fd_kar_id = 3
+                        Case "DANISH_TROLLEY" : fd_kar_id = 1
+                        Case "EURO_TROLLEY" : fd_kar_id = 16
+                        Case "PALLET" : fd_kar_id = 6
+                        Case "EURO_PALLET" : fd_kar_id = 7
+                    End Select
+
+                    Dim fd_rfhRelationId As Integer = 0
+                    query = "SELECT * FROM floriday_organizations WHERE organizationId='" + customerOrganizationId + "'"
+                    Cmd2.CommandText = query
+                    reader2 = Cmd2.ExecuteReader()
+                    If reader2.HasRows Then
+                        fd_kopernaam = CHstr(reader2("name"))
+                        fd_koper_ean = CHstr(reader2("companyGln"))
+                        fd_rfhRelationId = CHint(reader2("rfhRelationId"))
+                    End If
+                    reader2.Close()
+
+                    query = "SELECT * FROM klanten where ean = " + fd_koper_ean
+                    Cmd2.CommandText = query
+                    reader2 = Cmd2.ExecuteReader()
+                    If reader2.HasRows Then
+                        fd_afleverloc = CHint(reader2("bdo"))
+                        If jenptenhave = False Then
+                            If fd_locatie_ean = "8714231208761" Then    'EAN locatie AF TUIN => haagkamp
+                                fd_afleverloc = 7
+                            End If
+                        End If
+                        fd_veilingbrief_id = CHint(reader2("veiling_voorkeur"))
+                        fd_vervoerder = CHint(reader2("vervoerder"))
+                        reader2.Close()
+                    Else
+                        reader2.Close()
+                        'afleverlocatie bepalen
+                        query = "SELECT city_name FROM locatielijst WHERE GLN_location_code=?"
+                        Cmd.Parameters.Clear()
+                        Cmd.Parameters.AddWithValue("", fd_afleverloc)
+                        Cmd.CommandText = query
+                        reader = Cmd.ExecuteReader()
+                        If reader.HasRows Then
+                            reader.Read()
+                            fd_afleverloc = 3  'westland default
+                            fd_veilingbrief_id = 1
+                            Dim plaats As String = CHstr(reader("city_name"))
+                            reader.Close()
+
+                            If plaats = "AALSMEER" Then
+                                fd_afleverloc = 1
+                                fd_veilingbrief_id = 2
+                            End If
+                            If plaats = "RIJNSBURG" Then fd_afleverloc = 8
+                            If plaats = "BLEIWIJK" Then fd_afleverloc = 2
+                            If plaats = "RHEINMAAS" Then fd_afleverloc = 4
+                            If plaats = "EELDE" Then fd_afleverloc = 6
+                            If plaats = "BOSKOOP" Then fd_afleverloc = 5
+                            If jenptenhave = True Then
+                                If fd_locatie_ean = "8714231208761" Then fd_afleverloc = 9
+                            Else
+                                If fd_locatie_ean = "8714231208761" Then fd_afleverloc = 7
+                            End If
+                        End If
+
+                        query = "INSERT INTO klanten (klantnaam, ean, veilingnr_westland, veilingnr_vba, veiling_voorkeur," _
+                                & "kar_voorkeur, opmerking, fust_voorkeur, decorum, stikker, stikkeropslag, veilingnr_von," _
+                                & "vervoerder, bdo, mixen, contact, prijsopslag, actief, foto, opmerking_algemeen, opmerking_contacts," _
+                                & "transport_opmerking1, transport_opmerking2, transport_opmerking3, transport_opmerking4," _
+                                & "transport_opmerking5, wps_indeling, fustcategorie, hoescategorie, bakstikker, floriday_sync)" _
+                                & " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                        Cmd2.CommandText = query
+                        Cmd2.Parameters.Clear()
+                        Cmd2.Parameters.AddWithValue("", fd_kopernaam)
+                        Cmd2.Parameters.AddWithValue("", fd_koper_ean)
+                        Cmd2.Parameters.AddWithValue("", fd_rfhRelationId)
+                        Cmd2.Parameters.AddWithValue("", 0)
+                        Cmd2.Parameters.AddWithValue("", 1)
+
+                        Cmd2.Parameters.AddWithValue("", 1)
+                        Cmd2.Parameters.AddWithValue("", "")
+                        Cmd2.Parameters.AddWithValue("", 1)
+                        Cmd2.Parameters.AddWithValue("", 0)
+                        Cmd2.Parameters.AddWithValue("", 0)
+                        Cmd2.Parameters.AddWithValue("", 0)
+                        Cmd2.Parameters.AddWithValue("", 0)
+
+                        Cmd2.Parameters.AddWithValue("", 0)
+                        Cmd2.Parameters.AddWithValue("", fd_afleverloc)
+                        Cmd2.Parameters.AddWithValue("", 0)
+                        Cmd2.Parameters.AddWithValue("", "")
+                        Cmd2.Parameters.AddWithValue("", 0)
+                        Cmd2.Parameters.AddWithValue("", 1)
+                        Cmd2.Parameters.AddWithValue("", 0)
+                        Cmd2.Parameters.AddWithValue("", "")
+                        Cmd2.Parameters.AddWithValue("", "")
+
+                        Cmd2.Parameters.AddWithValue("", "")
+                        Cmd2.Parameters.AddWithValue("", "")
+                        Cmd2.Parameters.AddWithValue("", "")
+                        Cmd2.Parameters.AddWithValue("", "")
+
+                        Cmd2.Parameters.AddWithValue("", "")
+                        Cmd2.Parameters.AddWithValue("", 1)
+                        Cmd2.Parameters.AddWithValue("", 1)
+                        Cmd2.Parameters.AddWithValue("", 1)
+                        Cmd2.Parameters.AddWithValue("", 0)
+                        Cmd2.Parameters.AddWithValue("", 0)
+
+                        Cmd2.ExecuteNonQuery()
+                        MsgBox("Koperinfo '" + fd_kopernaam + "'  niet gevonden, nieuwe klant is aangemaakt.")
+                        Load_Database_kopers()
+                        fd_vervoerder = 0
+                    End If
+                End If
+
+
+                'write info to order header database 
+
+                query = "INSERT INTO orderheaders (afleverdatum,invoerdatumtijd,koper_ean,koper_naam,afleverloc,veilingbrief_id," _
+                      & "vervoerder_id,contact,opmerking,inlog_naam,prijs_opslag,agenda_mark,decorum,status,kar_id,versie,afleverloc_ean,vestiging,koppelnummer) " _
+                      & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                Cmd.CommandText = query
+                Cmd.Parameters.Clear()
+
+                Cmd.Parameters.AddWithValue("", Format(fd_afleverdatum, "yyyy-MM-dd HH:mm"))                       ' 1 afleverdatum
+                Cmd.Parameters.AddWithValue("", Format(Now, "yyyy-MM-dd HH:mm"))
+                Cmd.Parameters.AddWithValue("", fd_koper_ean)                              ' 4 koper_ean
+                Cmd.Parameters.AddWithValue("", "(FD) " + fd_kopernaam)                    ' 5 koper_naam
+                Cmd.Parameters.AddWithValue("", fd_afleverloc)                             ' 6 afleverloc
+                Cmd.Parameters.AddWithValue("", fd_veilingbrief_id)                        ' 7 veilingbrief id
+                Cmd.Parameters.AddWithValue("", fd_vervoerder)                             ' 8 vervoerder id
+                Cmd.Parameters.AddWithValue("", "")                                        ' 9 contact
+                Cmd.Parameters.AddWithValue("", "FD" + Trim(Str(fd_floridaynr)))           '10 opmerking
+                Cmd.Parameters.AddWithValue("", Login_name)                                '11 inlog_naam
+                Cmd.Parameters.AddWithValue("", 0)                                         '12 prijs_opslag
+                Cmd.Parameters.AddWithValue("", 1)                                         '13 agenda_mark
+                Cmd.Parameters.AddWithValue("", fd_decorum)                                '14 decorum
+                Cmd.Parameters.AddWithValue("", 20)                                        '15 status -> stikkers
+
+                Cmd.Parameters.AddWithValue("", fd_kar_id)    'kar_id
+                Cmd.Parameters.AddWithValue("", 0) 'versie nr = 0 voor nieuwe orders
+                Cmd.Parameters.AddWithValue("", fd_locatie_ean)
+                Cmd.Parameters.AddWithValue("", vestigingnummer)
+                Cmd.Parameters.AddWithValue("", koppelnummer)
+                Cmd.ExecuteNonQuery()
+
+                Cmd.CommandText = "SELECT LAST_INSERT_ID()"
+                header_id = Convert.ToInt32(Cmd.ExecuteScalar())
+
+
+                FormProgressBar.DataProgressBar.Value = 30
+
+
+                Dim selectiecol As Integer = FindCol(FloridayOrderLines_flx, "Selectie")
+                Dim parentcol As Integer = FindCol(FloridayOrderLines_flx, "parentrow")
+                Dim orderlineidcol As Integer = FindCol(FloridayOrderLines_flx, "orderLineId")
+                Dim aantalcol As Integer = FindCol(FloridayOrderLines_flx, "Aantal")
+                'OrderLines
+                Dim parentcheckid As Integer = -1
+
+                'loop door flexgrid voor selecties, als parent is geselecteerd dan childs skippen
+                Dim boek_orderlineId As Integer = 0
+
+                For selectloop = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                    Dim orderLineId As String = ""
+                    If FloridayOrderLines_flx.Item(selectloop, selectiecol) = True And FloridayOrderLines_flx.Rows(selectloop).IsNode Then
+                        'geselecteerde parentnode -> skip childs in next run
+                        parentcheckid = FloridayOrderLines_flx.Item(selectloop, parentcol)
+                    End If
+                    If FloridayOrderLines_flx.Item(selectloop, selectiecol) = False And FloridayOrderLines_flx.Rows(selectloop).IsNode Then
+                        'niet geselecteerde parentnode -> skip
+                        GoTo skip_verwerkline
+                    End If
+
+                    'child van verwerkte parent? -> skip
+                    If FloridayOrderLines_flx.Item(selectloop, selectiecol) = True And Not FloridayOrderLines_flx.Rows(selectloop).IsNode Then
+                        If FloridayOrderLines_flx.Item(selectloop, parentcol) = parentcheckid Then
+                            'skip
+                            orderLineId = FloridayOrderLines_flx.Item(selectloop, orderlineidcol)
+                            GoTo next_verwerkline
+                        End If
+                    End If
+
+                    If FloridayOrderLines_flx.Item(selectloop, selectiecol) = False And Not FloridayOrderLines_flx.Rows(selectloop).IsNode Then
+                        GoTo skip_verwerkline
+                    End If
+
+                    orderLineId = FloridayOrderLines_flx.Item(selectloop, orderlineidcol)
+
+
+                    query = "SELECT * FROM floriday_salesorders WHERE orderLineId='" + orderLineId + "'"
+                    Cmd.CommandText = query
+                    reader = Cmd.ExecuteReader()
+                    If reader.HasRows Then
+                        reader.Read()
+                        Dim DBId As Integer = CHint(reader("Id"))
+                        Dim customerOrderId As String = CHstr(reader("customerOrderId"))
+                        Dim customerOrganizationId As String = CHstr(reader("customerOrganizationId"))
+                        Dim supplyLineId As String = CHstr(reader("supplyLineId"))
+                        Dim tradeItemId As String = CHstr(reader("tradeItemId"))
+                        Dim salesChannel As String = CHstr(reader("salesChannel"))
+                        Dim numberOfPieces As Integer = CHint(reader("numberOfPieces"))
+                        Dim piecesPerPackage As Integer = CHint(reader("selectedPackingConfiguration_piecesPerPackage"))
+                        Dim pricePerPiece_currency As String = CHstr(reader("pricePerPiece_currency"))
+                        Dim pricePerPiece_value As Double = CHdouble(reader("pricePerPiece_value"))
+                        reader.Close()
+
+
+                        ' aanbod lijn ophalen voor referentie
+                        Dim agreementReference_code As String = ""
+                        Dim agreementReference_description As String = ""
+                        query = "SELECT * FROM floriday_supply WHERE supplyLineId='" + supplyLineId + "'"
+                        Cmd2.CommandText = query
+                        reader2 = Cmd2.ExecuteReader()
+                        If reader2.HasRows Then
+                            reader2.Read()
+                            agreementReference_code = CHstr(reader2("agreementReference_code"))
+                            agreementReference_description = CHstr(reader2("agreementReference_description"))
+                        End If
+                        reader2.Close()
+
+                        'Get new SDF barcode
+                        Dim sdfbarcode As Integer = 0
+                        Cmd.CommandText = "SELECT sdfbarcode from instellingen"
+                        reader = Cmd.ExecuteReader()
+                        If reader.HasRows Then
+                            reader.Read()
+                            sdfbarcode = CHint(reader("sdfbarcode"))
+                            sdfbarcode = sdfbarcode + 1
+                            If sdfbarcode >= 100000000 Then sdfbarcode = 1
+                            reader.Close()
+                            Cmd.CommandText = "UPDATE instellingen SET sdfbarcode = ?"
+                            Cmd.Parameters.Clear()
+                            Cmd.Parameters.AddWithValue("", sdfbarcode)
+                            Cmd.ExecuteNonQuery()
+                        End If
+
+                        query = "SELECT * FROM floriday_salesorders_boek WHERE orderLineId='" + orderLineId + "'"
+                        Cmd2.CommandText = query
+                        reader2 = Cmd2.ExecuteReader()
+                        If reader2.HasRows Then
+                            reader2.Read()  'oude data ophalen
+                            Dim soort_id As Integer = CHint(reader2("boek_soortId"))
+                            Dim hoes_id As Integer = CHint(reader2("boek_hoesId"))
+                            Dim accessoire1 As Integer = CHint(reader2("boek_accessoire1"))
+                            Dim accessoire2 As Integer = CHint(reader2("boek_accessoire2"))
+                            Dim accessoire3 As Integer = CHint(reader2("boek_accessoire3"))
+                            Dim accessoire4 As Integer = CHint(reader2("boek_accessoire4"))
+                            Dim accessoire5 As Integer = CHint(reader2("boek_accessoire5"))
+                            Dim accessoire6 As Integer = CHint(reader2("boek_accessoire6"))
+                            Dim accessoire7 As Integer = CHint(reader2("boek_accessoire7"))
+                            Dim accessoire8 As Integer = CHint(reader2("boek_accessoire8"))
+                            Dim opmerking As String = CHstr(reader2("boek_opmerking"))
+                            Dim wpsfilter As Integer = CHint(reader2("boek_wpsfilter"))
+                            Dim BoekStatus As Integer = CHint(reader2("boek_status"))
+                            Dim fust_id As Integer = CHint(reader2("boek_fustid"))
+                            Dim stikkercode As Integer = CHint(reader2("boek_stikkercode"))
+                            Dim filterstoegepast As String = CHstr(reader2("filterstoegepast"))
+                            Dim selectie As Boolean = CHbool(reader2("selectie"))
+                            Dim stikkerstatus As Integer = CHint(reader2("boek_stikkerstatus"))
+                            If labelcode_header < stikkerstatus Then labelcode_header = stikkerstatus
+                            reader2.Close()
+
+                            Dim rijpheid As Integer = 0
+                            Dim hoogte As Integer = 0
+                            Dim diameter As Integer = 0
+                            Dim schermen As Integer = 0
+                            Dim keurcode As Integer = 0
+                            Dim potmaat As Integer = 0
+                            Dim transporthoogte As Integer = 0
+
+                            query = "SELECT id FROM floriday_tradeitem WHERE tradeItemId='" + tradeItemId + "'"
+                            Cmd2.CommandText = query
+                            reader2 = Cmd2.ExecuteReader()
+                            If reader2.HasRows Then
+                                reader2.Read()  'oude data ophalen
+                                Dim parentid As Integer = CHint(reader2("Id"))
+                                reader2.Close()
+
+                                query = "SELECT * FROM floriday_tradeitem_characteristics WHERE parent_id=" + Str(parentid)
+                                Cmd2.CommandText = query
+                                reader2 = Cmd2.ExecuteReader()
+                                Do While reader2.Read()  'oude data ophalen
+                                    Dim vbnCode As String = CHstr(reader2("vbnCode"))
+                                    Dim vbnValueCode As String = CHstr(reader2("vbnValueCode"))
+                                    Select Case vbnCode
+                                        Case "S05" : rijpheid = CInt(Val(vbnValueCode))
+                                        Case "S02" : hoogte = CInt(Val(vbnValueCode))
+                                        Case "S08" : diameter = CInt(Val(vbnValueCode))
+                                        Case "S09" : schermen = CInt(Val(vbnValueCode))
+                                        Case "S01" : potmaat = CInt(Val(vbnValueCode))
+                                        Case "S15" : transporthoogte = CInt(Val(vbnValueCode))
+                                    End Select
+                                Loop
+                                reader2.Close()
+
+                            End If
+
+
+                            'Dim fdl_aantal As Integer = CInt(numberOfPieces / piecesPerPackage)
+                            Dim fdl_aantal As Integer = FloridayOrderLines_flx.Item(selectloop, aantalcol)
+                            Dim fdl_soortid As Integer = soort_id
+                            Dim fdl_fustid As Integer = fust_id
+                            Dim fdl_hoesid As Integer = hoes_id
+                            Dim fdl_prijs As Double = pricePerPiece_value
+                            Dim gp As Integer = 1
+                            Dim fdl_rijpheid As Integer = rijpheid
+                            Dim fdl_hoogte As Integer = hoogte
+                            Dim fdl_diameter As Integer = diameter
+                            Dim fdl_schermen As Integer = schermen
+                            Dim fdl_keurcode As Integer = keurcode
+                            Dim fdl_acce1 As Integer = accessoire1
+                            Dim fdl_acce2 As Integer = accessoire2
+                            Dim fdl_acce4 As Integer = accessoire3
+                            Dim fdl_acce5 As Integer = accessoire4
+                            Dim fdl_acce6 As Integer = accessoire5
+                            Dim fdl_acce7 As Integer = accessoire6
+                            Dim fdl_acce8 As Integer = accessoire7
+                            Dim fdl_acce9 As Integer = accessoire8
+                            Dim fdl_kopercode As String = customerOrderId
+                            Dim fdl_potmaat As Integer = potmaat
+
+                            Select Case stikkercode
+                                Case 1 : opmerking = "<Stikker>"
+
+                                Case 3 : opmerking = "<Floraconnect>"
+
+                                Case 6 : opmerking = "<Stikker LB>"
+
+                            End Select
+
+
+                            Dim fdl_opmerking As String = opmerking
+                            Dim fdl_floridaynr As String = "FD" + Trim(Str(fd_floridaynr))
+                            Dim fdl_actie_type As Integer = 0
+                            Dim fdl_retail_prijs As String = ""
+                            Dim fdl_label_ean As String = ""
+                            Dim fdl_label_status As Integer = stikkerstatus
+                            Dim fdl_labelref As String = ""
+                            Dim fdl_labelcode As Integer = stikkercode
+                            Dim fdl_vestiging As Integer = vestigingnummer
+                            Dim fdl_sdfbarcode As Integer = sdfbarcode
+                            Dim fdl_transporthoogte As Integer = transporthoogte
+                            Dim fdl_wpsfilternr As Integer = wpsfilter
+                            Dim fdl_supplyref As String = Mid(agreementReference_code + ":" + agreementReference_description, 1, 39)
+
+
+                            Dim vestigingline As Integer = 0
+                            If soort_id < 10000 Then
+                                vestigingline = soorten(GID(soorten, soort_id)).vestiging  'vestiging van line
+                            Else
+                                vestigingline = mixen(GID(mixen, soort_id - 10000)).vestiging
+                            End If
+
+                            If vestigingline = vestigingnummer Then
+
+                                query = "INSERT INTO orderlines(OrderHeader_id,Koper_naam,Aantal,Soort_id,Fust_id,Prijs,GP,Rijpheid,Hoogte,Diameter," _
+                                    & "Accessoire1,Accessoire2,Accessoire3,Accessoire4,Accessoire5,Kopercode,Potmaat,Wps_filternr,Opmerking,Keurcode," _
+                                    & "Transporthoogte,Florecom_nr,actie_type,Wps_filternr2,retail_prijs,label_ean,label_status,label_referentie,labelbericht_code,vestiging,sdfbarcode,floridaynr,supplyref) " _
+                                    & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                                Cmd.CommandText = query
+                                Cmd.Parameters.Clear()
+                                Cmd.Parameters.AddWithValue("", header_id)                              ' 1 orderheader_id 
+                                Cmd.Parameters.AddWithValue("", fd_kopernaam)                           ' 2 koper_naam
+                                Cmd.Parameters.AddWithValue("", fdl_aantal)                             ' 3 aantal
+                                Cmd.Parameters.AddWithValue("", fdl_soortid)                            ' 4 soort_id
+                                Cmd.Parameters.AddWithValue("", fdl_fustid)                             ' 5 fust_id
+                                Cmd.Parameters.AddWithValue("", fdl_prijs)                              ' 6 prijs
+                                Cmd.Parameters.AddWithValue("", 1)                                      ' 7 GP
+                                Cmd.Parameters.AddWithValue("", fdl_rijpheid)                           ' 8 Rijpheid
+                                Cmd.Parameters.AddWithValue("", fdl_hoogte)                             ' 9 hoogte
+                                Cmd.Parameters.AddWithValue("", fdl_diameter)                           '10 Diameter
+                                Cmd.Parameters.AddWithValue("", fdl_acce1)                              '11 Accessoire1
+                                Cmd.Parameters.AddWithValue("", fdl_acce2)                              '12 Accessoire2
+                                Cmd.Parameters.AddWithValue("", fdl_hoesid)                             '13 Hoes
+                                Cmd.Parameters.AddWithValue("", fdl_acce4)                              '14 Accessoire4
+                                Cmd.Parameters.AddWithValue("", fdl_acce5)                              '15 Accessoire5
+                                Cmd.Parameters.AddWithValue("", fdl_kopercode)                          '16 kopercode
+                                Cmd.Parameters.AddWithValue("", fdl_potmaat * 10)                            '17 potmaat
+
+                                Dim wpsfilterid As Integer = fdl_wpsfilternr
+                                Dim wpsfilterid2 As Integer = 0
+                                'GetWPSFilterNr(fc_koper_ean, fcl_soortid, fcl_acces1, wpsfilterid, wpsfilterid2)
+
+                                Cmd.Parameters.AddWithValue("", wpsfilterid)                            '18 wps filternr
+                                Cmd.Parameters.AddWithValue("", fdl_opmerking)                          '19 Opmerking
+                                Cmd.Parameters.AddWithValue("", 0)                                      '20 Keurcode
+                                Cmd.Parameters.AddWithValue("", fdl_transporthoogte)                    '21 Transporthoogte
+                                Cmd.Parameters.AddWithValue("", fdl_floridaynr)                         '22 Florecom_nr
+                                Cmd.Parameters.AddWithValue("", fdl_actie_type)                         '23 Actie_type
+                                Cmd.Parameters.AddWithValue("", wpsfilterid2)
+                                Cmd.Parameters.AddWithValue("", fdl_retail_prijs)
+                                Cmd.Parameters.AddWithValue("", fdl_label_ean)
+                                Cmd.Parameters.AddWithValue("", fdl_label_status)
+                                Cmd.Parameters.AddWithValue("", fdl_labelref)
+                                Cmd.Parameters.AddWithValue("", fdl_labelcode)
+                                Cmd.Parameters.AddWithValue("", vestigingnummer)
+                                Cmd.Parameters.AddWithValue("", fdl_sdfbarcode)
+                                Cmd.Parameters.AddWithValue("", fdl_floridaynr)
+                                Cmd.Parameters.AddWithValue("", fdl_supplyref)
+                                Cmd.ExecuteNonQuery()
+
+                                Cmd.CommandText = "SELECT LAST_INSERT_ID()"
+                                boek_orderlineId = Convert.ToInt32(Cmd.ExecuteScalar())
+
+                                'fd order bevestigen
+next_verwerkline:
+                                Cmd.CommandText = "UPDATE floriday_salesorders_boek SET boek_orderlineId=?, boek_floridaynr=? WHERE orderLineId = '" + orderLineId + "'"
+                                Cmd.Parameters.Clear()
+                                Cmd.Parameters.AddWithValue("", boek_orderlineId)
+                                Cmd.Parameters.AddWithValue("", fd_floridaynr)
+                                Cmd.ExecuteNonQuery()
+
+                                Cmd.CommandText = "UPDATE floriday_salesorders SET boekstatus=? WHERE orderLineId = '" + orderLineId + "'"
+                                Cmd.Parameters.Clear()
+                                Cmd.Parameters.AddWithValue("", fd_floridaynr)
+                                Cmd.ExecuteNonQuery()
+skip_verwerkline:
+                            End If
+
+                        End If
+                    End If
+
+
+                Next
+
+                'new status for labelorder
+                If labelcode_header = 6 Then   'labelbericht of lemkes
+                    Cmd.CommandText = "UPDATE orderheaders SET status=24, sticker=6 WHERE header_id = " + Str(header_id)
+                    Cmd.ExecuteNonQuery()
+                End If
+                If labelcode_header = 3 Or labelcode_header = 1 Then
+                    Cmd.CommandText = "UPDATE orderheaders Set status=21, sticker=1 WHERE header_id = " + Str(header_id)
+                    Cmd.ExecuteNonQuery()
+                End If
+
+
+                'karindeling of order aanmaken
+
+                ' !!!!!!!!! UPDATE AGENDA
+                user_date_change = False
+                Order_MonthCalendar.SelectionStart = fd_afleverdatum
+                Order_MonthCalendar.SelectionEnd = fd_afleverdatum
+                user_date_change = True
+                BoekStatus = 8
+                Update_Boek(1, fd_koper_ean)
+
+                Maak_Karindeling(False, fd_kar_id, header_id, fd_afleverdatum)
+
+                FloridayOrderLines_flx.Rows.Count = 1
+                FloridayOrdersShow()
+
+            End Using
+        Catch ex As Exception
+            ErrorLog("Fout orderopslag floriday " + ex.Message)
+            MsgBox("Fout orderopslag floriday " + ex.Message, MsgBoxStyle.OkOnly)
+        End Try
+
+
+        FormProgressBar.DataProgressBar.Value = 95
+        FormProgressBar.Close()
+        Me.Cursor = Cursors.Default
+
+
+    End Sub
+
+    Private Sub FloridayOrderLines_flx_AfterEdit(sender As Object, e As RowColEventArgs) Handles FloridayOrderLines_flx.AfterEdit
+        Dim row As Integer = e.Row
+        Dim col As Integer = e.Col
+        Dim colname As String = CStr(FloridayOrderLines_flx.Item(0, col)).ToLower
+        Dim orderlineid As String = ""
+        Dim OldSoortId As Integer = 0
+        Dim idcol As Integer = 0
+        Dim OldFustId As Integer = 0
+        Dim selectiecol As Integer = 0
+        Dim parentcol As Integer = 0
+        Dim lineidcol As Integer = 0
+        Try
+            'fetch old data to make checks
+            idcol = FindCol(FloridayOrderLines_flx, "orderLineId")
+            orderlineid = FloridayOrderLines_flx.Item(row, idcol)
+            idcol = FindCol(FloridayOrderLines_flx, "Soort")
+            OldSoortId = FloridayOrderLines_flx.Item(row, idcol)
+            idcol = FindCol(FloridayOrderLines_flx, "Fust")
+            OldFustId = FloridayOrderLines_flx.Item(row, idcol)
+            selectiecol = FindCol(FloridayOrderLines_flx, "Selectie")
+            parentcol = FindCol(FloridayOrderLines_flx, "parentrow")
+            lineidcol = FindCol(FloridayOrderLines_flx, "orderLineId")
+        Catch ex As Exception
+            Exit Sub
+        End Try
+
+        Dim query As String = ""
+        Try
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+                Dim Cmd2 As New OdbcCommand(query, Conn)
+                Dim Reader2 As OdbcDataReader
+
+                If col = selectiecol Then  'selecties -> parent child
+                    Dim parentid As Integer = FloridayOrderLines_flx(row, parentcol)
+                    If FloridayOrderLines_flx.Rows(row).IsNode Then
+                        'parent node geselecteerd -> childnodes aanpassen
+                        If FloridayOrderLines_flx.Item(row, col) = False Then
+                            For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                                If FloridayOrderLines_flx(i, parentcol) = parentid And Not FloridayOrderLines_flx.Rows(i).IsNode Then
+                                    FloridayOrderLines_flx(i, selectiecol) = False
+                                End If
+                            Next
+                        Else
+                            For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                                If FloridayOrderLines_flx(i, parentcol) = parentid And Not FloridayOrderLines_flx.Rows(i).IsNode Then
+                                    FloridayOrderLines_flx(i, selectiecol) = True
+                                End If
+                            Next
+                        End If
+                    Else
+                        'child node selection changed -> parent aanpassen?
+                        Dim childstatus As Boolean = FloridayOrderLines_flx.Item(row, col)
+                        Dim selectedchildfound As Boolean = False
+                        Dim notselectedchildfound As Boolean = False
+                        For i = 2 To FloridayOrderLines_flx.Rows.Count - 1  'als alle childnodes dezelfde status hebben -> parent aanpassen
+                            If FloridayOrderLines_flx(i, parentcol) = parentid And Not FloridayOrderLines_flx.Rows(i).IsNode Then
+                                If FloridayOrderLines_flx(i, selectiecol) = True Then selectedchildfound = True
+                                If FloridayOrderLines_flx(i, selectiecol) = False Then notselectedchildfound = True
+                            End If
+                        Next
+                        'set parent
+                        If selectedchildfound = True And notselectedchildfound = False Then
+                            For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                                If FloridayOrderLines_flx(i, parentcol) = parentid And FloridayOrderLines_flx.Rows(i).IsNode Then
+                                    FloridayOrderLines_flx(i, selectiecol) = True
+                                End If
+                            Next
+                        Else
+                            For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                                If FloridayOrderLines_flx(i, parentcol) = parentid And FloridayOrderLines_flx.Rows(i).IsNode Then
+                                    FloridayOrderLines_flx(i, selectiecol) = False
+                                End If
+                            Next
+                        End If
+                    End If
+
+                    For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                        If FloridayOrderLines_flx.Item(i, parentcol) = parentid Then
+                            orderlineid = FloridayOrderLines_flx.Item(i, lineidcol)
+                            Dim vselectie As Integer = FloridayOrderLines_flx(i, selectiecol)
+                            'save all oderlines from this parent
+
+                            query = "UPDATE floriday_salesorders_boek SET selectie=? WHERE orderLineId=?"
+                            Cmd2.CommandText = query
+                            Cmd2.Parameters.Clear()
+                            Cmd2.Parameters.AddWithValue("", vselectie)
+                            Cmd2.Parameters.AddWithValue("", orderlineid)
+                            Cmd2.ExecuteNonQuery()
+
+                        End If
+                    Next
+
+
+                    Exit Sub
+                End If
+
+                Dim selectie As Boolean = True
+                Dim soort_id As Integer = 0
+                Dim fust_id As Integer = 0
+                Dim hoes_id As Integer = 0
+                Dim accessoire1 As Integer = 0
+                Dim accessoire2 As Integer = 0
+                Dim accessoire3 As Integer = 0
+                Dim accessoire4 As Integer = 0
+                Dim accessoire5 As Integer = 0
+                Dim accessoire6 As Integer = 0
+                Dim accessoire7 As Integer = 0
+                Dim accessoire8 As Integer = 0
+
+                query = "SELECT * FROM floriday_salesorders_boek WHERE orderLineId='" + orderlineid + "'"
+                Cmd2.CommandText = query
+                Reader2 = Cmd2.ExecuteReader()
+                If Reader2.HasRows Then
+                    Reader2.Read()  'oude data ophalen
+                    soort_id = CHint(Reader2("boek_soortId"))
+                    hoes_id = CHint(Reader2("boek_hoesId"))
+                    accessoire1 = CHint(Reader2("boek_accessoire1"))
+                    accessoire2 = CHint(Reader2("boek_accessoire2"))
+                    accessoire3 = CHint(Reader2("boek_accessoire3"))
+                    accessoire4 = CHint(Reader2("boek_accessoire4"))
+                    accessoire5 = CHint(Reader2("boek_accessoire5"))
+                    accessoire6 = CHint(Reader2("boek_accessoire6"))
+                    accessoire7 = CHint(Reader2("boek_accessoire7"))
+                    accessoire8 = CHint(Reader2("boek_accessoire8"))
+                    fust_id = CHint(Reader2("boek_fustid"))
+                End If
+                Reader2.Close()
+
+
+                Select Case colname
+                    Case "soort"
+                        Dim newsoortid As Integer = FloridayOrderLines_flx.Item(row, col)
+                        If newsoortid >= 10000 Then
+                            Dim newfustid As Integer = mixen(GID(mixen, newsoortid - 10000)).fust
+                            Dim newvbnfustcode As Integer = fust(GID(fust, newfustid)).fustcode
+                            Dim oldvbnfustcode As Integer = fust(GID(fust, fust_id)).fustcode
+                            If newvbnfustcode <> oldvbnfustcode Then
+                                MsgBox("De fustcode uit de bestelling komt niet overeen met de fustcode van de geselecteerde mix, de verandering wordt teruggedraaid")
+                                FloridayOrderLines_flx.Item(row, col) = soort_id
+                            End If
+
+                        End If
+
+                    Case "fust"
+                        Dim newfustid As Integer = FloridayOrderLines_flx.Item(row, col)
+
+                        Dim newvbnfustcode As Integer = fust(GID(fust, newfustid)).fustcode
+                        Dim oldvbnfustcode As Integer = fust(GID(fust, fust_id)).fustcode
+                        If newvbnfustcode <> oldvbnfustcode Then
+                            MsgBox("De fustcode uit de bestelling komt niet overeen met de geselecteerde fustcode, de verandering wordt teruggedraaid")
+                            FloridayOrderLines_flx.Item(row, col) = fust_id
+                        End If
+
+                End Select
+
+                selectie = FloridayOrderLines_flx.Item(row, FindCol(FloridayOrderLines_flx, "selectie"))
+                soort_id = FloridayOrderLines_flx.Item(row, FindCol(FloridayOrderLines_flx, "soort"))
+                hoes_id = FloridayOrderLines_flx.Item(row, FindCol(FloridayOrderLines_flx, "hoes"))
+                accessoire1 = FloridayOrderLines_flx.Item(row, FindCol(FloridayOrderLines_flx, "accessoire1"))
+                accessoire2 = FloridayOrderLines_flx.Item(row, FindCol(FloridayOrderLines_flx, "accessoire2"))
+                accessoire4 = FloridayOrderLines_flx.Item(row, FindCol(FloridayOrderLines_flx, "accessoire4"))
+                accessoire5 = FloridayOrderLines_flx.Item(row, FindCol(FloridayOrderLines_flx, "accessoire5"))
+                accessoire6 = FloridayOrderLines_flx.Item(row, FindCol(FloridayOrderLines_flx, "accessoire6"))
+                accessoire7 = FloridayOrderLines_flx.Item(row, FindCol(FloridayOrderLines_flx, "accessoire7"))
+                accessoire8 = FloridayOrderLines_flx.Item(row, FindCol(FloridayOrderLines_flx, "accessoire8"))
+                Dim opmerking As String = FloridayOrderLines_flx.Item(row, FindCol(FloridayOrderLines_flx, "opmerking"))
+                Dim wpsfilter As String = FloridayOrderLines_flx.Item(row, FindCol(FloridayOrderLines_flx, "wpsfilter"))
+                Dim wpsfiltercode As Integer = 0
+                If col = FindCol(FloridayOrderLines_flx, "wpsfilter") Then
+                    For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                        FloridayOrderLines_flx.SetCellStyle(i, col, FloridayOrderLines_flx.Styles.Normal)
+                    Next
+                End If
+                If selectedwpsvalue > 0 Then
+                    wpsfiltercode = selectedwpsvalue
+
+                    selectedwpsvalue = 0
+                End If
+
+                If wpsfilter = "" Then wpsfilter = 0
+                fust_id = FloridayOrderLines_flx.Item(row, FindCol(FloridayOrderLines_flx, "fust"))
+                Dim stikkercode As String = FloridayOrderLines_flx.Item(row, FindCol(FloridayOrderLines_flx, "stikkercode"))
+                If stikkercode = "" Then stikkercode = 0
+
+                If FloridayOrderLines_flx.Rows(row).IsNode Then
+
+                    Dim parentid As Integer = FloridayOrderLines_flx.Item(row, parentcol)
+
+                    For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                        If FloridayOrderLines_flx.Item(i, parentcol) = parentid Then
+                            orderlineid = FloridayOrderLines_flx.Item(i, lineidcol)
+
+                            'save all oderlines from this parent
+
+                            query = "UPDATE floriday_salesorders_boek SET boek_soortId=?,boek_hoesId=?,boek_accessoire1=?," _
+                                        & "boek_accessoire2=?,boek_accessoire3=?,boek_accessoire4=?,boek_accessoire5=?,boek_accessoire6=?,boek_accessoire7=?," _
+                                        & "boek_accessoire8=?,boek_opmerking=?,boek_wpsfilter=?,boek_status=?,boek_fustid=?,boek_stikkercode=?,selectie=?" _
+                                        & " WHERE orderLineId=?"
+                            Cmd2.CommandText = query
+                            Cmd2.Parameters.Clear()
+                            Cmd2.Parameters.AddWithValue("", soort_id)
+                            Cmd2.Parameters.AddWithValue("", hoes_id)
+                            Cmd2.Parameters.AddWithValue("", accessoire1)
+                            Cmd2.Parameters.AddWithValue("", accessoire2)
+                            Cmd2.Parameters.AddWithValue("", accessoire3)
+                            Cmd2.Parameters.AddWithValue("", accessoire4)
+                            Cmd2.Parameters.AddWithValue("", accessoire5)
+                            Cmd2.Parameters.AddWithValue("", accessoire6)
+                            Cmd2.Parameters.AddWithValue("", accessoire7)
+                            Cmd2.Parameters.AddWithValue("", accessoire8)
+
+                            Cmd2.Parameters.AddWithValue("", Mid(opmerking, 1, 79))
+                            Cmd2.Parameters.AddWithValue("", wpsfiltercode)
+                            Cmd2.Parameters.AddWithValue("", 0) 'status
+                            Cmd2.Parameters.AddWithValue("", fust_id)
+                            Cmd2.Parameters.AddWithValue("", stikkercode)
+                            Cmd2.Parameters.AddWithValue("", selectie)
+                            Cmd2.Parameters.AddWithValue("", orderlineid)
+                            Cmd2.ExecuteNonQuery()
+
+                        End If
+                    Next
+                    Dim selectedrow As Integer = FloridayOrders_flx.RowSel
+                    If selectedrow >= 1 Then
+                        CheckOrderlines(True, selectedrow)
+                    End If
+
+                Else
+                    'save 1 orderline
+                    query = "UPDATE floriday_salesorders_boek SET boek_soortId=?,boek_hoesId=?,boek_accessoire1=?," _
+                        & "boek_accessoire2=?,boek_accessoire3=?,boek_accessoire4=?,boek_accessoire5=?,boek_accessoire6=?,boek_accessoire7=?," _
+                        & "boek_accessoire8=?,boek_opmerking=?,boek_wpsfilter=?,boek_status=?,boek_fustid=?,boek_stikkercode=?" _
+                        & " WHERE orderLineId=?"
+                    Cmd2.CommandText = query
+                    Cmd2.Parameters.Clear()
+                    Cmd2.CommandText = query
+                    Cmd2.Parameters.Clear()
+                    Cmd2.Parameters.AddWithValue("", soort_id)
+                    Cmd2.Parameters.AddWithValue("", hoes_id)
+                    Cmd2.Parameters.AddWithValue("", accessoire1)
+                    Cmd2.Parameters.AddWithValue("", accessoire2)
+                    Cmd2.Parameters.AddWithValue("", accessoire3)
+                    Cmd2.Parameters.AddWithValue("", accessoire4)
+                    Cmd2.Parameters.AddWithValue("", accessoire5)
+                    Cmd2.Parameters.AddWithValue("", accessoire6)
+                    Cmd2.Parameters.AddWithValue("", accessoire7)
+                    Cmd2.Parameters.AddWithValue("", accessoire8)
+
+                    Cmd2.Parameters.AddWithValue("", Mid(opmerking, 1, 79))
+                    Cmd2.Parameters.AddWithValue("", wpsfiltercode)
+                    Cmd2.Parameters.AddWithValue("", 0) 'status
+                    Cmd2.Parameters.AddWithValue("", fust_id)
+                    Cmd2.Parameters.AddWithValue("", stikkercode)
+                    Cmd2.Parameters.AddWithValue("", orderlineid)
+                    Cmd2.ExecuteNonQuery()
+
+                End If
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Fout bij floriday orderlines ophalen " + ex.ToString, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
+
+    End Sub
+
+    Private Sub FloridayOrderLines_flx_CellButtonClick(sender As Object, e As RowColEventArgs) Handles FloridayOrderLines_flx.CellButtonClick
+        Dim col As Integer = e.Col
+        Dim row As Integer = e.Row
+        Dim stikkercol As Integer = FindCol(FloridayOrderLines_flx, "stikkercode")
+        Dim filtercol As Integer = FindCol(FloridayOrderLines_flx, "Verander filters")
+        Dim idcol As Integer = FindCol(FloridayOrderLines_flx, "orderLineId")
+        Dim orderlineid As String = FloridayOrderLines_flx.Item(row, idcol)
+        Dim aantalcol As Integer = FindCol(FloridayOrderLines_flx, "Aantal")
+        Dim correctiecol As Integer = FindCol(FloridayOrderLines_flx, "Correctie")
+
+        If col = stikkercol Then
+            'generate labels
+            Dim aantal_boek As Integer = 0
+            Dim labelnummer As Integer = 0
+            Dim soort_id As Integer = -1
+            Dim fust_id As Integer = -1
+            Dim koper_ean As String = ""
+            Dim opmerking As String = ""
+            Dim accessoire1 As Integer = 0
+            Dim query As String = ""
+            Dim kopernaam As String = "Koper onbekend"
+            Dim customerOrganizationId As String = ""
+            Try
+                Using Conn As New OdbcConnection(ConnString)
+                    Conn.Open()
+                    Dim Cmd2 As New OdbcCommand(query, Conn)
+                    Dim Reader2 As OdbcDataReader
+
+                    query = "SELECT * FROM floriday_salesorders_boek WHERE orderLineId='" + orderlineid + "'"
+                    Cmd2.CommandText = query
+                    Reader2 = Cmd2.ExecuteReader()
+                    If Reader2.HasRows Then
+                        Reader2.Read()  'oude data ophalen
+                        aantal_boek = CHint(Reader2("boek_aantal"))
+                        soort_id = CHint(Reader2("boek_soortId"))
+                        accessoire1 = CHint(Reader2("boek_accessoire1"))
+                        fust_id = CHint(Reader2("boek_fustid"))
+                        opmerking = CHstr(Reader2("boek_opmerking"))
+                        customerOrganizationId = CHstr(Reader2("customerOrganizationId"))
+                    End If
+                    Reader2.Close()
+
+                    If FloridayOrderLines_flx.Rows(row).IsNode Then
+                        aantal_boek = FloridayOrderLines_flx.Item(row, aantalcol)
+                    End If
+                    'kopernaam ophalen
+
+                    query = "SELECT * FROM floriday_organizations WHERE organizationId='" + customerOrganizationId + "'"
+                    Cmd2.CommandText = query
+                    Reader2 = Cmd2.ExecuteReader()
+                    If Reader2.HasRows Then
+                        kopernaam = CHstr(Reader2("name"))
+                        koper_ean = CHstr(Reader2("companyGln"))
+                    End If
+                    Reader2.Close()
+
+                End Using
+            Catch ex As Exception
+                MessageBox.Show("Database fout: (floridayorder stikkers)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+            End Try
+
+            If aantal_boek <= 0 Then
+                MsgBox("Het aantal planten moet bekend zijn")
+                Exit Sub
+            End If
+
+            Dim soort As String = soorten(GID(soorten, soort_id)).soortnaam
+            Dim accessoire1naam As String = ""
+            If accessoire(GID(accessoire, accessoire1)).fust > 0 Then
+                accessoire1naam = accessoire(GID(accessoire, accessoire1)).naam
+            End If
+
+            LabelWindow.Init(labelnummer, soort_id, aantal_boek, fust_id, row, koper_ean, kopernaam, opmerking, accessoire1naam, 2)
+            LabelWindow.Show()
+
+        End If
+
+        If col = filtercol Then
+            FloridayFilters.Init(orderlineid)
+            FloridayFilters.Show()
+
+        End If
+
+        If col = correctiecol Then
+
+            Form14.Init(orderlineid)
+            Form14.StartPosition = FormStartPosition.CenterScreen
+            Form14.Show()
+
+        End If
+
+    End Sub
+
+    Public Sub SaveFloridayLabelData(flexgridrow As Integer, labelnummer As Integer, opmerking As String)
+        'called in Form8 -> label generator
+        Dim idcol As Integer = FindCol(FloridayOrderLines_flx, "stikkercode")
+        FloridayOrderLines_flx.Item(flexgridrow, idcol) = labelnummer
+
+        idcol = FindCol(FloridayOrderLines_flx, "opmerking")
+        FloridayOrderLines_flx.Item(flexgridrow, idcol) = opmerking
+
+        idcol = FindCol(FloridayOrderLines_flx, "orderLineId")
+        Dim orderlineid As String = FloridayOrderLines_flx.Item(flexgridrow, idcol)
+        Dim query As String = ""
+
+        Try
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+                Dim Cmd2 As New OdbcCommand(query, Conn)
+
+                If FloridayOrderLines_flx.Rows(flexgridrow).IsNode Then
+                    Dim lineidcol As Integer = FindCol(FloridayOrderLines_flx, "orderLineId")
+                    Dim parentcol As Integer = FindCol(FloridayOrderLines_flx, "parentrow")
+                    Dim parentid As Integer = FloridayOrderLines_flx.Item(flexgridrow, parentcol)
+                    For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                        If FloridayOrderLines_flx.Item(i, parentcol) = parentid Then
+                            Dim orderLineIdlp As String = FloridayOrderLines_flx.Item(i, lineidcol)
+
+                            query = "UPDATE floriday_salesorders_boek SET boek_opmerking=?,boek_stikkercode=? WHERE orderLineId=?"
+                            Cmd2.CommandText = query
+                            Cmd2.Parameters.Clear()
+                            Cmd2.Parameters.AddWithValue("", Mid(opmerking, 1, 79))
+                            Cmd2.Parameters.AddWithValue("", labelnummer)
+                            Cmd2.Parameters.AddWithValue("", orderLineIdlp)
+                            Cmd2.ExecuteNonQuery()
+
+                        End If
+                    Next
+                    Dim selectedrow As Integer = FloridayOrders_flx.RowSel
+                    If selectedrow >= 1 Then
+                        CheckOrderlines(True, selectedrow)
+                    End If
+                Else
+                    'save orderlines
+                    query = "UPDATE floriday_salesorders_boek SET boek_opmerking=?,boek_stikkercode=? WHERE orderLineId=?"
+                    Cmd2.CommandText = query
+                    Cmd2.Parameters.Clear()
+                    Cmd2.Parameters.AddWithValue("", Mid(opmerking, 1, 79))
+                    Cmd2.Parameters.AddWithValue("", labelnummer)
+                    Cmd2.Parameters.AddWithValue("", orderlineid)
+                    Cmd2.ExecuteNonQuery()
+                End If
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Fout bij floriday stikkerinfo save " + ex.ToString, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
+    End Sub
+
+    Dim selectedwpsvalue As Integer = 0
+    Private Sub FDLineCombo_Validated(sender As Object, e As EventArgs) Handles FDLineCombo.Validated
+        Try
+            selectedwpsvalue = FDLineCombo.SelectedValue
+        Catch ex As Exception
+        End Try
+    End Sub
+
+    Private Sub Floriday_orderlineherstellen_but_Click(sender As Object, e As EventArgs) Handles Floriday_orderlineherstellen_but.Click
+        Dim query As String = ""
+
+        Dim selectedrow As Integer = FloridayOrderLines_flx.RowSel
+        If selectedrow >= 1 Then
+            Try
+                Using Conn As New OdbcConnection(ConnString)
+                    Conn.Open()
+
+                    Dim Cmd2 As New OdbcCommand(query, Conn)
+                    Dim reader2 As OdbcDataReader
+
+                    If FloridayOrderLines_flx.Rows(selectedrow).IsNode Then
+                        Dim lineidcol As Integer = FindCol(FloridayOrderLines_flx, "orderLineId")
+                        Dim parentcol As Integer = FindCol(FloridayOrderLines_flx, "parentrow")
+                        Dim parentid As Integer = FloridayOrderLines_flx.Item(selectedrow, parentcol)
+                        For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                            If FloridayOrderLines_flx.Item(i, parentcol) = parentid Then
+                                Dim orderLineIdlp As String = FloridayOrderLines_flx.Item(i, lineidcol)
+
+                                query = "UPDATE floriday_salesorders_boek SET boek_soortId=org_soortId,boek_hoesId=org_hoesId,boek_accessoire1=org_accessoire1," _
+                               & "boek_accessoire2=org_accessoire2,boek_accessoire3=org_accessoire3,boek_accessoire4=org_accessoire4," _
+                               & "boek_accessoire5=org_accessoire5,boek_accessoire6=org_accessoire6,boek_accessoire7=org_accessoire7," _
+                               & "boek_accessoire8=org_accessoire8,boek_opmerking='',boek_wpsfilter=0,boek_fustid=org_fustId,boek_stikkercode=0,filterstoegepast=''" _
+                               & " WHERE orderLineId=?"
+                                Cmd2.CommandText = query
+                                Cmd2.Parameters.Clear()
+                                Cmd2.Parameters.AddWithValue("", orderLineIdlp)
+                                Cmd2.ExecuteNonQuery()
+
+                            End If
+                        Next
+                        selectedrow = FloridayOrders_flx.RowSel
+                        If selectedrow >= 1 Then
+                            CheckOrderlines(True, selectedrow)
+                        End If
+                    Else
+
+                        'normale orderline
+
+                        Dim idcol As Integer = FindCol(FloridayOrderLines_flx, "orderLineId")
+                        Dim orderLineId As String = FloridayOrderLines_flx.Item(selectedrow, idcol)
+
+                        query = "UPDATE floriday_salesorders_boek SET boek_soortId=org_soortId,boek_hoesId=org_hoesId,boek_accessoire1=org_accessoire1," _
+                               & "boek_accessoire2=org_accessoire2,boek_accessoire3=org_accessoire3,boek_accessoire4=org_accessoire4," _
+                               & "boek_accessoire5=org_accessoire5,boek_accessoire6=org_accessoire6,boek_accessoire7=org_accessoire7," _
+                               & "boek_accessoire8=org_accessoire8,boek_opmerking='',boek_wpsfilter=0,boek_fustid=org_fustId,boek_stikkercode=0,filterstoegepast=''" _
+                               & " WHERE orderLineId=?"
+                        Cmd2.CommandText = query
+                        Cmd2.Parameters.Clear()
+                        Cmd2.Parameters.AddWithValue("", orderLineId)
+                        Cmd2.ExecuteNonQuery()
+
+                        query = "SELECT * FROM floriday_salesorders_boek WHERE orderLineId='" + orderLineId + "'"
+                        Cmd2.CommandText = query
+                        reader2 = Cmd2.ExecuteReader()
+                        If reader2.HasRows Then
+                            reader2.Read()
+                            Dim soort_id As Integer = CHint(reader2("boek_soortId"))
+                            Dim hoes_id As Integer = CHint(reader2("boek_hoesId"))
+                            Dim accessoire1 As Integer = CHint(reader2("boek_accessoire1"))
+                            Dim accessoire2 As Integer = CHint(reader2("boek_accessoire2"))
+                            Dim accessoire3 As Integer = CHint(reader2("boek_accessoire3"))
+                            Dim accessoire4 As Integer = CHint(reader2("boek_accessoire4"))
+                            Dim accessoire5 As Integer = CHint(reader2("boek_accessoire5"))
+                            Dim accessoire6 As Integer = CHint(reader2("boek_accessoire6"))
+                            Dim accessoire7 As Integer = CHint(reader2("boek_accessoire7"))
+                            Dim accessoire8 As Integer = CHint(reader2("boek_accessoire8"))
+                            Dim fust_id As Integer = CHint(reader2("boek_fustid"))
+
+                            FloridayOrderLines_flx.Item(selectedrow, FindCol(FloridayOrderLines_flx, "Soort")) = soort_id
+                            FloridayOrderLines_flx.Item(selectedrow, FindCol(FloridayOrderLines_flx, "hoes")) = hoes_id
+                            FloridayOrderLines_flx.Item(selectedrow, FindCol(FloridayOrderLines_flx, "fust")) = fust_id
+                            FloridayOrderLines_flx.Item(selectedrow, FindCol(FloridayOrderLines_flx, "accessoire1")) = accessoire1
+                            FloridayOrderLines_flx.Item(selectedrow, FindCol(FloridayOrderLines_flx, "accessoire2")) = accessoire2
+                            FloridayOrderLines_flx.Item(selectedrow, FindCol(FloridayOrderLines_flx, "accessoire4")) = accessoire4
+                            FloridayOrderLines_flx.Item(selectedrow, FindCol(FloridayOrderLines_flx, "accessoire5")) = accessoire5
+                            FloridayOrderLines_flx.Item(selectedrow, FindCol(FloridayOrderLines_flx, "accessoire6")) = accessoire6
+                            FloridayOrderLines_flx.Item(selectedrow, FindCol(FloridayOrderLines_flx, "accessoire7")) = accessoire7
+                            FloridayOrderLines_flx.Item(selectedrow, FindCol(FloridayOrderLines_flx, "accessoire8")) = accessoire8
+                            FloridayOrderLines_flx.Item(selectedrow, FindCol(FloridayOrderLines_flx, "opmerking")) = ""
+                            FloridayOrderLines_flx.Item(selectedrow, FindCol(FloridayOrderLines_flx, "wpsfilter")) = 0
+                            FloridayOrderLines_flx.Item(selectedrow, FindCol(FloridayOrderLines_flx, "Verander filters")) = ""
+                        End If
+                        reader2.Close()
+                    End If
+                End Using
+            Catch ex As Exception
+                MessageBox.Show("Fout bij floriday orderline herstellen" + ex.ToString, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+            End Try
+        Else
+            MsgBox("Selecteer eerst een orderline")
+        End If
+    End Sub
+
+    Private Sub Floriday_Filterstoepassen_but_Click(sender As Object, e As EventArgs) Handles Floriday_Filterstoepassen_but.Click
+
+        FiltersToepassen()
+
+    End Sub
+
+    Public Sub FiltersToepassen()
+
+        Dim idcol As Integer = FindCol(FloridayOrderLines_flx, "orderLineId")
+        If FloridayOrderLines_flx.Rows.Count > 1 Then
+            For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                If Not FloridayOrderLines_flx.Rows(i).IsNode Then
+                    Dim orderLineId As String = FloridayOrderLines_flx.Item(i, idcol)
+                    CheckFloridayFilter(orderLineId)
+                End If
+            Next i
+            Dim selectedrow As Integer = FloridayOrders_flx.RowSel
+            If selectedrow >= 1 Then
+                CheckOrderlines(True, selectedrow)
+            End If
+        End If
+    End Sub
+
+    Private Function CheckFloridayFilter(orderlineId As String) As String
+        'return toegepaste filternummers as string
+        Dim filterstoegepast As String = ""
+
+        Dim query As String = ""
+
+        Try
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                Dim Cmd2 As New OdbcCommand(query, Conn)
+                Dim reader2 As OdbcDataReader
+
+                Dim soort As Integer = 0
+                Dim fust As Integer = 0
+                Dim hoes As Integer = 0
+                Dim accessoire1 As Integer = 0
+                Dim accessoire2 As Integer = 0
+                Dim accessoire3 As Integer = 0
+                Dim accessoire4 As Integer = 0
+                Dim accessoire5 As Integer = 0
+                Dim accessoire6 As Integer = 0
+                Dim accessoire7 As Integer = 0
+                Dim accessoire8 As Integer = 0
+                Dim opmerking As String = ""
+                Dim tradeItemId As String = ""
+                Dim customerOrganizationId As String = ""
+
+                'laden data
+                query = "SELECT * FROM floriday_salesorders_boek WHERE orderLineId='" + orderlineId + "'"
+                Cmd2.CommandText = query
+                reader2 = Cmd2.ExecuteReader()
+                If reader2.HasRows Then
+                    reader2.Read()  'oude data ophalen
+                    soort = CHint(reader2("boek_soortId"))
+                    hoes = CHint(reader2("boek_hoesId"))
+                    fust = CHint(reader2("boek_fustid"))
+                    tradeItemId = CHstr(reader2("tradeItemId"))
+                    accessoire1 = CHint(reader2("boek_accessoire1"))
+                    accessoire2 = CHint(reader2("boek_accessoire2"))
+                    accessoire3 = CHint(reader2("boek_accessoire3"))
+                    accessoire4 = CHint(reader2("boek_accessoire4"))
+                    accessoire5 = CHint(reader2("boek_accessoire5"))
+                    accessoire6 = CHint(reader2("boek_accessoire6"))
+                    accessoire7 = CHint(reader2("boek_accessoire7"))
+                    accessoire8 = CHint(reader2("boek_accessoire8"))
+                    opmerking = CHstr(reader2("boek_opmerking"))
+                    customerOrganizationId = CHstr(reader2("customerOrganizationId"))
+                End If
+                reader2.Close()
+
+                'filters laden
+                Dim save_changed_data As Boolean = False
+
+                query = "SELECT * FROM floriday_salesorders_filters WHERE (customer_check=0) OR (customer_check=1 AND customerOrganizationId='" + customerOrganizationId + "')"
+                Cmd2.CommandText = query
+                reader2 = Cmd2.ExecuteReader()
+                Do While reader2.Read
+
+                    Dim filterid As Integer = CHint(reader2("id"))
+                    Dim customer_check As Boolean = CHbool(reader2("customer_check"))
+                    Dim fcustomerOrganizationId As String = CHstr(reader2("customerOrganizationId"))
+                    Dim customerName As String = CHstr(reader2("customerName"))
+                    Dim customerEAN As String = CHstr(reader2("customerEAN"))
+                    Dim tradeItemCheck As Boolean = CHbool(reader2("tradeItemCheck"))
+                    Dim tradeItemName As String = CHstr(reader2("tradeItemName"))
+                    Dim ftradeItemId As String = CHstr(reader2("tradeItemId"))
+                    Dim fopmerking As String = CHstr(reader2("opmerking"))
+                    Dim soortCheck As Boolean = CHbool(reader2("soortCheck"))
+                    Dim soortOrg As Integer = CHint(reader2("soortOrg"))
+                    Dim soortNew As Integer = CHint(reader2("soortNew"))
+                    Dim fustCheck As Boolean = CHbool(reader2("fustCheck"))
+                    Dim fustOrg As Integer = CHint(reader2("fustOrg"))
+                    Dim fustNew As Integer = CHint(reader2("fustNew"))
+                    Dim hoesCheck As Boolean = CHbool(reader2("hoesCheck"))
+                    Dim hoesOrg As Integer = CHint(reader2("hoesOrg"))
+                    Dim hoesNew As Integer = CHint(reader2("hoesNew"))
+                    Dim accessoire1Check As Boolean = CHbool(reader2("accessoire1Check"))
+                    Dim accessoire1Org As Integer = CHint(reader2("accessoire1Org"))
+                    Dim accessoire1New As Integer = CHint(reader2("accessoire1New"))
+                    Dim accessoire2Check As Boolean = CHbool(reader2("accessoire2Check"))
+                    Dim accessoire2Org As Integer = CHint(reader2("accessoire2Org"))
+                    Dim accessoire2New As Integer = CHint(reader2("accessoire2New"))
+                    Dim accessoire3Check As Boolean = CHbool(reader2("accessoire3Check"))
+                    Dim accessoire3Org As Integer = CHint(reader2("accessoire3Org"))
+                    Dim accessoire3New As Integer = CHint(reader2("accessoire3New"))
+                    Dim accessoire4Check As Boolean = CHbool(reader2("accessoire4Check"))
+                    Dim accessoire4Org As Integer = CHint(reader2("accessoire4Org"))
+                    Dim accessoire4New As Integer = CHint(reader2("accessoire4New"))
+                    Dim opmerkingCheck As Boolean = CHbool(reader2("opmerkingCheck"))
+
+                    If (tradeItemCheck = False) Or (tradeItemCheck = True And tradeItemId = ftradeItemId) Then
+                        Dim filterdone As Boolean = False
+                        If soortCheck = True And soort = soortOrg Then
+                            soort = soortNew
+                            filterdone = True
+                        End If
+                        If fustCheck = True And fust = fustOrg Then
+                            fust = fustNew
+                            filterdone = True
+                        End If
+                        If hoesCheck = True And hoes = hoesOrg Then
+                            hoes = hoesNew
+                            filterdone = True
+                        End If
+                        If accessoire1Check = True Then
+                            If accessoire1 = accessoire1Org Then
+                                filterdone = True
+                                accessoire1 = accessoire1New
+                            End If
+                            If accessoire2 = accessoire1Org Then
+                                filterdone = True
+                                accessoire2 = accessoire1New
+                            End If
+                            If accessoire3 = accessoire1Org Then
+                                filterdone = True
+                                accessoire3 = accessoire1New
+                            End If
+                            If accessoire4 = accessoire1Org Then
+                                filterdone = True
+                                accessoire4 = accessoire1New
+                            End If
+                            If accessoire5 = accessoire1Org Then
+                                filterdone = True
+                                accessoire5 = accessoire1New
+                            End If
+                            If accessoire6 = accessoire1Org Then
+                                filterdone = True
+                                accessoire6 = accessoire1New
+                            End If
+                            If accessoire7 = accessoire1Org Then
+                                filterdone = True
+                                accessoire7 = accessoire1New
+                            End If
+                            If accessoire8 = accessoire1Org Then
+                                filterdone = True
+                                accessoire8 = accessoire1New
+                            End If
+                        End If
+                        If accessoire2Check = True Then
+                            If accessoire1 = accessoire2Org Then
+                                filterdone = True
+                                accessoire1 = accessoire2New
+                            End If
+                            If accessoire2 = accessoire2Org Then
+                                filterdone = True
+                                accessoire2 = accessoire2New
+                            End If
+                            If accessoire3 = accessoire2Org Then
+                                filterdone = True
+                                accessoire3 = accessoire2New
+                            End If
+                            If accessoire4 = accessoire2Org Then
+                                filterdone = True
+                                accessoire4 = accessoire2New
+                            End If
+                            If accessoire5 = accessoire2Org Then
+                                filterdone = True
+                                accessoire5 = accessoire2New
+                            End If
+                            If accessoire6 = accessoire2Org Then
+                                filterdone = True
+                                accessoire6 = accessoire2New
+                            End If
+                            If accessoire7 = accessoire2Org Then
+                                filterdone = True
+                                accessoire7 = accessoire2New
+                            End If
+                            If accessoire8 = accessoire2Org Then
+                                filterdone = True
+                                accessoire8 = accessoire2New
+                            End If
+                        End If
+                        If accessoire3Check = True Then
+                            If accessoire1 = accessoire3Org Then
+                                filterdone = True
+                                accessoire1 = accessoire3New
+                            End If
+                            If accessoire2 = accessoire3Org Then
+                                filterdone = True
+                                accessoire2 = accessoire3New
+                            End If
+                            If accessoire3 = accessoire3Org Then
+                                filterdone = True
+                                accessoire3 = accessoire3New
+                            End If
+                            If accessoire4 = accessoire3Org Then
+                                filterdone = True
+                                accessoire4 = accessoire3New
+                            End If
+                            If accessoire5 = accessoire3Org Then
+                                filterdone = True
+                                accessoire5 = accessoire3New
+                            End If
+                            If accessoire6 = accessoire3Org Then
+                                filterdone = True
+                                accessoire6 = accessoire3New
+                            End If
+                            If accessoire7 = accessoire3Org Then
+                                filterdone = True
+                                accessoire7 = accessoire3New
+                            End If
+                            If accessoire8 = accessoire3Org Then
+                                filterdone = True
+                                accessoire8 = accessoire3New
+                            End If
+                        End If
+                        If accessoire4Check = True Then
+                            If accessoire1 = accessoire4Org Then
+                                filterdone = True
+                                accessoire1 = accessoire4New
+                            End If
+                            If accessoire2 = accessoire4Org Then
+                                filterdone = True
+                                accessoire2 = accessoire4New
+                            End If
+                            If accessoire3 = accessoire4Org Then
+                                filterdone = True
+                                accessoire3 = accessoire4New
+                            End If
+                            If accessoire4 = accessoire4Org Then
+                                filterdone = True
+                                accessoire4 = accessoire4New
+                            End If
+                            If accessoire5 = accessoire4Org Then
+                                filterdone = True
+                                accessoire5 = accessoire4New
+                            End If
+                            If accessoire6 = accessoire4Org Then
+                                filterdone = True
+                                accessoire6 = accessoire4New
+                            End If
+                            If accessoire7 = accessoire4Org Then
+                                filterdone = True
+                                accessoire7 = accessoire4New
+                            End If
+                            If accessoire8 = accessoire4Org Then
+                                filterdone = True
+                                accessoire8 = accessoire4New
+                            End If
+                        End If
+                        If filterdone = True Then
+                            filterstoegepast = filterstoegepast + Tstr(filterid) + " "
+                            save_changed_data = True
+                        End If
+                    End If
+                Loop
+                reader2.Close()
+
+                If save_changed_data = True Then
+                    query = "UPDATE floriday_salesorders_boek SET boek_soortId=?,boek_hoesId=?,boek_accessoire1=?," _
+                            & "boek_accessoire2=?,boek_accessoire3=?,boek_accessoire4=?,boek_accessoire5=?,boek_accessoire6=?,boek_accessoire7=?," _
+                            & "boek_accessoire8=?,boek_opmerking=?,boek_fustid=?,filterstoegepast=? WHERE orderLineId=?"
+                    Cmd2.CommandText = query
+                    Cmd2.Parameters.Clear()
+                    Cmd2.Parameters.AddWithValue("", soort)
+                    Cmd2.Parameters.AddWithValue("", hoes)
+                    Cmd2.Parameters.AddWithValue("", accessoire1)
+                    Cmd2.Parameters.AddWithValue("", accessoire2)
+                    Cmd2.Parameters.AddWithValue("", accessoire3)
+                    Cmd2.Parameters.AddWithValue("", accessoire4)
+                    Cmd2.Parameters.AddWithValue("", accessoire5)
+                    Cmd2.Parameters.AddWithValue("", accessoire6)
+                    Cmd2.Parameters.AddWithValue("", accessoire7)
+                    Cmd2.Parameters.AddWithValue("", accessoire8)
+                    Cmd2.Parameters.AddWithValue("", Mid(opmerking, 1, 79))
+                    Cmd2.Parameters.AddWithValue("", fust)
+                    Cmd2.Parameters.AddWithValue("", Mid(filterstoegepast, 1, 99))
+                    Cmd2.Parameters.AddWithValue("", orderlineId)
+                    Cmd2.ExecuteNonQuery()
+                End If
+
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Fout bij floriday filters toepassen" + ex.ToString, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
+        Return filterstoegepast
+
+    End Function
+
+    Private Sub Floriday_Cal_DateChanged(sender As Object, e As DateRangeEventArgs) Handles Floriday_Calendar.DateChanged
+        FloridayOrderLines_flx.Rows.Count = 1
+        FloridayOrdersShow()
+    End Sub
+
+    Private Sub fd_updatelist_but_Click(sender As Object, e As EventArgs) Handles fd_updatelist_but.Click
+        FloridayOrderLines_flx.Rows.Count = 1
+        FloridayOrdersShow()
+
+    End Sub
+
+
+
 
 
 
@@ -34680,6 +39219,43 @@ Public Module GlobalVariables
     Friend order_veilingnr_vba As Integer = Nothing
     Friend order_veilingnr_von As Integer = Nothing
 
+    Friend aantalcol As Integer = 0   'orderinvoer kolomen
+    Friend GPcol As Integer = 0
+    Friend labelcol As Integer = 0
+    Friend fustcol As Integer = 0
+    Friend soortcol As Integer = 0
+    Friend hoescol As Integer = 0
+    Friend potmaatcol As Integer = 0
+    Friend xcol As Integer = 0
+    Friend acce1col As Integer = 0
+    Friend acce2col As Integer = 0
+    Friend acce4col As Integer = 0
+    Friend acce5col As Integer = 0
+    Friend acce6col As Integer = 0
+    Friend acce7col As Integer = 0
+    Friend acce8col As Integer = 0
+    Friend schermencol As Integer = 0
+    Friend vestigingcol As Integer = 0
+    Friend aanbodcol As Integer = 0
+    Friend prijscol As Integer = 0
+    Friend rijpheidcol As Integer = 0
+    Friend diametercol As Integer = 0
+    Friend hoogtecol As Integer = 0
+    Friend wpsfilter1col As Integer = 0
+    Friend wpsfilter2col As Integer = 0
+    Friend wpsfilter3col As Integer = 0
+    Friend pluscol As Integer = 0
+    Friend opmerkingcol As Integer = 0
+    Friend kopercodecol As Integer = 0
+    Friend keurcodecol As Integer = 0
+    Friend transporthoogtecol As Integer = 0
+    Friend florecomnrcol As Integer = 0
+    Friend actiecol As Integer = 0
+    Friend oldheadercol As Integer = 0
+    Friend fotocol As Integer = 0
+    Friend floridaynrcol As Integer = 0
+    Friend orderinvoer_idcol As Integer = 0
+
     Friend kar() As Kar_Data
     Friend brief() As Brief_Data
     Friend veiling() As Veiling_Data
@@ -34694,6 +39270,7 @@ Public Module GlobalVariables
     Friend wpsfilter() As wps_filter
     Friend soortvolgorde() As soort_volgorde
     Friend soortgroep() As soortgroepnaam_data
+    Friend fotofilters() As FotoFiltersStruct
 
     Friend dataelementen() As Data_elementen
     Friend sortelementen() As Sort_elementen
@@ -34713,6 +39290,7 @@ Public Module GlobalVariables
     Friend dt_rijpheid As New DataTable
     Friend dt_hoogte As New DataTable
     Friend dt_diameter As New DataTable
+    Friend dt_schermen As New DataTable
 
     Friend dt_fust As New DataTable
     Friend dt_fusta As New DataTable
@@ -34738,8 +39316,10 @@ Public Module GlobalVariables
     Friend dt_hoescategorie As New DataTable
     Friend dt_kwaliteit As New DataTable
     Friend dt_floridayveiling As New DataTable
+    Friend dt_floridaywarehouses As New DataTable
     Friend dt_soortgroepveilgroep As New DataTable
-
+    Friend dt_soortmixids As New DataTable
+    Friend dt_tradeitem As New DataTable
 
     Friend dtt_prijsactie As New DataTable
     Friend dtt_keurcode As New DataTable
@@ -34766,7 +39346,19 @@ Public Module GlobalVariables
     Friend dt_empty As New DataTable
     Friend dt_db_tables As New DataTable
     Friend dt_favorieten_naam As New DataTable
+    Friend dt_labelstatus As New DataTable
 
+    Structure FotoFiltersStruct
+        Dim tradeItemId As Integer
+        Dim rijpheid As Integer
+        Dim diameter As Integer
+        Dim hoogte As Integer
+        Dim schermen As Integer
+        Dim fust As Integer
+        Dim keurcode As Integer
+        Dim fotopath As String
+        Dim hoes As Integer
+    End Structure
 
     Structure wps_filter
         Dim filternummer As Integer
@@ -34854,7 +39446,7 @@ Public Module GlobalVariables
         Dim labelnaam As String
         Dim vestiging As Integer
         Dim logiqs_code As String
-
+        Dim tradeitemklok As Integer
     End Structure
     Structure Prijzen_data
         Dim id As Integer
@@ -34900,12 +39492,13 @@ Public Module GlobalVariables
         Dim potmaat As Double
         Dim vbn_code As Integer
         Dim sdf_code As Integer
-        Dim interne_code As Integer
+        Dim interne_code As String
         Dim labelnaam As String
         Dim mixlagen As Boolean
         Dim accessoire As Integer
         Dim vestiging As Integer
         Dim sdf_artcode As String
+        Dim tradeitemklok As Integer
     End Structure
     Structure Mixen_vulling
         Dim mix_id As Integer
@@ -34972,7 +39565,7 @@ Public Module GlobalVariables
         Dim scan_flag As Boolean
         Dim overgooien_naar As String
         Dim overgooien_hierop As String
-
+        Dim floriday_printflag As Integer
     End Structure
     Structure kar_line
         Dim tag As Boolean
@@ -34991,6 +39584,7 @@ Public Module GlobalVariables
         Dim opmerking As String
         Dim wps17_flag As Boolean
         Dim sdfbarcode2 As Integer
+        Dim line_id As Integer
     End Structure
     Structure NAD
         Dim id As Integer
