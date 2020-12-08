@@ -635,6 +635,7 @@ Partial Class Form1
         Me.C1NavPanelOrders1 = New System.Windows.Forms.Panel()
         Me.Order_MonthCalendar = New System.Windows.Forms.MonthCalendar()
         Me.C1NavBarFloriday = New C1.Win.C1Command.C1NavBarPanel()
+        Me.FdMenu_Nietverwerken_but = New System.Windows.Forms.Button()
         Me.FdMenu_ordernr_chk = New System.Windows.Forms.CheckBox()
         Me.fd_updatelist_but = New System.Windows.Forms.Button()
         Me.Fd_archief_rb = New System.Windows.Forms.RadioButton()
@@ -646,6 +647,7 @@ Partial Class Form1
         Me.FdMenu_Verwerk_but = New System.Windows.Forms.Button()
         Me.C1NavBarFlorecom = New C1.Win.C1Command.C1NavBarPanel()
         Me.C1NavPanelFlorecom = New System.Windows.Forms.Panel()
+        Me.FCMenu_Nietverwerken_but = New System.Windows.Forms.Button()
         Me.FcMenu_fczoek_chk = New System.Windows.Forms.CheckBox()
         Me.FcMenu_fczoek_txt = New System.Windows.Forms.TextBox()
         Me.FcMenu_fcnummer_txt = New System.Windows.Forms.TextBox()
@@ -7162,6 +7164,7 @@ Partial Class Form1
         '
         Me.C1NavBarFloriday.Button.Image = CType(resources.GetObject("resource.Image1"), System.Drawing.Image)
         Me.C1NavBarFloriday.Button.Text = "Floriday"
+        Me.C1NavBarFloriday.Controls.Add(Me.FdMenu_Nietverwerken_but)
         Me.C1NavBarFloriday.Controls.Add(Me.FdMenu_ordernr_chk)
         Me.C1NavBarFloriday.Controls.Add(Me.fd_updatelist_but)
         Me.C1NavBarFloriday.Controls.Add(Me.Fd_archief_rb)
@@ -7174,6 +7177,15 @@ Partial Class Form1
         Me.C1NavBarFloriday.ID = 6
         Me.C1NavBarFloriday.Name = "C1NavBarFloriday"
         Me.C1NavBarFloriday.Size = New System.Drawing.Size(205, 707)
+        '
+        'FdMenu_Nietverwerken_but
+        '
+        Me.FdMenu_Nietverwerken_but.Location = New System.Drawing.Point(46, 620)
+        Me.FdMenu_Nietverwerken_but.Name = "FdMenu_Nietverwerken_but"
+        Me.FdMenu_Nietverwerken_but.Size = New System.Drawing.Size(107, 48)
+        Me.FdMenu_Nietverwerken_but.TabIndex = 25
+        Me.FdMenu_Nietverwerken_but.Text = "Niet verwerken via floriday"
+        Me.FdMenu_Nietverwerken_but.UseVisualStyleBackColor = True
         '
         'FdMenu_ordernr_chk
         '
@@ -7269,6 +7281,7 @@ Partial Class Form1
         '
         'C1NavPanelFlorecom
         '
+        Me.C1NavPanelFlorecom.Controls.Add(Me.FCMenu_Nietverwerken_but)
         Me.C1NavPanelFlorecom.Controls.Add(Me.FcMenu_fczoek_chk)
         Me.C1NavPanelFlorecom.Controls.Add(Me.FcMenu_fczoek_txt)
         Me.C1NavPanelFlorecom.Controls.Add(Me.FcMenu_fcnummer_txt)
@@ -7283,6 +7296,15 @@ Partial Class Form1
         Me.C1NavPanelFlorecom.Name = "C1NavPanelFlorecom"
         Me.C1NavPanelFlorecom.Size = New System.Drawing.Size(205, 707)
         Me.C1NavPanelFlorecom.TabIndex = 0
+        '
+        'FCMenu_Nietverwerken_but
+        '
+        Me.FCMenu_Nietverwerken_but.Location = New System.Drawing.Point(33, 574)
+        Me.FCMenu_Nietverwerken_but.Name = "FCMenu_Nietverwerken_but"
+        Me.FCMenu_Nietverwerken_but.Size = New System.Drawing.Size(141, 39)
+        Me.FCMenu_Nietverwerken_but.TabIndex = 11
+        Me.FCMenu_Nietverwerken_but.Text = "Florecom niet verwerken (verwerking via Floriday)"
+        Me.FCMenu_Nietverwerken_but.UseVisualStyleBackColor = True
         '
         'FcMenu_fczoek_chk
         '
@@ -8785,4 +8807,6 @@ Partial Class Form1
     Friend WithEvents Kar_fdverzonden2_chk As CheckBox
     Friend WithEvents Kar_fdverzonden1_chk As CheckBox
     Friend WithEvents FdMenu_ordernr_chk As CheckBox
+    Friend WithEvents FdMenu_Nietverwerken_but As Button
+    Friend WithEvents FCMenu_Nietverwerken_but As Button
 End Class

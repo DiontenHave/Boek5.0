@@ -17,7 +17,7 @@
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>C:\CodingV4\Boek5.0\Boek5.0\publish\</PublishUrl>
+    <PublishUrl>C:\CodingV4\Boek5.0\Boek5.0\publish\Boek\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -27,9 +27,9 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ProductName>Boek4.0</ProductName>
+    <ProductName>Boek5.0</ProductName>
     <PublisherName>ten Have</PublisherName>
-    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationRevision>13</ApplicationRevision>
     <ApplicationVersion>5.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>

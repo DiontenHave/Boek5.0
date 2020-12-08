@@ -582,23 +582,7 @@ Public Class Form1
                 C1TabVoorraad.Enabled = False
                 C1TabPrijzen.Enabled = False
                 C1TabWPS.Enabled = False
-                SetTabPage("Instellingen")
 
-            Case 5
-                C1TabOrderInvoer.Enabled = False
-                C1TabKarindeling.Enabled = False
-                C1TabFloriday.Enabled = False
-                C1TabFlorecom.Enabled = False
-                C1TabVervoer.Enabled = False
-                C1TabOverzichten.Enabled = False
-                C1TabDatabase.Enabled = False
-                C1TabInloggen.Enabled = True
-                C1TabInstellingen.Enabled = False
-                C1TabVoorraad.Enabled = False
-                C1TabPrijzen.Enabled = True
-                C1TabWPS.Enabled = False
-                'C1Tab.SelectedTab = C1Tab.TabPages(7)
-                SetTabPage("Prijzen")
                 Me.Inst_Login1_Txt.Text = My.Settings.LoginName1
                 Me.Inst_Login2_Txt.Text = My.Settings.LoginName2
                 Me.Inst_Login3_Txt.Text = My.Settings.LoginName3
@@ -630,7 +614,27 @@ Public Class Form1
                 Me.Inst_MySQLUser_Txt.Text = My.Settings.MySQL_User
                 Me.Inst_MySQLPass_Txt.Text = My.Settings.MySQL_Pass
                 Me.Inst_MySQLODBC_Txt.Text = My.Settings.MySQL_ODBC
-            Case 6
+
+
+                SetTabPage("Instellingen")
+
+            Case 5
+                C1TabOrderInvoer.Enabled = False
+                C1TabKarindeling.Enabled = False
+                C1TabFloriday.Enabled = False
+                C1TabFlorecom.Enabled = False
+                C1TabVervoer.Enabled = False
+                C1TabOverzichten.Enabled = False
+                C1TabDatabase.Enabled = False
+                C1TabInloggen.Enabled = True
+                C1TabInstellingen.Enabled = False
+                C1TabVoorraad.Enabled = False
+                C1TabPrijzen.Enabled = True
+                C1TabWPS.Enabled = False
+                'C1Tab.SelectedTab = C1Tab.TabPages(7)
+                SetTabPage("Prijzen")
+
+
                 SetupPrijzenGrid()
                 Load_prijzen_lijst()
 
@@ -691,6 +695,15 @@ Public Class Form1
         Else
             dt_tradeitem.Clear()
         End If
+
+        If dt_tradeitemklok.Columns.Count = 0 Then
+            dt_tradeitemklok.Columns.Add("ID", GetType(String))
+            dt_tradeitemklok.Columns.Add("desc", GetType(String))
+        Else
+            dt_tradeitemklok.Clear()
+        End If
+
+
         Try
             Using Conn As New OdbcConnection(ConnString)
                 Conn.Open()
@@ -704,12 +717,32 @@ Public Class Form1
                     Dim id As Integer = CHint(Reader("id"))
                     dt_tradeitem.Rows.Add(New String() {Tstr(id), naam})
                 Loop
+                Reader.Close()
+
+                'Execute Query
+                Dim Cmd2 As New OdbcCommand("SELECT * FROM floriday_tradeitem as ft LEFT JOIN floriday_tradeitem_boek as tb ON ft.tradeItemId=tb.tradeItemId WHERE klok=1 AND length(parentId)<1 AND isDeleted=0 ORDER BY tradeItemName_nl", Conn)
+                Dim Reader2 As OdbcDataReader
+                Reader2 = Cmd2.ExecuteReader()
+                Do While Reader2.Read
+                    Dim naam As String = CHstr(Reader2("tradeItemName_nl"))
+                    Dim id As Integer = CHint(Reader2("id"))
+                    dt_tradeitemklok.Rows.Add(New String() {Tstr(id), naam})
+                Loop
+                Reader.Close()
+
+
+
 
             End Using
         Catch ex As Exception
             ErrorLog("Database fout: (tradeitems)" + ex.Message)
             MessageBox.Show("Database fout: (tradeitems)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
         End Try
+
+
+
+
+
     End Sub
     Private Sub Load_Database_WpsFilters()
         Dim i As Integer
@@ -1313,7 +1346,7 @@ Public Class Form1
 
         count = GetRowCount("mixen")
         ReDim mixen(count + 1)
-        Dim CmdString As String = "SELECT * FROM mixen"
+        Dim CmdString As String = "SELECT * FROM mixen ORDER BY naam"
 
         ' initialize datastructure for dropdown menu's
         If dt_mixen.Columns.Count = 0 Then
@@ -2180,6 +2213,8 @@ Public Class Form1
             dt_soortmixids.Clear()
         End If
 
+        dt_soortmixids.Rows.Add(New Object() {Tstr(0), "Onbekend", 0})
+
         Dim count2 As Integer = 1
         For j = 0 To 999
             For i = 1 To UBound(soorten) - 1
@@ -2708,6 +2743,7 @@ Public Class Form1
                             Case "dtt_gp" : dtable = dtt_gp
                             Case "dt_labelstatus" : dtable = dt_labelstatus
                             Case "dt_tradeitem" : dtable = dt_tradeitem
+                            Case "dt_tradeitemklok" : dtable = dt_tradeitemklok
                             Case "dt_floridaywarehouses" : dtable = dt_floridaywarehouses
 
                             Case "dt_rijpheid" : dtable = dt_rijpheid
@@ -5848,6 +5884,9 @@ nexttreeline:
     End Sub
     Private Sub SetLoginSettings(ByVal loginnr As Integer)
 
+        CheckForUpdate()
+
+
         If jenptenhave = True Then
             If TreeVestTotaal_but.Enabled = True Then
                 TreeviewVestiging = 0
@@ -5965,6 +6004,69 @@ nexttreeline:
         Update_Boek()
     End Sub
 
+    Private Sub CheckForUpdate()
+        Try
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                Dim Cmd2 As New OdbcCommand("SELECT * FROM instellingen", Conn)
+                Dim Reader2 As OdbcDataReader = Cmd2.ExecuteReader()
+                If Reader2.HasRows Then
+                    Reader2.Read()
+                    Dim new_version As String = CHstr(Reader2("version"))
+                    Dim update_mandatory As Boolean = CHbool(Reader2("update_mandatory"))
+
+                    Dim current_version As String = My.Settings.Versie
+                    If current_version <> new_version Then
+                        My.Settings.Versie = new_version
+                        My.Settings.Save()
+                        If update_mandatory = True Then
+                            Dim answer As Integer = MsgBox("Nieuwe versie van Boek gevonden!", vbOKOnly)
+                            If answer = vbOK Then
+                                Try
+                                    If Debugger.IsAttached Then
+                                        ' Since there is a debugger attached, assume we are running from the IDE
+                                    Else
+                                        ' Assume we aren't running from the IDE
+                                        System.Diagnostics.Process.Start("C:\Boek\Update.appref-ms", "app1")
+                                        Application.Exit()
+                                    End If
+                                Catch ex As Exception
+                                    MsgBox("Updater Not found")
+                                End Try
+                            End If
+                        Else
+                            Dim answer As Integer = MsgBox("Nieuwe versie van Boek gevonden! Update?", vbYesNo)
+                            If answer = vbYes Then
+                                Try
+                                    If Debugger.IsAttached Then
+                                        ' Since there is a debugger attached, assume we are running from the IDE
+                                    Else
+                                        ' Assume we aren't running from the IDE
+                                        System.Diagnostics.Process.Start("C:\Boek\Update.appref-ms", "app1")
+                                        Application.Exit()
+                                    End If
+                                Catch ex As Exception
+                                    MsgBox("Updater Not found")
+                                End Try
+                            End If
+                        End If
+
+                    End If
+
+
+                End If
+                Reader2.Close()
+
+
+
+            End Using
+        Catch ex As Exception
+            ErrorLog("Database fout: (update boek )" + ex.Message)
+            MessageBox.Show("Database fout: (update boek)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
+
+    End Sub
     Private Sub ActivityTimer_lbl_Click(sender As System.Object, e As System.EventArgs) Handles ActivityTimer_lbl.Click
         Set_Boek_reload()
     End Sub
@@ -6263,7 +6365,7 @@ nexttreeline:
 
     Private Sub Inst_run_update_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Inst_run_update_but.Click
         Try
-            Process.Start("c:\boek\update.appref-ms")
+            Process.Start("c:\boek\update.appref-ms", "app1")
             Application.Exit()
         Catch ex As Exception
             MsgBox("Updater not found")
@@ -6843,16 +6945,18 @@ nexttreeline:
                     Reader2 = Cmd2.ExecuteReader()
                     Do While Reader2.Read
                         Dim tradeItemId As String = CHstr(Reader2("tradeItemId"))
-                        query = "SELECT tradeItemId,tradeItemName_nl FROM floriday_tradeitem WHERE isDeleted=0 AND parentId='' AND tradeItemId='" + tradeItemId + "'"
+                        query = "SELECT tradeItemId,tradeItemName_nl,supplierArticleCode FROM floriday_tradeitem WHERE isDeleted=0 AND parentId='' AND tradeItemId='" + tradeItemId + "'"
                         Cmd3.CommandText = query
                         Reader3 = Cmd3.ExecuteReader()
                         If Reader3.HasRows Then
                             Dim tradeItemName As String = CHstr(Reader3("tradeItemName_nl"))
-                            query = "INSERT INTO floriday_tradeitem_boek SET tradeItemId=?,tradeItemName=?,boek_soortcode=0,boek_hoes=0,boek_accessoire1=0,boek_accessoire2=0,boek_accessoire3=0,boek_accessoire4=0"
+                            Dim supplierArticleCode As String = CHstr(Reader3("supplierArticleCode"))
+                            query = "INSERT INTO floriday_tradeitem_boek SET tradeItemId=?,tradeItemName=?,kwekerscode=?,boek_soortcode=0,boek_hoes=0,boek_accessoire1=0,boek_accessoire2=0,boek_accessoire3=0,boek_accessoire4=0"
                             Cmd4.CommandText = query
                             Cmd4.Parameters.Clear()
                             Cmd4.Parameters.AddWithValue("", tradeItemId)
                             Cmd4.Parameters.AddWithValue("", tradeItemName)
+                            Cmd4.Parameters.AddWithValue("", supplierArticleCode)
                             Cmd4.ExecuteNonQuery()
                         End If
                         Reader3.Close()
@@ -18271,6 +18375,9 @@ next_fav:
                         If mark = 0 Then
                             Cmd.CommandText = "UPDATE OrderKarLines SET Wps_flag=1 WHERE header_id = " + Trim(Str(mark_idlist(i)))
                             Cmd.ExecuteNonQuery()
+
+                            Cmd.CommandText = "UPDATE OrderKarren SET Wps_status=6 WHERE header_id = " + Trim(Str(mark_idlist(i)))
+                            Cmd.ExecuteNonQuery()
                         End If
                     End If
 
@@ -21647,8 +21754,8 @@ next_fav:
                 Dim sdf_flagtrue As Boolean = 0
                 Dim sdf_flagfalse As Boolean = 0
 
-                Dim scan_flagtrue As Boolean = 0
-                Dim scan_flagfalse As Boolean = 0
+                '  Dim scan_flagtrue As Boolean = 0
+                '  Dim scan_flagfalse As Boolean = 0
 
 
                 Dim vervoer_flagtrue As Boolean = 0
@@ -21660,7 +21767,7 @@ next_fav:
                 Dim floriday_error As Boolean = False
                 Dim floriday_printflag As Integer = 0
                 Dim sdf_flag As Boolean
-                Dim scan_flag As Boolean
+                'Dim scan_flag As Boolean
                 Dim vervoer_flag As Boolean
                 Dim wps_status As Integer = 0
                 Dim wps_tempstatus As Integer = 0
@@ -21668,7 +21775,7 @@ next_fav:
                 Do While Reader.Read()
                     sdf_flag = CHbool(Reader("sdf_flag"))
                     vervoer_flag = CHbool(Reader("vervoer_flag"))
-                    scan_flag = CHbool(Reader("scan_flag"))
+                    'scan_flag = CHbool(Reader("scan_flag"))
                     floriday_printflag = CHint(Reader("floriday_printflag"))
 
                     If floriday_printflag > 0 Then sdf_flag = True
@@ -21684,12 +21791,12 @@ next_fav:
                         floriday_error = True
                     End If
 
-                    If scan_flag = True Then
-                        scan_flagtrue = True
-                    End If
-                    If scan_flag = False Then
-                        scan_flagfalse = True
-                    End If
+                    'If scan_flag = True Then
+                    'scan_flagtrue = True
+                    'End If
+                    'If scan_flag = False Then
+                    'scan_flagfalse = True
+                    ' End If
 
                     If vervoer_flag = True Then
                         vervoer_flagtrue = True
@@ -21729,14 +21836,14 @@ next_fav:
                 Reader.Close()
                 Dim sdf_done As Boolean = False
                 If sdf_flagtrue = True And sdf_flagfalse = True Then
-                    If scan_flagfalse = True Then
-                        newstatus = 40  'sdf gedeeltelijk
-                        sdf_done = True
-                    End If
-                    If scan_flagtrue = True And scan_flagfalse = False Then
-                        newstatus = 45  'sdf gedeeltelijk + scan
-                        sdf_done = True
-                    End If
+                    'If scan_flagfalse = True Then
+                    newstatus = 40  'sdf gedeeltelijk
+                    sdf_done = True
+                    'End If
+                    'If scan_flagtrue = True And scan_flagfalse = False Then
+                    'newstatus = 45  'sdf gedeeltelijk + scan
+                    'sdf_done = True
+                    'endIf
                 End If
                 If sdf_flagtrue = True And sdf_flagfalse = False Then
                     newstatus = 41  'sdf compleet
@@ -21767,13 +21874,13 @@ next_fav:
                     If sdf_done = False Then
                         'newstatus = 32  'wps compleet
 
-                        If scan_flagfalse = True Then
-                            newstatus = 32  'wps compleet
-                        End If
-                        If scan_flagtrue = True And scan_flagfalse = False Then
-                            newstatus = 29  'wps compleet + scan
-                            sdf_done = True
-                        End If
+                        'If scan_flagfalse = True Then
+                        newstatus = 32  'wps compleet
+                        'End If
+                        'If scan_flagtrue = True And scan_flagfalse = False Then
+                        ' newstatus = 29  'wps compleet + scan
+                        ' sdf_done = True
+                        'End If
 
                     End If
                 End If
@@ -22193,7 +22300,7 @@ next_fav:
                                 Cmd.Parameters.AddWithValue("", kar_id)
                                 Cmd.Parameters.AddWithValue("", -1)
                                 Cmd.Parameters.AddWithValue("", -1)
-                                Cmd.Parameters.AddWithValue("", 4) 'print handmatig
+                                Cmd.Parameters.AddWithValue("", 3) 'print handmatig
                                 Cmd.Parameters.AddWithValue("", "")
                                 Cmd.Parameters.AddWithValue("", TreeviewVestiging)  'vestiging afhankelijk van boek
                                 Cmd.Parameters.AddWithValue("", 1)
@@ -22221,7 +22328,7 @@ next_fav:
                                 Cmd.CommandText = "INSERT INTO afleverscan(datumtijd,kar_id,lagen,kar,status,barcode,vestiging,pagina) VALUES (?,?,?,?,?,?,?,?)"
                                 Cmd.Parameters.Clear()
                                 Cmd.Parameters.AddWithValue("", Format(Now, "yy-MM-dd HH:mm:ss"))
-                                Cmd.Parameters.AddWithValue("", kar_id)
+                                Cmd.Parameters.AddWithValue("", karrun_id)
                                 Cmd.Parameters.AddWithValue("", -1)
                                 Cmd.Parameters.AddWithValue("", -1)
                                 Cmd.Parameters.AddWithValue("", 3) 'print handmatig
@@ -22239,7 +22346,7 @@ next_fav:
                     End If
 
                 End If
-
+                MsgBox("Brieven worden geprint")
 
             End Using
         Catch ex As Exception
@@ -26335,6 +26442,93 @@ search_on:
 
     Private Sub FcMenu_Verwerk_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles FcMenu_Verwerk_but.Click
         VerwerkFlorecom()
+    End Sub
+
+    Private Sub FCMenu_Nietverwerken_but_Click(sender As Object, e As EventArgs) Handles FCMenu_Nietverwerken_but.Click
+        VerwijderFlorecomOrder()
+    End Sub
+
+    Private Sub VerwijderFlorecomOrder()
+
+        FcMenu_Verwerk_but.Enabled = False
+        Application.DoEvents()
+
+        If FC_CurrentEditOrder > 0 Then
+            'reread all order lines
+            SetOrderLines(FC_CurrentEditOrder)
+        Else
+            GoTo exit_verwerk4
+        End If
+
+        'zijn alle lines geaccepteerd etc?
+
+        If FC_Flexgrid_orderlines.Rows.Count > 1 Then
+            For i = 1 To FC_Flexgrid_orderlines.Rows.Count - 1
+                Dim acceptedstate As Integer = CInt(Val(FC_Flexgrid_orderlines.Item(i, 1)))
+                If acceptedstate = 99 Or acceptedstate = 0 Then
+                    MsgBox("Een of meerdere orderlines moeten nog bewerkt worden", vbOKOnly)
+                    GoTo exit_verwerk4
+                End If
+            Next i
+        Else
+            Exit Sub
+        End If
+
+        'is de order nog steeds nieuw ? 
+        '(orderstatus & linestatus = 0)
+
+        Dim tweedevestiging As Boolean = False
+        Dim vestigingnummer As Integer = 0
+
+        Try
+            'Open Connection
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                'read info from florecom database
+                Dim Reader As OdbcDataReader
+                Dim CmdString2 = "SELECT * FROM edi2_orders where id = " + Str(FC_CurrentEditOrder)
+                Dim Cmd2 As New OdbcCommand(CmdString2, Conn)
+                Reader = Cmd2.ExecuteReader()
+                Dim status As Integer = 0
+                Dim koper_ean As String = ""
+                If Reader.HasRows Then
+                    status = CHint(Reader("Status"))
+                    koper_ean = CHstr(Reader("koper_ean"))
+                Else
+                    MsgBox("Florecom vertaal fout, order niet correct opgeslagen")
+                    GoTo exit_verwerk5
+                End If
+                If status <> 0 Then
+                    MsgBox("Deze order is al verwerkt")
+                    'SaveOrder = True
+                    FcMenu_Verwerk_but.Enabled = True
+                    GoTo exit_verwerk5                               '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                End If
+
+                Dim Cmd8 As New OdbcCommand("", Conn)
+                Cmd8.CommandText = "UPDATE edi2_lines SET status=3 where ordernr = " + Str(FC_CurrentEditOrder)
+                Cmd8.ExecuteNonQuery()
+
+                Cmd8.CommandText = "UPDATE edi2_orders SET status=2 where id = " + Str(FC_CurrentEditOrder)
+                Cmd8.ExecuteNonQuery()
+
+
+exit_verwerk5:
+                Reader.Close()
+            End Using
+        Catch ex As Exception
+            ErrorLog("Fout orderopslag fc check: " + ex.Message)
+            MsgBox("Fout orderopslag fc check: " + ex.Message, MsgBoxStyle.OkOnly)
+        End Try
+
+exit_verwerk4:
+        Me.Cursor = Cursors.Default
+        'reload florecom list
+        LaadNieuweFlorecoms()
+
+        FcMenu_Verwerk_but.Enabled = True
+
     End Sub
 
     Private Sub VerwerkFlorecom()
@@ -30863,7 +31057,10 @@ exit_verwerk:
                         pdf_saved = CHbool(reader("pdf_saved"))
                         briefnummer = CHstr(reader("briefnummer"))
                         Dim fulfillment_STATUS As String = CHstr(reader("fulfillment_STATUS"))
-                        If fulfillment_STATUS <> "ACCEPTED" Then
+                        If fulfillment_STATUS = "CANCELLED" Then
+                            MsgBox("Deze order is al geannuleerd.")
+                            Exit Sub
+                        ElseIf fulfillment_STATUS <> "ACCEPTED" Then
                             MsgBox("Verwijderen is pas mogelijk als de veiling de brief heeft verwerkt.")
                             Exit Sub
                         End If
@@ -30888,11 +31085,12 @@ exit_verwerk:
                             klok = True
                         End If
                     End If
+                    reader.Close()
 
                     If klok = True Then
                         'FFO en Delivery verwijderen
                         Dim FFPostID As Integer = InsertTask(0, 95, "DELETE", "fulfillment-orders", fulfillmentOrderId, "", "", "", "", "", "", "", taskrun_id)
-                        Dim FFPostID2 As Integer = InsertTask(60, 95, "DELETE", "delivery-orders", deliveryOrderId, "auction", "", "", "", "", "", "", taskrun_id)
+                        Dim FFPostID2 As Integer = InsertTask(120, 95, "DELETE", "delivery-orders", deliveryOrderId, "auction", "", "", "", "", "", "", taskrun_id)
                         'header status aanpassen
 
                         query = "UPDATE floriday_taskrun SET kar_id=? WHERE kar_id=" + Str(kar_id)
@@ -37236,7 +37434,7 @@ exit_verwerk:
                 Cmd.CommandText = query
                 Reader = Cmd.ExecuteReader()
                 Do While Reader.Read
-
+                    Dim loadCarrier As String = CHstr(Reader("selectedPackingConfiguration_loadCarrier"))
                     Dim customerOrganizationId As String = CHstr(Reader("customerOrganizationId"))
                     Dim supplyLineId As String = CHstr(Reader("supplyLineId"))
                     Dim numberOfTrays As Integer = CHint(Reader("totaalbakken"))
@@ -37245,18 +37443,48 @@ exit_verwerk:
                     Dim delivery_location_gln As String = CHstr(Reader("delivery_location_gln"))
                     Dim orderdatetime As DateTime = CHDate2(Reader("orderdatetime"), Now)
                     Dim databaseboektijd As DateTime = CHDate2(Reader("boektijd"), Now)
+
                     'kopernaam ophalen
                     Dim kopernaam As String = "Koper onbekend"
-                    query = "SELECT name FROM floriday_organizations WHERE organizationId='" + customerOrganizationId + "'"
+                    Dim koper_ean As String = ""
+                    query = "SELECT name,companyGln FROM floriday_organizations WHERE organizationId='" + customerOrganizationId + "'"
                     Cmd2.CommandText = query
                     Reader2 = Cmd2.ExecuteReader()
                     If Reader2.HasRows Then
                         kopernaam = CHstr(Reader2("name"))
+                        koper_ean = CHstr(Reader2("companyGln"))
                     Else
                         kopernaam = "Koper onbekend"
                         InsertTask(0, 9, "GET", "organizations", customerOrganizationId)
                     End If
                     Reader2.Close()
+
+                    'dim kar info ophalen
+                    Dim karvoorkeur As Integer = 1
+                    query = "SELECT kar_voorkeur FROM klanten WHERE ean='" + koper_ean + "'"
+                    Cmd2.CommandText = query
+                    Reader2 = Cmd2.ExecuteReader()
+                    If Reader2.HasRows Then
+                        karvoorkeur = CHstr(Reader2("kar_voorkeur"))
+                    End If
+                    Reader2.Close()
+
+                    Dim kartype As Integer = 1
+                    Select Case loadCarrier
+                        Case "NONE" : kartype = 8
+                        Case "AUCTION_TROLLEY" : kartype = 3
+                        Case "DANISH_TROLLEY" : kartype = 1
+                        Case "EURO_TROLLEY" : kartype = 16
+                        Case "PALLET" : kartype = 6
+                        Case "EURO_PALLET" : kartype = 7
+                    End Select
+
+                    'deen type bepalen
+                    If kartype = 1 Then   'deen?
+                        If karvoorkeur = 4 Or karvoorkeur = 5 Then   'voorkeur deen zonder slotje
+                            kartype = 4
+                        End If
+                    End If
 
                     'locatie plaats ophalen
                     Dim plaats As String = "Onbekend"
@@ -37307,6 +37535,8 @@ exit_verwerk:
                     flexfill.Add("leveringslocatie", plaats.ToLower)
                     flexfill.Add("idlist", idlist)
                     flexfill.Add("orderdatetime", orderdatetime)
+                    flexfill.Add("kartype", kartype)
+
                     Dim flexwarning As New Dictionary(Of String, Object)
                     If tijdwarning = True Then
                         flexwarning.Add("leveringsdt", 1)
@@ -37757,14 +37987,17 @@ exit_verwerk:
                     Dim loadCarrier As String = CHstr(reader("selectedPackingConfiguration_loadCarrier"))
                     reader.Close()
 
-                    Select Case loadCarrier
-                        Case "NONE" : fd_kar_id = 8
-                        Case "AUCTION_TROLLEY" : fd_kar_id = 3
-                        Case "DANISH_TROLLEY" : fd_kar_id = 1
-                        Case "EURO_TROLLEY" : fd_kar_id = 16
-                        Case "PALLET" : fd_kar_id = 6
-                        Case "EURO_PALLET" : fd_kar_id = 7
-                    End Select
+                    'Select Case loadCarrier
+                    '    Case "NONE" : fd_kar_id = 8
+                    '    Case "AUCTION_TROLLEY" : fd_kar_id = 3
+                    '    Case "DANISH_TROLLEY" : fd_kar_id = 1
+                    '    Case "EURO_TROLLEY" : fd_kar_id = 16
+                    '    Case "PALLET" : fd_kar_id = 6
+                    '    Case "EURO_PALLET" : fd_kar_id = 7
+                    'End Select
+
+                    fd_kar_id = CInt(FloridayOrders_flx.GetData(selectedrow, FindCol(FloridayOrders_flx, "Kar type")))
+
 
                     Dim fd_rfhRelationId As Integer = 0
                     query = "SELECT * FROM floriday_organizations WHERE organizationId='" + customerOrganizationId + "'"
@@ -37954,6 +38187,7 @@ exit_verwerk:
                         reader.Read()
                         Dim DBId As Integer = CHint(reader("Id"))
                         Dim customerOrderId As String = CHstr(reader("customerOrderId"))
+                        Dim salesChannelOrderId As String = CHstr(reader("salesChannelOrderId"))
                         Dim customerOrganizationId As String = CHstr(reader("customerOrganizationId"))
                         Dim supplyLineId As String = CHstr(reader("supplyLineId"))
                         Dim tradeItemId As String = CHstr(reader("tradeItemId"))
@@ -38076,7 +38310,7 @@ exit_verwerk:
                             Dim fdl_acce7 As Integer = accessoire6
                             Dim fdl_acce8 As Integer = accessoire7
                             Dim fdl_acce9 As Integer = accessoire8
-                            Dim fdl_kopercode As String = customerOrderId
+                            Dim fdl_kopercode As String = salesChannelOrderId
                             Dim fdl_potmaat As Integer = potmaat
 
                             Select Case stikkercode
@@ -39053,6 +39287,66 @@ skip_verwerkline:
 
     End Sub
 
+    Private Sub FdMenu_Nietverwerken_but_Click(sender As Object, e As EventArgs) Handles FdMenu_Nietverwerken_but.Click
+
+        Dim fd_orderLineIdCol As Integer = FindCol(FloridayOrderLines_flx, "orderlineid")
+        Dim fd_selectieCol As Integer = FindCol(FloridayOrderLines_flx, "selectie")
+        Dim fd_soortCol As Integer = FindCol(FloridayOrderLines_flx, "soort")
+
+        Dim query As String = ""
+        Try
+            'Open Connection
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                Dim Cmd As New OdbcCommand("", Conn)
+                Dim Cmd2 As New OdbcCommand("", Conn)
+                Dim reader As OdbcDataReader
+                'is de order nog steeds nieuw ? 
+
+
+                For i = 2 To FloridayOrderLines_flx.Rows.Count - 1
+                    If FloridayOrderLines_flx.Item(i, fd_selectieCol) = True Then
+                        If FloridayOrderLines_flx.Rows(i).IsNode Then
+                            'no check
+                        Else
+                            Dim orderLineId As String = FloridayOrderLines_flx.Item(i, fd_orderLineIdCol)
+
+                            Cmd.CommandText = "select * from floriday_salesorders where  orderLineId='" + orderLineId + "'"
+                            reader = Cmd.ExecuteReader()
+                            If reader.HasRows Then
+                                reader.Read()
+                                Dim boekstatus As Integer = CHint(reader("boekstatus"))
+                                Dim id As Integer = CHint(reader("id"))
+                                If boekstatus = 0 Then
+
+                                    Cmd2.CommandText = "UPDATE floriday_salesorders SET boekstatus=-1 WHERE id=?"
+                                    Cmd2.Parameters.Clear()
+                                    Cmd2.Parameters.AddWithValue("", id)
+                                    Cmd2.ExecuteNonQuery()
+
+                                End If
+                            End If
+                            reader.Close()
+
+                        End If
+
+                    End If
+                Next
+
+                FloridayOrderLines_flx.Rows.Count = 1
+                FloridayOrdersShow()
+
+            End Using
+        Catch ex As Exception
+            ErrorLog("Fout ordernietverwerken: " + ex.Message)
+            MsgBox("Fout ordernietverwerken: " + ex.Message, MsgBoxStyle.OkOnly)
+        End Try
+
+
+
+    End Sub
+
 
 
 
@@ -39320,6 +39614,7 @@ Public Module GlobalVariables
     Friend dt_soortgroepveilgroep As New DataTable
     Friend dt_soortmixids As New DataTable
     Friend dt_tradeitem As New DataTable
+    Friend dt_tradeitemklok As New DataTable
 
     Friend dtt_prijsactie As New DataTable
     Friend dtt_keurcode As New DataTable
