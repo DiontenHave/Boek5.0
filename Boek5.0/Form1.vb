@@ -2710,9 +2710,11 @@ Public Class Form1
                             flexgrid.Cols(i + 2).ComboList = "..."
                             flexgrid.Cols(i + 2).Format = ""
                         Else
+                            flexgrid.Cols(i + 2).ComboList = ""
                             flexgrid.Cols(i + 2).Format = Trim(celformat(1))
                         End If
                     Else
+                        flexgrid.Cols(i + 2).ComboList = ""
                         flexgrid.Cols(i + 2).Format = ""
                     End If
 
@@ -10214,9 +10216,10 @@ nexttreeline:
                 Select Case table
                     Case "kopers"
                         Load_Database_kopers()
-                    Case "Foto's Standaard"
+                    Case "Klok foto's standaard"
                         Load_Database_fotoFilters()
-
+                    Case "Floriday Soort koppeling"
+                        Load_Database_TradeItems()
 
                 End Select
 
@@ -19485,6 +19488,9 @@ next_fav:
                                     Cmd9.Parameters.AddWithValue("", kar_id)
                                     Cmd9.ExecuteNonQuery()
 
+                                    Cmd.CommandText = "UPDATE OrderKarren SET Wps_status=6 WHERE header_id = " + Trim(Str(kar_id))
+                                    Cmd.ExecuteNonQuery()
+
 
                                 End If
                             End If
@@ -22176,7 +22182,7 @@ next_fav:
             Dim header_id As Integer = mark_idlist(i)
             PrintBriefFloriday(header_id, 0)
         Next i
-
+        MsgBox("Brieven worden geprint")
 
     End Sub
 
@@ -22346,7 +22352,7 @@ next_fav:
                     End If
 
                 End If
-                MsgBox("Brieven worden geprint")
+
 
             End Using
         Catch ex As Exception
@@ -31014,7 +31020,9 @@ exit_verwerk:
         Select Case CommandText
             Case "" : MsgBox("Selecteer een optie om uit te voeren")
             Case "print pakbon" : PrintPakbon(karnr)
-            Case "print brief via floriday" : PrintBriefFloriday(header_id, kar_id)
+            Case "print brief via floriday"
+                PrintBriefFloriday(header_id, kar_id)
+                MsgBox("De brief wordt geprint")
             Case "print brief via sdf" : PrintViaSDF(karnr)
             Case "fd lagen aanpassing" : Floriday_KarLagenAanpassen(header_id, kar_id, kar_type, aantal_lagen)
             Case "fd brief verwijderen" : Floriday_BriefVerwijderen(header_id, kar_id)
@@ -31218,7 +31226,10 @@ exit_verwerk:
                         Case 3, 13, 14, 15
                             kar_enum = "AUCTION_TROLLEY"
                             extralagen = aantal_lagen
-                        Case 4, 5, 8, 9, 10, 11, 12 : kar_enum = "NONE"
+                        Case 4, 5
+                            kar_enum = "DANISH_TROLLEY_NON_CC_RFID"
+                            extralagen = aantal_lagen - 1
+                        Case 8, 9, 10, 11, 12 : kar_enum = "NONE"
                         Case 6 : kar_enum = "PALLET"
                         Case 7 : kar_enum = "EURO_PALLET"
                         Case 16 : kar_enum = "EURO_TROLLEY"
@@ -36795,8 +36806,8 @@ exit_verwerk:
                                 & "boek_accessoire8,boek_opmerking,boek_wpsfilter,boek_status,boek_fustid,boek_stikkercode,boek_aantal,customerOrganizationId," _
                                 & "org_soortId,org_hoesId,org_fustId,org_accessoire1,org_accessoire2,org_accessoire3," _
                                 & "org_accessoire4,org_accessoire5,org_accessoire6,org_accessoire7,org_accessoire8,tradeItemName,tradeItemId,selectie," _
-                                & "boek_stikkerstatus,packages_to_fullfill)" _
-                                & " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                                & "boek_stikkerstatus,packages_to_fullfill,agreementReference_code)" _
+                                & " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                             Cmd2.CommandText = query
                             Cmd2.Parameters.Clear()
                             Cmd2.Parameters.AddWithValue("", orderLineId)
@@ -36837,6 +36848,7 @@ exit_verwerk:
                             If selectedPackingConfiguration_piecesPerPackage < 1 Then selectedPackingConfiguration_piecesPerPackage = 1
                             Dim aantalfust As Integer = CInt(numberOfPieces / selectedPackingConfiguration_piecesPerPackage)
                             Cmd2.Parameters.AddWithValue("", aantalfust)
+                            Cmd2.Parameters.AddWithValue("", agreementReference_code)
                             Cmd2.ExecuteNonQuery()
 
                             filterstoegepast = CheckFloridayFilter(orderLineId)
@@ -39023,7 +39035,7 @@ skip_verwerkline:
                 Dim opmerking As String = ""
                 Dim tradeItemId As String = ""
                 Dim customerOrganizationId As String = ""
-
+                Dim agreementReference_code As String = ""
                 'laden data
                 query = "SELECT * FROM floriday_salesorders_boek WHERE orderLineId='" + orderlineId + "'"
                 Cmd2.CommandText = query
@@ -39044,6 +39056,7 @@ skip_verwerkline:
                     accessoire8 = CHint(reader2("boek_accessoire8"))
                     opmerking = CHstr(reader2("boek_opmerking"))
                     customerOrganizationId = CHstr(reader2("customerOrganizationId"))
+                    agreementReference_code = CHstr(reader2("agreementReference_code"))
                 End If
                 reader2.Close()
 
@@ -39086,160 +39099,137 @@ skip_verwerkline:
                     Dim accessoire4Org As Integer = CHint(reader2("accessoire4Org"))
                     Dim accessoire4New As Integer = CHint(reader2("accessoire4New"))
                     Dim opmerkingCheck As Boolean = CHbool(reader2("opmerkingCheck"))
+                    Dim AanbodRefCheck As Boolean = CHbool(reader2("AanbodRefCheck"))
+                    Dim AanbodRef As String = CHstr(reader2("AanbodRef"))
 
-                    If (tradeItemCheck = False) Or (tradeItemCheck = True And tradeItemId = ftradeItemId) Then
-                        Dim filterdone As Boolean = False
-                        If soortCheck = True And soort = soortOrg Then
-                            soort = soortNew
-                            filterdone = True
-                        End If
-                        If fustCheck = True And fust = fustOrg Then
-                            fust = fustNew
-                            filterdone = True
-                        End If
-                        If hoesCheck = True And hoes = hoesOrg Then
-                            hoes = hoesNew
-                            filterdone = True
-                        End If
-                        If accessoire1Check = True Then
-                            If accessoire1 = accessoire1Org Then
+                    If AanbodRefCheck = False Or (AanbodRefCheck = True And AanbodRef = agreementReference_code) Then
+
+                        If (tradeItemCheck = False) Or (tradeItemCheck = True And tradeItemId = ftradeItemId) Then
+                            Dim filterdone As Boolean = False
+                            If soortCheck = True And soort = soortOrg Then
+                                soort = soortNew
                                 filterdone = True
-                                accessoire1 = accessoire1New
                             End If
-                            If accessoire2 = accessoire1Org Then
+                            If fustCheck = True And fust = fustOrg Then
+                                fust = fustNew
                                 filterdone = True
-                                accessoire2 = accessoire1New
                             End If
-                            If accessoire3 = accessoire1Org Then
+                            If hoesCheck = True And hoes = hoesOrg Then
+                                hoes = hoesNew
                                 filterdone = True
-                                accessoire3 = accessoire1New
                             End If
-                            If accessoire4 = accessoire1Org Then
-                                filterdone = True
-                                accessoire4 = accessoire1New
+                            If accessoire1Check = True Then
+                                If accessoire1 = accessoire1Org Then
+                                    filterdone = True
+                                    accessoire1 = accessoire1New
+                                ElseIf accessoire2 = accessoire1Org Then
+                                    filterdone = True
+                                    accessoire2 = accessoire1New
+                                ElseIf accessoire3 = accessoire1Org Then
+                                    filterdone = True
+                                    accessoire3 = accessoire1New
+                                ElseIf accessoire4 = accessoire1Org Then
+                                    filterdone = True
+                                    accessoire4 = accessoire1New
+                                ElseIf accessoire5 = accessoire1Org Then
+                                    filterdone = True
+                                    accessoire5 = accessoire1New
+                                ElseIf accessoire6 = accessoire1Org Then
+                                    filterdone = True
+                                    accessoire6 = accessoire1New
+                                ElseIf accessoire7 = accessoire1Org Then
+                                    filterdone = True
+                                    accessoire7 = accessoire1New
+                                ElseIf accessoire8 = accessoire1Org Then
+                                    filterdone = True
+                                    accessoire8 = accessoire1New
+                                End If
                             End If
-                            If accessoire5 = accessoire1Org Then
-                                filterdone = True
-                                accessoire5 = accessoire1New
+                            If accessoire2Check = True Then
+                                If accessoire1 = accessoire2Org Then
+                                    filterdone = True
+                                    accessoire1 = accessoire2New
+                                ElseIf accessoire2 = accessoire2Org Then
+                                    filterdone = True
+                                    accessoire2 = accessoire2New
+                                ElseIf accessoire3 = accessoire2Org Then
+                                    filterdone = True
+                                    accessoire3 = accessoire2New
+                                ElseIf accessoire4 = accessoire2Org Then
+                                    filterdone = True
+                                    accessoire4 = accessoire2New
+                                ElseIf accessoire5 = accessoire2Org Then
+                                    filterdone = True
+                                    accessoire5 = accessoire2New
+                                ElseIf accessoire6 = accessoire2Org Then
+                                    filterdone = True
+                                    accessoire6 = accessoire2New
+                                ElseIf accessoire7 = accessoire2Org Then
+                                    filterdone = True
+                                    accessoire7 = accessoire2New
+                                ElseIf accessoire8 = accessoire2Org Then
+                                    filterdone = True
+                                    accessoire8 = accessoire2New
+                                End If
                             End If
-                            If accessoire6 = accessoire1Org Then
-                                filterdone = True
-                                accessoire6 = accessoire1New
+                            If accessoire3Check = True Then
+                                If accessoire1 = accessoire3Org Then
+                                    filterdone = True
+                                    accessoire1 = accessoire3New
+                                ElseIf accessoire2 = accessoire3Org Then
+                                    filterdone = True
+                                    accessoire2 = accessoire3New
+                                ElseIf accessoire3 = accessoire3Org Then
+                                    filterdone = True
+                                    accessoire3 = accessoire3New
+                                ElseIf accessoire4 = accessoire3Org Then
+                                    filterdone = True
+                                    accessoire4 = accessoire3New
+                                ElseIf accessoire5 = accessoire3Org Then
+                                    filterdone = True
+                                    accessoire5 = accessoire3New
+                                ElseIf accessoire6 = accessoire3Org Then
+                                    filterdone = True
+                                    accessoire6 = accessoire3New
+                                ElseIf accessoire7 = accessoire3Org Then
+                                    filterdone = True
+                                    accessoire7 = accessoire3New
+                                ElseIf accessoire8 = accessoire3Org Then
+                                    filterdone = True
+                                    accessoire8 = accessoire3New
+                                End If
                             End If
-                            If accessoire7 = accessoire1Org Then
-                                filterdone = True
-                                accessoire7 = accessoire1New
+                            If accessoire4Check = True Then
+                                If accessoire1 = accessoire4Org Then
+                                    filterdone = True
+                                    accessoire1 = accessoire4New
+                                ElseIf accessoire2 = accessoire4Org Then
+                                    filterdone = True
+                                    accessoire2 = accessoire4New
+                                ElseIf accessoire3 = accessoire4Org Then
+                                    filterdone = True
+                                    accessoire3 = accessoire4New
+                                ElseIf accessoire4 = accessoire4Org Then
+                                    filterdone = True
+                                    accessoire4 = accessoire4New
+                                ElseIf accessoire5 = accessoire4Org Then
+                                    filterdone = True
+                                    accessoire5 = accessoire4New
+                                ElseIf accessoire6 = accessoire4Org Then
+                                    filterdone = True
+                                    accessoire6 = accessoire4New
+                                ElseIf accessoire7 = accessoire4Org Then
+                                    filterdone = True
+                                    accessoire7 = accessoire4New
+                                ElseIf accessoire8 = accessoire4Org Then
+                                    filterdone = True
+                                    accessoire8 = accessoire4New
+                                End If
                             End If
-                            If accessoire8 = accessoire1Org Then
-                                filterdone = True
-                                accessoire8 = accessoire1New
+                            If filterdone = True Then
+                                filterstoegepast = filterstoegepast + Tstr(filterid) + " "
+                                save_changed_data = True
                             End If
-                        End If
-                        If accessoire2Check = True Then
-                            If accessoire1 = accessoire2Org Then
-                                filterdone = True
-                                accessoire1 = accessoire2New
-                            End If
-                            If accessoire2 = accessoire2Org Then
-                                filterdone = True
-                                accessoire2 = accessoire2New
-                            End If
-                            If accessoire3 = accessoire2Org Then
-                                filterdone = True
-                                accessoire3 = accessoire2New
-                            End If
-                            If accessoire4 = accessoire2Org Then
-                                filterdone = True
-                                accessoire4 = accessoire2New
-                            End If
-                            If accessoire5 = accessoire2Org Then
-                                filterdone = True
-                                accessoire5 = accessoire2New
-                            End If
-                            If accessoire6 = accessoire2Org Then
-                                filterdone = True
-                                accessoire6 = accessoire2New
-                            End If
-                            If accessoire7 = accessoire2Org Then
-                                filterdone = True
-                                accessoire7 = accessoire2New
-                            End If
-                            If accessoire8 = accessoire2Org Then
-                                filterdone = True
-                                accessoire8 = accessoire2New
-                            End If
-                        End If
-                        If accessoire3Check = True Then
-                            If accessoire1 = accessoire3Org Then
-                                filterdone = True
-                                accessoire1 = accessoire3New
-                            End If
-                            If accessoire2 = accessoire3Org Then
-                                filterdone = True
-                                accessoire2 = accessoire3New
-                            End If
-                            If accessoire3 = accessoire3Org Then
-                                filterdone = True
-                                accessoire3 = accessoire3New
-                            End If
-                            If accessoire4 = accessoire3Org Then
-                                filterdone = True
-                                accessoire4 = accessoire3New
-                            End If
-                            If accessoire5 = accessoire3Org Then
-                                filterdone = True
-                                accessoire5 = accessoire3New
-                            End If
-                            If accessoire6 = accessoire3Org Then
-                                filterdone = True
-                                accessoire6 = accessoire3New
-                            End If
-                            If accessoire7 = accessoire3Org Then
-                                filterdone = True
-                                accessoire7 = accessoire3New
-                            End If
-                            If accessoire8 = accessoire3Org Then
-                                filterdone = True
-                                accessoire8 = accessoire3New
-                            End If
-                        End If
-                        If accessoire4Check = True Then
-                            If accessoire1 = accessoire4Org Then
-                                filterdone = True
-                                accessoire1 = accessoire4New
-                            End If
-                            If accessoire2 = accessoire4Org Then
-                                filterdone = True
-                                accessoire2 = accessoire4New
-                            End If
-                            If accessoire3 = accessoire4Org Then
-                                filterdone = True
-                                accessoire3 = accessoire4New
-                            End If
-                            If accessoire4 = accessoire4Org Then
-                                filterdone = True
-                                accessoire4 = accessoire4New
-                            End If
-                            If accessoire5 = accessoire4Org Then
-                                filterdone = True
-                                accessoire5 = accessoire4New
-                            End If
-                            If accessoire6 = accessoire4Org Then
-                                filterdone = True
-                                accessoire6 = accessoire4New
-                            End If
-                            If accessoire7 = accessoire4Org Then
-                                filterdone = True
-                                accessoire7 = accessoire4New
-                            End If
-                            If accessoire8 = accessoire4Org Then
-                                filterdone = True
-                                accessoire8 = accessoire4New
-                            End If
-                        End If
-                        If filterdone = True Then
-                            filterstoegepast = filterstoegepast + Tstr(filterid) + " "
-                            save_changed_data = True
                         End If
                     End If
                 Loop

@@ -37,6 +37,9 @@ Public Class FloridayFilters
                 Dim Cmd2 As New OdbcCommand(query, Conn)
                 Dim Reader2 As OdbcDataReader
 
+                Dim Cmd3 As New OdbcCommand(query, Conn)
+                Dim Reader3 As OdbcDataReader
+
                 query = "SELECT * FROM floriday_salesorders_boek WHERE orderLineId='" + orderlineId + "'"
                 Cmd2.CommandText = query
                 Reader2 = Cmd2.ExecuteReader()
@@ -65,6 +68,29 @@ Public Class FloridayFilters
                 End If
                 Reader2.Close()
 
+
+                'suply ophalen
+                Dim agreementReference_code As String = ""
+                query = "SELECT * FROM floriday_salesorders WHERE  orderLineId='" + orderlineId + "'"
+                Cmd2.CommandText = query
+                Reader2 = Cmd2.ExecuteReader()
+                If Reader2.HasRows Then
+                    Reader2.Read()
+                    Dim supplyLineId As String = CHstr(Reader2("supplyLineId"))
+                    'suply referentie ophalen
+
+                    query = "SELECT * FROM floriday_supply WHERE supplyLineId='" + supplyLineId + "'"
+                    Cmd3.CommandText = query
+                    Reader3 = Cmd3.ExecuteReader()
+                    If Reader3.HasRows Then
+                        Reader3.Read()
+                        agreementReference_code = CHstr(Reader3("agreementReference_code"))
+                    End If
+                    Reader3.Close()
+                End If
+                Reader2.Close()
+
+
                 'kopernaam ophalen
 
                 query = "SELECT * FROM floriday_organizations WHERE organizationId='" + customerOrganizationId + "'"
@@ -82,6 +108,8 @@ Public Class FloridayFilters
 
                 tradeitem_txt.Text = tradeItemName
                 tradeitem_chk.Checked = True
+
+                Aanbodref_txt.Text = agreementReference_code
 
                 LoadCombo(soort1_cmb, dtt_soortmix, False)
                 LoadCombo(soort2_cmb, dtt_soortmix, False)
@@ -174,8 +202,8 @@ Public Class FloridayFilters
                     & "customerEAN, tradeItemCheck, tradeItemName, tradeItemId, opmerkingCheck, Opmerking, soortCheck, soortOrg, soortNew," _
                     & "fustCheck, fustOrg, fustNew, hoesCheck, hoesOrg, hoesNew, accessoire1Check, accessoire1Org," _
                     & "accessoire1New, accessoire2Check, accessoire2Org, accessoire2New, accessoire3Check, accessoire3Org," _
-                    & "accessoire3New, accessoire4Check, accessoire4Org, accessoire4New)" _
-                    & " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    & "accessoire3New, accessoire4Check, accessoire4Org, accessoire4New,AanbodRefCheck,AanbodRef)" _
+                    & " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                 Cmd2.CommandText = query
                 Cmd2.Parameters.Clear()
                 Cmd2.Parameters.AddWithValue("", koper_chk.Checked)
@@ -261,6 +289,13 @@ Public Class FloridayFilters
                 Else
                     Cmd2.Parameters.AddWithValue("", 0)
                     Cmd2.Parameters.AddWithValue("", 0)
+                End If
+
+                Cmd2.Parameters.AddWithValue("", AanbodRef_chk.Checked)
+                If AanbodRef_chk.Checked = True Then
+                    Cmd2.Parameters.AddWithValue("", Aanbodref_txt.Text)
+                Else
+                    Cmd2.Parameters.AddWithValue("", "")
                 End If
 
                 Cmd2.ExecuteNonQuery()

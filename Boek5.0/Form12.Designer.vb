@@ -67,6 +67,9 @@ Partial Class FloridayFilters
         Me.soort2_cmb = New System.Windows.Forms.ComboBox()
         Me.soort_chk = New System.Windows.Forms.CheckBox()
         Me.soort1_cmb = New System.Windows.Forms.ComboBox()
+        Me.Label17 = New System.Windows.Forms.Label()
+        Me.Aanbodref_txt = New System.Windows.Forms.TextBox()
+        Me.AanbodRef_chk = New System.Windows.Forms.CheckBox()
         Me.SuspendLayout()
         '
         'koper_txt
@@ -97,7 +100,7 @@ Partial Class FloridayFilters
         'hoes1_cmb
         '
         Me.hoes1_cmb.FormattingEnabled = True
-        Me.hoes1_cmb.Location = New System.Drawing.Point(116, 132)
+        Me.hoes1_cmb.Location = New System.Drawing.Point(116, 158)
         Me.hoes1_cmb.Name = "hoes1_cmb"
         Me.hoes1_cmb.Size = New System.Drawing.Size(174, 21)
         Me.hoes1_cmb.TabIndex = 4
@@ -105,7 +108,7 @@ Partial Class FloridayFilters
         'hoes_chk
         '
         Me.hoes_chk.AutoSize = True
-        Me.hoes_chk.Location = New System.Drawing.Point(95, 135)
+        Me.hoes_chk.Location = New System.Drawing.Point(95, 161)
         Me.hoes_chk.Name = "hoes_chk"
         Me.hoes_chk.Size = New System.Drawing.Size(15, 14)
         Me.hoes_chk.TabIndex = 5
@@ -114,7 +117,7 @@ Partial Class FloridayFilters
         'hoes2_cmb
         '
         Me.hoes2_cmb.FormattingEnabled = True
-        Me.hoes2_cmb.Location = New System.Drawing.Point(328, 132)
+        Me.hoes2_cmb.Location = New System.Drawing.Point(328, 158)
         Me.hoes2_cmb.Name = "hoes2_cmb"
         Me.hoes2_cmb.Size = New System.Drawing.Size(174, 21)
         Me.hoes2_cmb.TabIndex = 6
@@ -122,7 +125,7 @@ Partial Class FloridayFilters
         'Label1
         '
         Me.Label1.AutoSize = True
-        Me.Label1.Location = New System.Drawing.Point(296, 136)
+        Me.Label1.Location = New System.Drawing.Point(296, 162)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(25, 13)
         Me.Label1.TabIndex = 7
@@ -131,7 +134,7 @@ Partial Class FloridayFilters
         'Label2
         '
         Me.Label2.AutoSize = True
-        Me.Label2.Location = New System.Drawing.Point(296, 163)
+        Me.Label2.Location = New System.Drawing.Point(296, 189)
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(25, 13)
         Me.Label2.TabIndex = 11
@@ -140,7 +143,7 @@ Partial Class FloridayFilters
         'acce1B_cmb
         '
         Me.acce1B_cmb.FormattingEnabled = True
-        Me.acce1B_cmb.Location = New System.Drawing.Point(328, 159)
+        Me.acce1B_cmb.Location = New System.Drawing.Point(328, 185)
         Me.acce1B_cmb.Name = "acce1B_cmb"
         Me.acce1B_cmb.Size = New System.Drawing.Size(174, 21)
         Me.acce1B_cmb.TabIndex = 10
@@ -148,7 +151,7 @@ Partial Class FloridayFilters
         'accessoire1_chk
         '
         Me.accessoire1_chk.AutoSize = True
-        Me.accessoire1_chk.Location = New System.Drawing.Point(95, 162)
+        Me.accessoire1_chk.Location = New System.Drawing.Point(95, 188)
         Me.accessoire1_chk.Name = "accessoire1_chk"
         Me.accessoire1_chk.Size = New System.Drawing.Size(15, 14)
         Me.accessoire1_chk.TabIndex = 9
@@ -157,7 +160,7 @@ Partial Class FloridayFilters
         'acce1A_cmb
         '
         Me.acce1A_cmb.FormattingEnabled = True
-        Me.acce1A_cmb.Location = New System.Drawing.Point(116, 159)
+        Me.acce1A_cmb.Location = New System.Drawing.Point(116, 185)
         Me.acce1A_cmb.Name = "acce1A_cmb"
         Me.acce1A_cmb.Size = New System.Drawing.Size(174, 21)
         Me.acce1A_cmb.TabIndex = 8
@@ -165,7 +168,7 @@ Partial Class FloridayFilters
         'Label3
         '
         Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(296, 190)
+        Me.Label3.Location = New System.Drawing.Point(296, 216)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(25, 13)
         Me.Label3.TabIndex = 15
@@ -174,7 +177,7 @@ Partial Class FloridayFilters
         'acce2B_cmb
         '
         Me.acce2B_cmb.FormattingEnabled = True
-        Me.acce2B_cmb.Location = New System.Drawing.Point(328, 186)
+        Me.acce2B_cmb.Location = New System.Drawing.Point(328, 212)
         Me.acce2B_cmb.Name = "acce2B_cmb"
         Me.acce2B_cmb.Size = New System.Drawing.Size(174, 21)
         Me.acce2B_cmb.TabIndex = 14
@@ -182,7 +185,7 @@ Partial Class FloridayFilters
         'accessoire2_chk
         '
         Me.accessoire2_chk.AutoSize = True
-        Me.accessoire2_chk.Location = New System.Drawing.Point(95, 189)
+        Me.accessoire2_chk.Location = New System.Drawing.Point(95, 215)
         Me.accessoire2_chk.Name = "accessoire2_chk"
         Me.accessoire2_chk.Size = New System.Drawing.Size(15, 14)
         Me.accessoire2_chk.TabIndex = 13
@@ -191,7 +194,7 @@ Partial Class FloridayFilters
         'acce2A_cmb
         '
         Me.acce2A_cmb.FormattingEnabled = True
-        Me.acce2A_cmb.Location = New System.Drawing.Point(116, 186)
+        Me.acce2A_cmb.Location = New System.Drawing.Point(116, 212)
         Me.acce2A_cmb.Name = "acce2A_cmb"
         Me.acce2A_cmb.Size = New System.Drawing.Size(174, 21)
         Me.acce2A_cmb.TabIndex = 12
@@ -199,7 +202,7 @@ Partial Class FloridayFilters
         'Label4
         '
         Me.Label4.AutoSize = True
-        Me.Label4.Location = New System.Drawing.Point(296, 217)
+        Me.Label4.Location = New System.Drawing.Point(296, 243)
         Me.Label4.Name = "Label4"
         Me.Label4.Size = New System.Drawing.Size(25, 13)
         Me.Label4.TabIndex = 19
@@ -208,7 +211,7 @@ Partial Class FloridayFilters
         'acce3B_cmb
         '
         Me.acce3B_cmb.FormattingEnabled = True
-        Me.acce3B_cmb.Location = New System.Drawing.Point(328, 213)
+        Me.acce3B_cmb.Location = New System.Drawing.Point(328, 239)
         Me.acce3B_cmb.Name = "acce3B_cmb"
         Me.acce3B_cmb.Size = New System.Drawing.Size(174, 21)
         Me.acce3B_cmb.TabIndex = 18
@@ -216,7 +219,7 @@ Partial Class FloridayFilters
         'accessoire3_chk
         '
         Me.accessoire3_chk.AutoSize = True
-        Me.accessoire3_chk.Location = New System.Drawing.Point(95, 216)
+        Me.accessoire3_chk.Location = New System.Drawing.Point(95, 242)
         Me.accessoire3_chk.Name = "accessoire3_chk"
         Me.accessoire3_chk.Size = New System.Drawing.Size(15, 14)
         Me.accessoire3_chk.TabIndex = 17
@@ -225,7 +228,7 @@ Partial Class FloridayFilters
         'acce3A_cmb
         '
         Me.acce3A_cmb.FormattingEnabled = True
-        Me.acce3A_cmb.Location = New System.Drawing.Point(116, 213)
+        Me.acce3A_cmb.Location = New System.Drawing.Point(116, 239)
         Me.acce3A_cmb.Name = "acce3A_cmb"
         Me.acce3A_cmb.Size = New System.Drawing.Size(174, 21)
         Me.acce3A_cmb.TabIndex = 16
@@ -241,7 +244,7 @@ Partial Class FloridayFilters
         '
         'opslaan_but
         '
-        Me.opslaan_but.Location = New System.Drawing.Point(141, 320)
+        Me.opslaan_but.Location = New System.Drawing.Point(173, 339)
         Me.opslaan_but.Name = "opslaan_but"
         Me.opslaan_but.Size = New System.Drawing.Size(246, 33)
         Me.opslaan_but.TabIndex = 21
@@ -269,7 +272,7 @@ Partial Class FloridayFilters
         'Label7
         '
         Me.Label7.AutoSize = True
-        Me.Label7.Location = New System.Drawing.Point(12, 136)
+        Me.Label7.Location = New System.Drawing.Point(12, 162)
         Me.Label7.Name = "Label7"
         Me.Label7.Size = New System.Drawing.Size(32, 13)
         Me.Label7.TabIndex = 24
@@ -278,7 +281,7 @@ Partial Class FloridayFilters
         'Label8
         '
         Me.Label8.AutoSize = True
-        Me.Label8.Location = New System.Drawing.Point(296, 244)
+        Me.Label8.Location = New System.Drawing.Point(296, 270)
         Me.Label8.Name = "Label8"
         Me.Label8.Size = New System.Drawing.Size(25, 13)
         Me.Label8.TabIndex = 28
@@ -287,7 +290,7 @@ Partial Class FloridayFilters
         'acce4B_cmb
         '
         Me.acce4B_cmb.FormattingEnabled = True
-        Me.acce4B_cmb.Location = New System.Drawing.Point(328, 240)
+        Me.acce4B_cmb.Location = New System.Drawing.Point(328, 266)
         Me.acce4B_cmb.Name = "acce4B_cmb"
         Me.acce4B_cmb.Size = New System.Drawing.Size(174, 21)
         Me.acce4B_cmb.TabIndex = 27
@@ -295,7 +298,7 @@ Partial Class FloridayFilters
         'accessoire4_chk
         '
         Me.accessoire4_chk.AutoSize = True
-        Me.accessoire4_chk.Location = New System.Drawing.Point(95, 243)
+        Me.accessoire4_chk.Location = New System.Drawing.Point(95, 269)
         Me.accessoire4_chk.Name = "accessoire4_chk"
         Me.accessoire4_chk.Size = New System.Drawing.Size(15, 14)
         Me.accessoire4_chk.TabIndex = 26
@@ -304,7 +307,7 @@ Partial Class FloridayFilters
         'acce4A_cmb
         '
         Me.acce4A_cmb.FormattingEnabled = True
-        Me.acce4A_cmb.Location = New System.Drawing.Point(116, 240)
+        Me.acce4A_cmb.Location = New System.Drawing.Point(116, 266)
         Me.acce4A_cmb.Name = "acce4A_cmb"
         Me.acce4A_cmb.Size = New System.Drawing.Size(174, 21)
         Me.acce4A_cmb.TabIndex = 25
@@ -312,7 +315,7 @@ Partial Class FloridayFilters
         'Label9
         '
         Me.Label9.AutoSize = True
-        Me.Label9.Location = New System.Drawing.Point(12, 162)
+        Me.Label9.Location = New System.Drawing.Point(12, 188)
         Me.Label9.Name = "Label9"
         Me.Label9.Size = New System.Drawing.Size(59, 13)
         Me.Label9.TabIndex = 29
@@ -321,7 +324,7 @@ Partial Class FloridayFilters
         'Label10
         '
         Me.Label10.AutoSize = True
-        Me.Label10.Location = New System.Drawing.Point(12, 190)
+        Me.Label10.Location = New System.Drawing.Point(12, 216)
         Me.Label10.Name = "Label10"
         Me.Label10.Size = New System.Drawing.Size(59, 13)
         Me.Label10.TabIndex = 30
@@ -330,7 +333,7 @@ Partial Class FloridayFilters
         'Label11
         '
         Me.Label11.AutoSize = True
-        Me.Label11.Location = New System.Drawing.Point(12, 216)
+        Me.Label11.Location = New System.Drawing.Point(12, 242)
         Me.Label11.Name = "Label11"
         Me.Label11.Size = New System.Drawing.Size(59, 13)
         Me.Label11.TabIndex = 31
@@ -339,7 +342,7 @@ Partial Class FloridayFilters
         'Label12
         '
         Me.Label12.AutoSize = True
-        Me.Label12.Location = New System.Drawing.Point(12, 244)
+        Me.Label12.Location = New System.Drawing.Point(12, 270)
         Me.Label12.Name = "Label12"
         Me.Label12.Size = New System.Drawing.Size(59, 13)
         Me.Label12.TabIndex = 32
@@ -348,7 +351,7 @@ Partial Class FloridayFilters
         'opmerking_lbl
         '
         Me.opmerking_lbl.AutoSize = True
-        Me.opmerking_lbl.Location = New System.Drawing.Point(12, 271)
+        Me.opmerking_lbl.Location = New System.Drawing.Point(12, 297)
         Me.opmerking_lbl.Name = "opmerking_lbl"
         Me.opmerking_lbl.Size = New System.Drawing.Size(58, 13)
         Me.opmerking_lbl.TabIndex = 37
@@ -357,7 +360,7 @@ Partial Class FloridayFilters
         'opmerking_chk
         '
         Me.opmerking_chk.AutoSize = True
-        Me.opmerking_chk.Location = New System.Drawing.Point(95, 270)
+        Me.opmerking_chk.Location = New System.Drawing.Point(95, 296)
         Me.opmerking_chk.Name = "opmerking_chk"
         Me.opmerking_chk.Size = New System.Drawing.Size(15, 14)
         Me.opmerking_chk.TabIndex = 34
@@ -365,7 +368,7 @@ Partial Class FloridayFilters
         '
         'opmerking_txt
         '
-        Me.opmerking_txt.Location = New System.Drawing.Point(116, 267)
+        Me.opmerking_txt.Location = New System.Drawing.Point(116, 293)
         Me.opmerking_txt.Name = "opmerking_txt"
         Me.opmerking_txt.Size = New System.Drawing.Size(386, 20)
         Me.opmerking_txt.TabIndex = 38
@@ -373,7 +376,7 @@ Partial Class FloridayFilters
         'Label14
         '
         Me.Label14.AutoSize = True
-        Me.Label14.Location = New System.Drawing.Point(12, 81)
+        Me.Label14.Location = New System.Drawing.Point(12, 107)
         Me.Label14.Name = "Label14"
         Me.Label14.Size = New System.Drawing.Size(32, 13)
         Me.Label14.TabIndex = 41
@@ -382,7 +385,7 @@ Partial Class FloridayFilters
         'Label13
         '
         Me.Label13.AutoSize = True
-        Me.Label13.Location = New System.Drawing.Point(12, 109)
+        Me.Label13.Location = New System.Drawing.Point(12, 135)
         Me.Label13.Name = "Label13"
         Me.Label13.Size = New System.Drawing.Size(27, 13)
         Me.Label13.TabIndex = 47
@@ -391,7 +394,7 @@ Partial Class FloridayFilters
         'Label15
         '
         Me.Label15.AutoSize = True
-        Me.Label15.Location = New System.Drawing.Point(296, 109)
+        Me.Label15.Location = New System.Drawing.Point(296, 135)
         Me.Label15.Name = "Label15"
         Me.Label15.Size = New System.Drawing.Size(25, 13)
         Me.Label15.TabIndex = 46
@@ -400,7 +403,7 @@ Partial Class FloridayFilters
         'fust2_cmb
         '
         Me.fust2_cmb.FormattingEnabled = True
-        Me.fust2_cmb.Location = New System.Drawing.Point(328, 105)
+        Me.fust2_cmb.Location = New System.Drawing.Point(328, 131)
         Me.fust2_cmb.Name = "fust2_cmb"
         Me.fust2_cmb.Size = New System.Drawing.Size(174, 21)
         Me.fust2_cmb.TabIndex = 45
@@ -408,7 +411,7 @@ Partial Class FloridayFilters
         'fust_chk
         '
         Me.fust_chk.AutoSize = True
-        Me.fust_chk.Location = New System.Drawing.Point(95, 108)
+        Me.fust_chk.Location = New System.Drawing.Point(95, 134)
         Me.fust_chk.Name = "fust_chk"
         Me.fust_chk.Size = New System.Drawing.Size(15, 14)
         Me.fust_chk.TabIndex = 44
@@ -417,7 +420,7 @@ Partial Class FloridayFilters
         'fust1_cmb
         '
         Me.fust1_cmb.FormattingEnabled = True
-        Me.fust1_cmb.Location = New System.Drawing.Point(116, 105)
+        Me.fust1_cmb.Location = New System.Drawing.Point(116, 131)
         Me.fust1_cmb.Name = "fust1_cmb"
         Me.fust1_cmb.Size = New System.Drawing.Size(174, 21)
         Me.fust1_cmb.TabIndex = 43
@@ -425,7 +428,7 @@ Partial Class FloridayFilters
         'Label16
         '
         Me.Label16.AutoSize = True
-        Me.Label16.Location = New System.Drawing.Point(296, 82)
+        Me.Label16.Location = New System.Drawing.Point(296, 108)
         Me.Label16.Name = "Label16"
         Me.Label16.Size = New System.Drawing.Size(25, 13)
         Me.Label16.TabIndex = 51
@@ -434,7 +437,7 @@ Partial Class FloridayFilters
         'soort2_cmb
         '
         Me.soort2_cmb.FormattingEnabled = True
-        Me.soort2_cmb.Location = New System.Drawing.Point(328, 78)
+        Me.soort2_cmb.Location = New System.Drawing.Point(328, 104)
         Me.soort2_cmb.Name = "soort2_cmb"
         Me.soort2_cmb.Size = New System.Drawing.Size(174, 21)
         Me.soort2_cmb.TabIndex = 50
@@ -442,7 +445,7 @@ Partial Class FloridayFilters
         'soort_chk
         '
         Me.soort_chk.AutoSize = True
-        Me.soort_chk.Location = New System.Drawing.Point(95, 81)
+        Me.soort_chk.Location = New System.Drawing.Point(95, 107)
         Me.soort_chk.Name = "soort_chk"
         Me.soort_chk.Size = New System.Drawing.Size(15, 14)
         Me.soort_chk.TabIndex = 49
@@ -451,16 +454,45 @@ Partial Class FloridayFilters
         'soort1_cmb
         '
         Me.soort1_cmb.FormattingEnabled = True
-        Me.soort1_cmb.Location = New System.Drawing.Point(116, 78)
+        Me.soort1_cmb.Location = New System.Drawing.Point(116, 104)
         Me.soort1_cmb.Name = "soort1_cmb"
         Me.soort1_cmb.Size = New System.Drawing.Size(174, 21)
         Me.soort1_cmb.TabIndex = 48
+        '
+        'Label17
+        '
+        Me.Label17.AutoSize = True
+        Me.Label17.Location = New System.Drawing.Point(12, 81)
+        Me.Label17.Name = "Label17"
+        Me.Label17.Size = New System.Drawing.Size(67, 13)
+        Me.Label17.TabIndex = 54
+        Me.Label17.Text = "Aanbod Ref."
+        '
+        'Aanbodref_txt
+        '
+        Me.Aanbodref_txt.Location = New System.Drawing.Point(116, 78)
+        Me.Aanbodref_txt.Name = "Aanbodref_txt"
+        Me.Aanbodref_txt.ReadOnly = True
+        Me.Aanbodref_txt.Size = New System.Drawing.Size(386, 20)
+        Me.Aanbodref_txt.TabIndex = 53
+        '
+        'AanbodRef_chk
+        '
+        Me.AanbodRef_chk.AutoSize = True
+        Me.AanbodRef_chk.Location = New System.Drawing.Point(95, 81)
+        Me.AanbodRef_chk.Name = "AanbodRef_chk"
+        Me.AanbodRef_chk.Size = New System.Drawing.Size(15, 14)
+        Me.AanbodRef_chk.TabIndex = 52
+        Me.AanbodRef_chk.UseVisualStyleBackColor = True
         '
         'FloridayFilters
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(530, 365)
+        Me.ClientSize = New System.Drawing.Size(530, 400)
+        Me.Controls.Add(Me.Label17)
+        Me.Controls.Add(Me.Aanbodref_txt)
+        Me.Controls.Add(Me.AanbodRef_chk)
         Me.Controls.Add(Me.Label16)
         Me.Controls.Add(Me.soort2_cmb)
         Me.Controls.Add(Me.soort_chk)
@@ -558,4 +590,7 @@ Partial Class FloridayFilters
     Friend WithEvents soort2_cmb As ComboBox
     Friend WithEvents soort_chk As CheckBox
     Friend WithEvents soort1_cmb As ComboBox
+    Friend WithEvents Label17 As Label
+    Friend WithEvents Aanbodref_txt As TextBox
+    Friend WithEvents AanbodRef_chk As CheckBox
 End Class
