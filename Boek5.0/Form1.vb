@@ -28999,6 +28999,264 @@ exit_verwerk:
         ' Update_Boek()
 
     End Sub
+
+
+    Private Sub Kar_opslaanMainNew()
+
+        Dim orderyear As String = Trim(Str(Year(karindeling_date)))
+        If staticyear = True Then orderyear = ""
+        Dim orderheader_db As String = "OrderHeaders" + orderyear
+        Dim orderlines_db As String = "OrderLines" + orderyear
+        Dim orderkarren_db As String = "OrderKarren" + orderyear
+        Dim orderkarlines_db As String = "OrderKarLines" + orderyear
+
+        Dim header_id = -1
+        For i = 1 To Max_Kar_Headers
+            If KarHeaders(i).tag = True Then
+                header_id = KarHeaders(i).header_id
+            End If
+        Next
+        If header_id = -1 Then
+            Exit Sub
+        End If
+
+        'check of de order door iemand anders is aangepast in de tussentijd 
+
+        If Order_is_aangepast(Val(KarOrder_versie_lbl.Text), orderheader_db, header_id) = True Then
+            MsgBox("Deze order is aangepast in de tijd dat de order door u bewerkt werd, deze order kan niet worden opgeslagen, probeer opnieuw", vbOKOnly)
+            Exit Sub
+        End If
+
+        Dim karlock As Boolean = False
+        For i = 1 To UBound(KarHeaders)
+            If KarHeaders(i).floriday_printflag > 0 Then
+                karlock = True
+            End If
+        Next
+
+        Try
+            'Open Connection
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                'is het een gp?
+                Dim gpaantal As Integer = 1
+                Dim Cmd15 As New OdbcCommand("SELECT gp from orderlines where orderheader_id=?", Conn)
+                Cmd15.Parameters.Clear()
+                Cmd15.Parameters.AddWithValue("", header_id)
+                Dim reader15 As OdbcDataReader
+                reader15 = Cmd15.ExecuteReader()
+                If reader15.HasRows Then
+                    reader15.Read()
+                    gpaantal = CHint(reader15("gp"))
+                End If
+
+
+                If karlock = False Then   'nieuwe karindeling opslaan
+
+                    ' delete kar-info & lines from database 
+                    ' delete all non-locked karinfo
+                    Dim DelString As String = "DELETE FROM " + orderkarren_db + " WHERE header_id='" + Str(header_id) + "'"
+                    Dim DelCmd As New OdbcCommand(DelString, Conn)
+                    DelCmd.ExecuteNonQuery()
+
+                    ' delete all kar-line info
+                    Dim DelString2 As String = "DELETE FROM " + orderkarlines_db + " WHERE header_id='" + Str(header_id) + "'"
+                    Dim DelCmd2 As New OdbcCommand(DelString2, Conn)
+                    DelCmd2.ExecuteNonQuery()
+
+                    For karcounter = 1 To Max_Kar_Headers
+                        If KarHeaders(karcounter).tag = True Then
+
+                            'extra check, heeft deze kar nog wel lagen?
+                            Dim linecheck As Boolean = False
+                            For karlinecounter = 0 To Max_Kar_Lines
+                                If KarLines(karlinecounter).tag = True And KarLines(karlinecounter).kar_id = KarHeaders(karcounter).kar_id Then
+                                    linecheck = True
+                                    Exit For
+                                End If
+                            Next karlinecounter
+                            If linecheck = True Then
+
+                                'Execute Query
+                                Dim cmdstring As String = "SELECT * FROM " + orderkarren_db + " WHERE 1=0"
+                                Dim Cmd As New OdbcCommand(cmdstring, Conn)
+                                With Cmd
+
+                                    .CommandText = "INSERT INTO " + orderkarren_db + "(header_id,kar_type,aantal_lagen,aantal_lagenlock,sdf_flag,wps_status,vervoer_flag,barcode,cc_rfid,scan_flag,overgooien_naar,overgooien_hierop)" _
+                                                    & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)"
+                                    .Parameters.Clear()
+                                    .Parameters.AddWithValue("", header_id)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).kar_type)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).aantal_lagen)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).aantal_lagenlock)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).sdf_flag)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).wps_status)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).vervoer_flag)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).barcode)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).cc_rfid)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).scan_flag)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).overgooien_naar)
+                                    .Parameters.AddWithValue("", KarHeaders(karcounter).overgooien_hierop)
+
+                                    .ExecuteNonQuery()
+
+                                    KarHeaders(karcounter).kar_nummer = KarHeaders(karcounter).kar_id    'oude id opslaan om karlines te koppelen 
+                                    ' fetch header
+                                    If postgress = True Then
+                                        Dim Cmd5 As New OdbcCommand("SELECT CURRVAL(pg_get_serial_sequence('orderkarren','kar_id'))", Conn)
+                                        KarHeaders(karcounter).kar_id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                    Else
+                                        Dim Cmd5 As New OdbcCommand("SELECT LAST_INSERT_ID()", Conn)
+                                        KarHeaders(karcounter).kar_id = Convert.ToInt32(Cmd5.ExecuteScalar())
+                                    End If
+                                End With
+                            End If
+                        End If
+                    Next karcounter
+
+                    'karlines opslaan
+
+                    Dim cmdstring6 As String = "SELECT * FROM " + orderkarlines_db + " WHERE 1=0"
+                    For karlinecounter = 0 To Max_Kar_Lines
+                        If KarLines(karlinecounter).tag = True Then
+
+                            'Execute Query
+                            Dim Cmd As New OdbcCommand(cmdstring6, Conn)
+                            With Cmd
+
+                                'Get new SDF barcode
+                                Dim sdfbarcode2 As Integer = 0
+                                Dim reader5 As OdbcDataReader
+                                Dim Cmd2 As New OdbcCommand("SELECT sdfbarcode2 from instellingen", Conn)
+                                reader5 = Cmd2.ExecuteReader()
+                                If reader5.HasRows Then
+                                    reader5.Read()
+                                    sdfbarcode2 = CHint(reader5("sdfbarcode2"))
+                                    sdfbarcode2 = sdfbarcode2 + 1
+                                    If sdfbarcode2 >= 100000000 Then sdfbarcode2 = 1
+                                    reader5.Close()
+                                    Cmd2.CommandText = "UPDATE instellingen SET sdfbarcode2 = ?"
+                                    Cmd2.Parameters.Clear()
+                                    Cmd2.Parameters.AddWithValue("", sdfbarcode2)
+                                    Cmd2.ExecuteNonQuery()
+                                End If
+
+
+                                .CommandText = "INSERT INTO " + orderkarlines_db + "(kar_id,aantal,Orderline_id,wps_flag,wps17_flag,header_id,sorteren,sdfbarcode2)" _
+                                                & "VALUES(?,?,?,?,?,?,?,?)"
+
+                                ' line id's van nieuwe karren koppelen aan kar id's 
+                                For karcounter2 = 1 To Max_Kar_Headers
+                                    KarHeaders(karcounter2).tag = True
+                                    If KarHeaders(karcounter2).kar_nummer = KarLines(karlinecounter).kar_id Then
+                                        KarLines(karlinecounter).kar_id = KarHeaders(karcounter2).kar_id
+                                        Exit For
+                                    End If
+                                Next
+                                .Parameters.Clear()
+                                .Parameters.AddWithValue("", KarLines(karlinecounter).kar_id)
+                                .Parameters.AddWithValue("", KarLines(karlinecounter).aantal)
+                                .Parameters.AddWithValue("", KarLines(karlinecounter).Orderline_id)
+                                .Parameters.AddWithValue("", KarLines(karlinecounter).wps_flag)
+                                .Parameters.AddWithValue("", KarLines(karlinecounter).wps17_flag)
+                                .Parameters.AddWithValue("", header_id)
+                                .Parameters.AddWithValue("", KarLines(karlinecounter).sorteren)
+                                .Parameters.AddWithValue("", sdfbarcode2)
+                                .ExecuteNonQuery()
+
+                            End With
+
+                        End If
+                    Next karlinecounter
+
+
+                Else    'Karren zijn gelocked , alleen update opslaan
+                    Dim Cmd As New OdbcCommand("", Conn)
+                    For karcounter = 1 To Max_Kar_Headers
+                        If KarHeaders(karcounter).tag = True Then
+
+                            'Execute Query
+                            Cmd.CommandText = "UPDATE orderkarren SET aantal_lagen=?,aantal_lagenlock=?,sdf_flag=?,wps_status=?,vervoer_flag=?,barcode=?,overgooien_naar=?,overgooien_hierop=? WHERE kar_id=?"
+                            Cmd.Parameters.Clear()
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).aantal_lagen)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).aantal_lagenlock)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).sdf_flag)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).wps_status)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).vervoer_flag)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).barcode)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).overgooien_naar)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).overgooien_hierop)
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).kar_id)
+                            Cmd.ExecuteNonQuery()
+
+                        End If
+
+                    Next karcounter
+
+                    'karlines opslaan
+
+                    For karlinecounter = 0 To Max_Kar_Lines
+                        If KarLines(karlinecounter).tag = True Then
+                            Cmd.CommandText = "UPDATE orderkarlines SET wps_flag=?,wps17_flag=?,sorteren=? WHERE id=?"
+                            Cmd.Parameters.Clear()
+                            Cmd.Parameters.AddWithValue("", KarLines(karlinecounter).wps_flag)
+                            Cmd.Parameters.AddWithValue("", KarLines(karlinecounter).wps17_flag)
+                            Cmd.Parameters.AddWithValue("", KarLines(karlinecounter).sorteren)
+                            Cmd.Parameters.AddWithValue("", KarLines(karlinecounter).line_id)
+                            Cmd.ExecuteNonQuery()
+                        End If
+                    Next karlinecounter
+
+                End If
+
+                'header overzicht berekenen voor snel overzicht.
+
+                If jenptenhave = True Then
+                    Dim aantal_karren As Integer = GetKarCount(orderyear, header_id)
+                    Dim p12 As Integer = GetBakCount(header_id, 120, 139)
+                    Dim p14 As Integer = GetBakCount(header_id, 140, 169)
+                    Dim p17 As Integer = GetBakCount(header_id, 170, 200)
+                    Dim bakverdeling As String = ""
+                    If gpaantal > 1 Then
+                        bakverdeling = bakverdeling + Trim(Str(gpaantal)) + "x"
+                    End If
+                    If p12 > 0 Then
+                        bakverdeling = bakverdeling + Trim(Str(p12)) + "x12 "
+                    End If
+                    If p14 > 0 Then
+                        bakverdeling = bakverdeling + Trim(Str(p14)) + "x14 "
+                    End If
+                    If p17 > 0 Then
+                        bakverdeling = bakverdeling + Trim(Str(p17)) + "x17 "
+                    End If
+
+                    Dim Cmd2 As New OdbcCommand("UPDATE orderheaders SET aantal_karren=?, bakverdeling=? WHERE header_id = ?", Conn)
+                    Cmd2.Parameters.Clear()
+                    Cmd2.Parameters.AddWithValue("", aantal_karren)
+                    Cmd2.Parameters.AddWithValue("", bakverdeling)
+                    Cmd2.Parameters.AddWithValue("", header_id)
+                    Cmd2.ExecuteNonQuery()
+                End If
+
+
+            End Using
+        Catch ex As Exception
+            ErrorLog("Fout: opslag karindeling" + ex.Message)
+            MsgBox("Fout opslag karindeling: " + ex.Message, MsgBoxStyle.OkOnly)
+        End Try
+
+        'If jenptenhave = False Then
+        ' SetMark(False, header_id)
+        ' End If
+
+        'SetNewStatusFlag(karindeling_date, header_id)
+        Set_Boek_reload()
+        ' Update_Boek()
+
+    End Sub
+
+
     Private Sub HScrollBar1_Scroll(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ScrollEventArgs) Handles HScrollBar1.Scroll
         Karindeling_Invullen(HScrollBar1.Value)
     End Sub
