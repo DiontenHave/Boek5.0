@@ -4095,6 +4095,7 @@ Public Class Form1
                 Dim vkar_count As Integer = 0
 
                 Do While Reader.Read()
+                    Dim floridayflag As Integer = CHint(Reader("floridayflag"))
                     Dim afleverlocatie As Integer = CHint(Reader("afleverloc"))
                     Dim gpflags As String = CHstr(Reader("gpflags"))
                     Dim EAN As String = CHstr(Reader("koper_ean"))
@@ -4534,6 +4535,10 @@ Public Class Form1
                             End If
 
                             koper_node = New TreeNode(nodestring + " " + Space(Int(tabs)) + bakverdeling)
+
+                            If floridayflag = 0 And icon_index = 11 Then icon_index = 56    'sdf V flags
+                            If floridayflag = 0 And icon_index = 43 Then icon_index = 56
+
                             koper_node.ImageIndex = icon_index
                             koper_node.SelectedImageIndex = icon_index
 
@@ -15796,16 +15801,16 @@ next_fav:
             End If
 
             If soortmixid < 10000 Then
-                For i = 0 To UBound(soorten)
+                For i = 0 To UBound(soorten) - 1
                     If soorten(i).id = soortmixid Then
                         FotoTradeItemDBId = soorten(i).tradeitemklok
                         Exit For
                     End If
                 Next
             Else
-                For i = 0 To UBound(mixen)
+                For i = 0 To UBound(mixen) - 1
                     If mixen(i).id = soortmixid - 10000 Then
-                        FotoTradeItemDBId = soorten(i).tradeitemklok
+                        FotoTradeItemDBId = mixen(i).tradeitemklok
                         Exit For
                     End If
                 Next
@@ -16494,7 +16499,7 @@ next_fav:
         ' write order header to database
         Dim Sticker As Integer = 0  '0 = Nee
         Dim cmdstring As String
-
+        Dim klok As Boolean = False
         cmdstring = "SELECT * FROM " + orderheader_db + " WHERE 1=0"
         Try
             'Open Connection
@@ -16508,6 +16513,7 @@ next_fav:
                     If header_id = 0 Or tweedevestiging = True Then
                         neworder = True
                     End If
+
                     If neworder = True Then   'nieuwe order
                         .CommandText = "INSERT INTO " + orderheader_db + "(afleverdatum,invoerdatumtijd,koper_ean,koper_naam,afleverloc,veilingbrief_id," _
                                         & "vervoerder_id,contact,opmerking,inlog_naam,prijs_opslag,agenda_mark,decorum,status,kar_id,versie,aanvulling,sticker,pakbon_opmerking,vestiging,koppelnummer,gpflags) " _
@@ -16523,6 +16529,7 @@ next_fav:
                     Dim order_date As Date = OrderDateTimePicker.Value
                     If EAN >= 1000 And EAN <= 1059 Then
                         EAN = EAN - 1000
+                        klok = True
                         mydate = Date.Parse(order_date.ToShortDateString & "  19:" & Format(EAN, "00") & ":00")
                     Else
                         mydate = Date.Parse(order_date.ToShortDateString & " " & Trim(Order_Aflevertijd_combo.Text) & ":00")
@@ -16535,6 +16542,9 @@ next_fav:
                         .Parameters.AddWithValue("", Format(Now, "yyyy-MM-dd HH:mm"))
                     End If
                     .Parameters.AddWithValue("", Order_ean_lbl.Text)                                ' 4 koper_ean
+
+                    'floriday check
+
                     .Parameters.AddWithValue("", Order_koper_combo.Text)                            ' 5 koper_naam
                     .Parameters.AddWithValue("", Order_afleverloc_combo.SelectedValue)              ' 6 afleverloc
                     .Parameters.AddWithValue("", Order_veilingbrief_combo.SelectedValue)            ' 7 veilingbrief id
@@ -16776,6 +16786,27 @@ next_fav:
 
                         End If
                     Next i
+
+                    Dim floridayflag As Integer = 1
+                    'update floridayflag
+                    Dim cmd12 As New OdbcCommand("", Conn)
+                    Dim reader12 As OdbcDataReader
+                    cmd12.CommandText = "SELECT * from orderlines WHERE orderheader_id = " + Trim(Str(header_id))
+                    reader12 = cmd12.ExecuteReader()
+                    Do While reader12.Read
+                        Dim FloridayNr As String = CHstr(reader12("Floridaynr"))
+                        If FloridayNr = "" Then
+                            floridayflag = 0
+                        End If
+                    Loop
+                    reader12.Close()
+
+                    If klok = True Then floridayflag = 1
+
+                    If floridayflag = 1 Then
+                        cmd12.CommandText = "UPDATE orderheaders SET floridayflag=1 WHERE header_id = " + Str(header_id)
+                        cmd12.ExecuteNonQuery()
+                    End If
 
                 End Using
             Catch ex As Exception
@@ -19488,7 +19519,7 @@ next_fav:
                                     Cmd9.Parameters.AddWithValue("", kar_id)
                                     Cmd9.ExecuteNonQuery()
 
-                                    Cmd.CommandText = "UPDATE OrderKarren SET Wps_status=6 WHERE header_id = " + Trim(Str(kar_id))
+                                    Cmd.CommandText = "UPDATE OrderKarren SET Wps_status=6 WHERE kar_id = " + Trim(Str(kar_id))
                                     Cmd.ExecuteNonQuery()
 
 
@@ -22146,12 +22177,17 @@ next_fav:
     Private Sub Order_PrintBriefFloriday_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Order_PrintBriefFloriday.Click
         Dim mark_idlist(101) As Integer
 
+        Dim idlist(101) As Integer
+        For clearloop = 0 To 100
+            idlist(clearloop) = -1
+        Next
         Dim id_counter As Integer = 1
+
         Dim Nodes As TreeNodeCollection = TreeView1.Nodes
         Dim Node As TreeNode
         For Each Node In Nodes
             If Node.Checked = True And Mid(Node.Tag, 1, 3) = "ID:" Then
-                mark_idlist(id_counter) = Val(Mid(Node.Tag, 4))
+                idlist(id_counter) = Val(Mid(Node.Tag, 4))
                 id_counter = id_counter + 1
             End If
 
@@ -22159,9 +22195,9 @@ next_fav:
                 Dim node2 As TreeNode
                 For Each node2 In Node.Nodes
                     If Mid(node2.Tag, 1, 3) = "ID:" And node2.Checked = True Then
-                        mark_idlist(id_counter) = Val(Mid(node2.Tag, 4))
+                        idlist(id_counter) = Val(Mid(node2.Tag, 4))
                         id_counter = id_counter + 1
-                        Exit For
+                        'Exit For
                     End If
                 Next node2
             End If
@@ -22169,26 +22205,111 @@ next_fav:
 
         If id_counter = 1 And Not TreeView1.SelectedNode Is Nothing Then
             If Mid(TreeView1.SelectedNode.Tag, 1, 3) = "ID:" Then
-                mark_idlist(id_counter) = Val(Mid(TreeView1.SelectedNode.Tag, 4))
+                idlist(id_counter) = Val(Mid(TreeView1.SelectedNode.Tag, 4))
                 id_counter = id_counter + 1
             End If
         End If
-
-
+        sdf_date = Order_MonthCalendar.SelectionStart
         If id_counter = 1 Then Exit Sub
 
-        For i = 1 To id_counter - 1
 
-            Dim header_id As Integer = mark_idlist(i)
-            PrintBriefFloriday(header_id, 0)
-        Next i
-        MsgBox("Brieven worden geprint")
+        Dim ordercount As Integer = id_counter - 1
+        Dim orderyear As String = Trim(Str(Year(sdf_date)))
+        If staticyear = True Then orderyear = ""
+        Dim orderheader_db As String = "OrderHeaders" + orderyear
+        Dim orderlines_db As String = "OrderLines" + orderyear
+        Dim orderkarren_db As String = "OrderKarren" + orderyear
+        Dim orderkarlines_db As String = "OrderKarLines" + orderyear
+
+        'DebugText.Text = ""
+
+        Try
+            'Open Connection
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+                Dim print_ok As Boolean = False
+                For orderloop = 1 To ordercount
+                    Dim header_id As Integer = idlist(orderloop)
+
+                    'koper ean ophalen + brief-type (ivm factuur generatie ipv sdf versturen) 
+                    Dim koper_ean As String = ""
+                    Dim veilingbrief_id As Integer = 1
+                    Dim aanvulling_headerid As Integer = 0
+
+                    Dim CmdString As String = "select * from " + orderheader_db + " WHERE  Header_id = " + Str(header_id) + " "
+                    Dim Cmd As New OdbcCommand(CmdString, Conn)
+                    Dim Reader As OdbcDataReader
+                    Reader = Cmd.ExecuteReader
+                    If Reader.HasRows Then
+                        Reader.Read()
+                        koper_ean = CHstr(Reader("koper_ean"))
+                        veilingbrief_id = CHint(Reader("veilingbrief_id"))
+                        aanvulling_headerid = CHint(Reader("aanvulling"))
+                    End If
+
+                    'verzamelkar check
+                    'staat deze ean in kopersgroep 8 (verzamelkar)
+                    Dim koper_in_groep As Boolean = False
+                    Dim CmdHeaderString3 As String = "select * from kopersgroepen2_eans WHERE id=8 and ean = '" + koper_ean + "'"
+                    Dim Cmd3 As New OdbcCommand(CmdHeaderString3, Conn)
+                    Dim Reader3 As OdbcDataReader
+                    Reader3 = Cmd3.ExecuteReader()
+                    If Reader3.HasRows Then
+                        koper_in_groep = True
+                    End If
+                    Reader3.Close()
+                    Dim nietprinten As Boolean = False
+                    If koper_in_groep = True Then
+                        'is het minder als 10 bakjes?
+
+                        Dim CmdHeaderString As String = "select SUM(ol.aantal) as taantal, ol.koper_naam, oh.koper_ean FROM orderlines as ol LEFT JOIN orderheaders as oh ON ol.OrderHeader_id=oh.header_id WHERE oh.header_id = " + Str(header_id) + " GROUP BY ol.koper_naam"
+                        Dim Cmdr As New OdbcCommand(CmdHeaderString, Conn)
+                        Dim Reader5 As OdbcDataReader
+                        Reader5 = Cmdr.ExecuteReader()
+                        Do While Reader5.Read()
+                            Dim aantal As Integer = CHint(Reader5("taantal"))
+                            Dim koper_naam As String = CHstr(Reader5("koper_naam"))
+                            If aantal < 9 And aanvulling_headerid = 0 Then
+                                Dim result As Integer = MessageBox.Show("Koper '" + koper_naam + "' heeft minder als 9 bakken en staat in de verzamelkar lijst. Wilt u deze kar toch printen?", "", MessageBoxButtons.YesNo)
+                                If result = DialogResult.No Then
+                                    nietprinten = True
+                                ElseIf result = DialogResult.Yes Then
+                                    nietprinten = False
+                                End If
+                            End If
+                        Loop
+                    End If
+                    '
+                    If veilingbrief_id = 3 Then   'factuur?
+                        print_factuur(header_id)
+                    ElseIf nietprinten = True Then
+                        'skip.. niet printen maar handmatig verzamelkar van maken
+                    Else
+                        Dim success As Boolean = PrintBriefFloriday(header_id, 0)
+                        If success = True Then print_ok = True
+                    End If
+
+                Next orderloop
+                'Update_Boek()
+
+                If print_ok = True Then
+                    MsgBox("Brieven worden geprint")
+                End If
+
+
+                Set_Boek_reload()
+
+            End Using
+        Catch ex As Exception
+            ErrorLog("Fout: print floriday" + ex.Message)
+            MessageBox.Show("Fout: print floriday" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
+
 
     End Sub
+    Private Function PrintBriefFloriday(header_id As Integer, kar_id As Integer) As Boolean
 
-
-    Private Sub PrintBriefFloriday(header_id As Integer, kar_id As Integer)
-
+        Dim print_ok As Boolean = True
         Dim id As Integer = 0
         Try
             'Open Connection
@@ -22201,7 +22322,7 @@ next_fav:
                 Dim Cmd2 As New OdbcCommand("", Conn)
                 Dim reader2 As OdbcDataReader
 
-                Dim print_ok As Boolean = True
+
                 'check of alle trade-items zijn ingevuld bij klokbrieven via floriday
                 'is het een klok order?
                 Dim klok As Boolean = False
@@ -22257,27 +22378,25 @@ next_fav:
 
                         If fotopath = "" Then
                             MsgBox("Van enkele orderlines is de foto nog niet toegevoegd, brief kan niet geprint worden")
-                            Exit Sub
+                            Return False
                         End If
 
                     Loop
                     reader.Close()
                 Else
                     'BB check for floriday 
-
+                    print_ok = True
                     Cmd2.CommandText = "SELECT * from orderlines WHERE orderheader_id = " + Trim(Str(header_id))
                     reader2 = Cmd2.ExecuteReader()
-                    If reader2.HasRows Then
-                        reader2.Read()
+                    Do While reader2.Read()
                         Dim FloridayNr As String = CHstr(reader2("Floridaynr"))
 
-                        If FloridayNr <> "" Then
-                            print_ok = True
-                        Else
-                            MsgBox("Van deze BB brief zijn niet alle orderlines afkomstig van Floriday, de brief kan niet worden geprint")
+                        If FloridayNr = "" Then
                             print_ok = False
-
                         End If
+                    Loop
+                    If print_ok = False Then
+                        MsgBox("Van deze BB brief zijn niet alle orderlines afkomstig van Floriday, de brief kan niet worden geprint via floriday")
                     End If
                     reader2.Close()
 
@@ -22298,15 +22417,13 @@ next_fav:
                                 Cmd.ExecuteNonQuery()
                                 SetNewStatusFlag(Now, header_id)
                             End If
-                            If floriday_printflag >= 2 Then  ' nogmaals printen
+                            If floriday_printflag = 5 Then  ' nogmaals printen
 
-                                Cmd.CommandText = "INSERT INTO afleverscan(datumtijd,kar_id,lagen,kar,status,barcode,vestiging,pagina) VALUES (?,?,?,?,?,?,?,?)"
+                                Cmd.CommandText = "INSERT INTO afleverscan(datumtijd,kar_id,status,barcode,vestiging,pagina) VALUES (?,?,?,?,?,?)"
                                 Cmd.Parameters.Clear()
                                 Cmd.Parameters.AddWithValue("", Format(Now, "yy-MM-dd HH:mm:ss"))
                                 Cmd.Parameters.AddWithValue("", kar_id)
-                                Cmd.Parameters.AddWithValue("", -1)
-                                Cmd.Parameters.AddWithValue("", -1)
-                                Cmd.Parameters.AddWithValue("", 3) 'print handmatig
+                                Cmd.Parameters.AddWithValue("", 1) 'print handmatig
                                 Cmd.Parameters.AddWithValue("", "")
                                 Cmd.Parameters.AddWithValue("", TreeviewVestiging)  'vestiging afhankelijk van boek
                                 Cmd.Parameters.AddWithValue("", 1)
@@ -22329,15 +22446,13 @@ next_fav:
                                 SetNewStatusFlag(Now, header_id)
                             End If
 
-                            If floriday_printflag >= 2 Then  ' nogmaals printen
+                            If floriday_printflag = 5 Then  ' nogmaals printen
 
-                                Cmd.CommandText = "INSERT INTO afleverscan(datumtijd,kar_id,lagen,kar,status,barcode,vestiging,pagina) VALUES (?,?,?,?,?,?,?,?)"
+                                Cmd.CommandText = "INSERT INTO afleverscan(datumtijd,kar_id,status,barcode,vestiging,pagina) VALUES (?,?,?,?,?,?)"
                                 Cmd.Parameters.Clear()
                                 Cmd.Parameters.AddWithValue("", Format(Now, "yy-MM-dd HH:mm:ss"))
                                 Cmd.Parameters.AddWithValue("", karrun_id)
-                                Cmd.Parameters.AddWithValue("", -1)
-                                Cmd.Parameters.AddWithValue("", -1)
-                                Cmd.Parameters.AddWithValue("", 3) 'print handmatig
+                                Cmd.Parameters.AddWithValue("", 1) 'print handmatig
                                 Cmd.Parameters.AddWithValue("", "")
                                 Cmd.Parameters.AddWithValue("", TreeviewVestiging)  'vestiging afhankelijk van boek
                                 Cmd.Parameters.AddWithValue("", 1)
@@ -22361,7 +22476,12 @@ next_fav:
 
         SetNewStatusFlag(Order_MonthCalendar.SelectionStart, kar_id)
 
-    End Sub
+        If print_ok = True Then
+            Return True
+        End If
+        Return False
+
+    End Function
 
     Private Sub TimerBarcodeServer_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles TimerBarcodeServer.Tick
 
@@ -31021,10 +31141,11 @@ exit_verwerk:
             Case "" : MsgBox("Selecteer een optie om uit te voeren")
             Case "print pakbon" : PrintPakbon(karnr)
             Case "print brief via floriday"
-                PrintBriefFloriday(header_id, kar_id)
-                MsgBox("De brief wordt geprint")
+                Dim success As Boolean = PrintBriefFloriday(header_id, kar_id)
+                If success = True Then MsgBox("De brief wordt geprint")
+
             Case "print brief via sdf" : PrintViaSDF(karnr)
-            Case "fd lagen aanpassing" : Floriday_KarLagenAanpassen(header_id, kar_id, kar_type, aantal_lagen)
+            'Case "fd lagen aanpassing" : Floriday_KarLagenAanpassen(header_id, kar_id, kar_type, aantal_lagen)
             Case "fd brief verwijderen" : Floriday_BriefVerwijderen(header_id, kar_id)
             Case "floriday rapport" : PrintFloridayErrorReport(kar_id)
             Case "reset floriday fout" : Resetfloridayerror(kar_id)
@@ -31570,19 +31691,41 @@ exit_verwerk:
                     End If
                     Form13.text_txt.Text = Form13.text_txt.Text + "Fulfillment status : " + fulfillment_STATUS + vbNewLine + vbNewLine
 
+
+                    Form13.text_txt.Text = Form13.text_txt.Text + vbNewLine
+                    Form13.text_txt.Text = Form13.text_txt.Text + "VERWERKINGSLOG   Kar-id:" + Str(kar_id) + vbNewLine
+                    Form13.text_txt.Text = Form13.text_txt.Text + vbNewLine
+
+                    query = "SELECT * From floriday_taskrun_log WHERE Kar_Id=" + Str(kar_id) + " ORDER BY id"
+                    cmd.CommandText = query
+                    reader = cmd.ExecuteReader()
+                    Do While reader.Read
+                        Dim datum As DateTime = CHDate2(reader("datum"), Now)
+                        Dim message As String = CHstr(reader("message"))
+                        Form13.text_txt.Text = Form13.text_txt.Text + Format(datum, "dd-MM-yyyy HH:mm:ss") + " " + message + vbNewLine
+                    Loop
+                    reader.Close()
+
+
                     If fulfillmentOrderId <> "" Then
                         query = "SELECT * From floriday_fulfillmentorderssync_json WHERE fulfillmentOrderId='" + fulfillmentOrderId + "'"
                         cmd.CommandText = query
                         reader = cmd.ExecuteReader()
                         If reader.HasRows Then
                             reader.Read()
+
+                            Form13.text_txt.Text = Form13.text_txt.Text + vbNewLine
+
+                            Form13.text_txt.Text = Form13.text_txt.Text + vbNewLine
+
                             Dim json As String = CHstr(reader("json"))
                             Form13.text_txt.Text = Form13.text_txt.Text + json
                         End If
                         reader.Close()
 
                     End If
-
+                Else
+                    MsgBox("Kar_id niet gevonden")
                 End If
 
             End Using
@@ -33121,15 +33264,16 @@ exit_verwerk:
                         Dim koper_node As TreeNode
 
                         ' onderliggende karren ophalen en daarvan de vervoersflag/sdf flag checken
-                        Dim cmdstring12 As String = "SELECT sdf_flag, vervoer_flag FROM orderkarren as ok LEFT JOIN orderheaders as oh ON ok.header_id=oh.header_id WHERE oh.aanvulling = " + Str(header_id)
+                        Dim cmdstring12 As String = "SELECT * FROM orderkarren as ok LEFT JOIN orderheaders as oh ON ok.header_id=oh.header_id WHERE oh.aanvulling = " + Str(header_id)
                         Dim Cmd12 As New OdbcCommand(cmdstring12, Conn)
                         Dim Reader12 As OdbcDataReader
                         Reader12 = Cmd12.ExecuteReader()
                         Dim sdf_done As Boolean = True
                         Do While Reader12.Read
                             Dim sdf_flag As Boolean = CHbool(Reader12("sdf_flag"))
+                            Dim floriday_printflag As Integer = CHint(Reader12("floriday_printflag"))
                             Dim vervoer_flag As Boolean = CHbool(Reader12("vervoer_flag"))
-                            If sdf_flag = False Then
+                            If sdf_flag = False And floriday_printflag = 0 Then
                                 sdf_done = False
                             End If
                         Loop
@@ -37208,6 +37352,7 @@ exit_verwerk:
                     Dim cancellationDeadline As DateTime = CHDate2(Reader("cancellationDeadline"), Now)
                     Dim status As String = CHstr(Reader("status"))
 
+
                     query = "SELECT * FROM floriday_tradeitem WHERE tradeItemId='" + tradeItemId + "'"
                     Cmd2.CommandText = query
                     Reader2 = Cmd2.ExecuteReader()
@@ -37361,6 +37506,47 @@ exit_verwerk:
                 flexfill.Add("naam", "salesChannel")
                 flexfill.Add("waarde", salesChannel)
                 FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                Dim delivery_parent_id As Integer = 0
+                query = "SELECT * FROM floriday_delivery_fulfillmentrequests WHERE orderLineId='" + orderLineId + "'"
+                Cmd2.CommandText = query
+                Reader2 = Cmd2.ExecuteReader()
+                If Reader2.HasRows Then
+                    Reader2.Read()
+                    delivery_parent_id = CHint(Reader2("parent_id"))
+                    Dim fulfillmentRequestId As String = CHstr(Reader2("fulfillmentRequestId"))
+
+                    flexfill.Add("naam", "Delivery FFReqId")
+                    flexfill.Add("waarde", fulfillmentRequestId)
+                    FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                Else
+                    flexfill.Add("naam", "Delivery status")
+                    flexfill.Add("waarde", "GEEN DELIVERY GEVONDEN")
+                    FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+                End If
+                Reader2.Close()
+                If delivery_parent_id > 0 Then
+                    query = "SELECT * FROM floriday_delivery WHERE Id=" + Str(delivery_parent_id)
+                    Cmd2.CommandText = query
+                    Reader2 = Cmd2.ExecuteReader()
+                    If Reader2.HasRows Then
+                        Reader2.Read()
+                        Dim deliveryOrderId As String = CHstr(Reader2("deliveryOrderId"))
+                        Dim creationDateTime As DateTime = CHDate2(Reader2("creationDateTime"), Now)
+
+                        flexfill.Add("naam", "Delivery ID")
+                        flexfill.Add("waarde", deliveryOrderId)
+                        FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+
+                        flexfill.Add("naam", "Delivery creationtime")
+                        flexfill.Add("waarde", Format(creationDateTime, "dd-MM-yyyy HH:mm"))
+                        FlexgridAdd(FloridayOrderInfo_flx, fd_orderinfotable, flexfill)
+                    End If
+                    Reader2.Close()
+                End If
+
+
 
 
                 Reader.Close()
@@ -37979,8 +38165,19 @@ exit_verwerk:
                 Cmd.Parameters.Clear()
                 Cmd.Parameters.AddWithValue("", fd_floridaynr)
                 Cmd.ExecuteNonQuery()
-                koppelnummer = fd_floridaynr
 
+                Cmd.CommandText = "SELECT koppelnummer from instellingen"
+                reader = Cmd.ExecuteReader()
+                If reader.HasRows Then
+                    reader.Read()
+                    koppelnummer = CHint(reader("koppelnummer"))
+                End If
+                koppelnummer = koppelnummer + 1
+                reader.Close()
+                Cmd.CommandText = "UPDATE instellingen SET koppelnummer=?"
+                Cmd.Parameters.Clear()
+                Cmd.Parameters.AddWithValue("", koppelnummer)
+                Cmd.ExecuteNonQuery()
 
                 Dim idlist As String = CStr(FloridayOrders_flx.GetData(selectedrow, FindCol(FloridayOrders_flx, "idlist")))
                 Dim ids() As String = idlist.Split(New Char() {";"c})
@@ -38121,15 +38318,15 @@ exit_verwerk:
                 'write info to order header database 
 
                 query = "INSERT INTO orderheaders (afleverdatum,invoerdatumtijd,koper_ean,koper_naam,afleverloc,veilingbrief_id," _
-                      & "vervoerder_id,contact,opmerking,inlog_naam,prijs_opslag,agenda_mark,decorum,status,kar_id,versie,afleverloc_ean,vestiging,koppelnummer) " _
-                      & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                      & "vervoerder_id,contact,opmerking,inlog_naam,prijs_opslag,agenda_mark,decorum,status,kar_id,versie,afleverloc_ean,vestiging,koppelnummer,floridayflag) " _
+                      & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                 Cmd.CommandText = query
                 Cmd.Parameters.Clear()
 
                 Cmd.Parameters.AddWithValue("", Format(fd_afleverdatum, "yyyy-MM-dd HH:mm"))                       ' 1 afleverdatum
                 Cmd.Parameters.AddWithValue("", Format(Now, "yyyy-MM-dd HH:mm"))
                 Cmd.Parameters.AddWithValue("", fd_koper_ean)                              ' 4 koper_ean
-                Cmd.Parameters.AddWithValue("", "(FD) " + fd_kopernaam)                    ' 5 koper_naam
+                Cmd.Parameters.AddWithValue("", fd_kopernaam)                    ' 5 koper_naam
                 Cmd.Parameters.AddWithValue("", fd_afleverloc)                             ' 6 afleverloc
                 Cmd.Parameters.AddWithValue("", fd_veilingbrief_id)                        ' 7 veilingbrief id
                 Cmd.Parameters.AddWithValue("", fd_vervoerder)                             ' 8 vervoerder id
@@ -38146,6 +38343,7 @@ exit_verwerk:
                 Cmd.Parameters.AddWithValue("", fd_locatie_ean)
                 Cmd.Parameters.AddWithValue("", vestigingnummer)
                 Cmd.Parameters.AddWithValue("", koppelnummer)
+                Cmd.Parameters.AddWithValue("", 1) 'floriday order
                 Cmd.ExecuteNonQuery()
 
                 Cmd.CommandText = "SELECT LAST_INSERT_ID()"
@@ -39410,6 +39608,10 @@ Public Class DetectActivity
     End Enum
 End Class
 Public Module GlobalVariables
+
+    Friend BoekVersion As String = "Version 5.0.2"
+
+
     Friend postgress As Boolean = False
     Friend SQLRUN As Boolean = False                  ' SQL verbinding?
     Friend SQLRUN2 As Boolean = False
@@ -39441,7 +39643,7 @@ Public Module GlobalVariables
 
     Friend user_click As Boolean = True
     Friend user_date_change As Boolean = True
-    Friend BoekVersion As String = "Version 5.0.0"
+
 
     Friend FC_CurrentEditOrder As Integer = -1
     Friend FC_CurrentEditLine As Integer = -1
