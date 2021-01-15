@@ -4081,6 +4081,17 @@ Public Class Form1
             Using Conn As New OdbcConnection(ConnString)
                 Conn.Open()
 
+                'recalc statusen  (wps & vervoerscan re-read)?
+
+                Dim cmdrecalc As New OdbcCommand("select header_id from orderheaders where recalc_status=-1", Conn)
+                Dim recalcReader As OdbcDataReader = cmdrecalc.ExecuteReader
+                Do While recalcReader.Read
+                    Dim header_id As Integer = CHint(recalcReader("header_id"))
+                    SetNewStatusFlag(Now, header_id, False)
+                    Dim cmdrecalcset As New OdbcCommand("update orderheaders set recalc_status=0 WHERE orderheader=" + Str(header_id), Conn)
+                    cmdrecalcset.ExecuteNonQuery()
+                Loop
+
                 'Execute Query
 
 
@@ -10219,11 +10230,11 @@ nexttreeline:
                 SaveItem(table, dbtable, DatabaseFlexGridShow)
 
                 Select Case table
-                    Case "kopers"
+                    Case "klanten"
                         Load_Database_kopers()
-                    Case "Klok foto's standaard"
+                    Case "Fotos_standaard"
                         Load_Database_fotoFilters()
-                    Case "Floriday Soort koppeling"
+                    Case "floriday_tradeitem_boek"
                         Load_Database_TradeItems()
 
                 End Select
@@ -16970,9 +16981,63 @@ next_fav:
     Private Sub Order_Slot_Chk_CheckedChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles Order_Slot_Chk.CheckedChanged
         If Not Order_Slot_Chk.Tag = "System" Then
             If Order_Slot_Chk.Checked = True Then
+                'orders kan je niet zelf op true zetten
                 Order_Slot_Chk.Checked = False
+            Else
+
+                ' Test of de order al naar floriday verstuurd is.
+                Dim header_id As Integer = CInt(Val(Order_id_lbl.Text))
+                If header_id > 0 Then
+
+                    Try
+                        'Open Connection
+                        Using Conn As New OdbcConnection(ConnString)
+                            Conn.Open()
+
+                            Dim verwerkt As Boolean = False
+                            Dim Cmd3 As New OdbcCommand("select floriday_printflag from orderkarren WHERE Header_id = ?", Conn)
+                            Cmd3.Parameters.Clear()
+                            Cmd3.Parameters.AddWithValue("", header_id)
+                            Dim Reader3 As OdbcDataReader
+                            Reader3 = Cmd3.ExecuteReader()
+                            Do While Reader3.Read()
+                                Dim printflag As Integer = CHint(Reader3("floriday_printflag"))
+                                If printflag = 1 Or printflag = 2 Or printflag = 3 Or printflag = 4 Or printflag = 5 Then verwerkt = True
+                            Loop
+
+                            If verwerkt = False Then
+                                Order_Slot_Chk.Tag = "System"
+                                Order_Slot_Chk.Checked = False
+                                Order_Slot_Chk.Tag = ""
+                            Else
+                                Order_Slot_Chk.Tag = "System"
+                                Order_Slot_Chk.Checked = True
+                                Order_Slot_Chk.Tag = ""
+                                MsgBox("Deze order is al verwerkt op floriday en kan alleen worden aangepast als de levering is verwijderd")
+                            End If
+
+                        End Using
+                    Catch ex As Exception
+                        ErrorLog("Fout order-checker: " + ex.Message)
+                        MsgBox("Fout order-checker: " + ex.Message, MsgBoxStyle.OkOnly)
+                    End Try
+                End If
+
+
+
+
             End If
+
+
+
+
+
+
         End If
+
+
+
+
     End Sub
 
 
@@ -28622,6 +28687,7 @@ exit_verwerk:
                     Case 1
                         Kar_lagenlock1_but.BackColor = Color.FromKnownColor(KnownColor.Control)
                         Kar_sdfverzonden1_chk.Checked = False
+                        Kar_fdverzonden1_chk.Checked = False
                         'Kar_scanready1_chk.Checked = False
                         Kar_vervoer1_chk.Checked = False
                         Kar_barcode1_txt.Text = ""
@@ -28630,6 +28696,7 @@ exit_verwerk:
                     Case 2
                         Kar_lagenlock2_but.BackColor = Color.FromKnownColor(KnownColor.Control)
                         Kar_sdfverzonden2_chk.Checked = False
+                        Kar_fdverzonden2_chk.Checked = False
                         'Kar_scanready2_chk.Checked = False
                         Kar_vervoer2_chk.Checked = False
                         Kar_barcode2_txt.Text = ""
@@ -28638,6 +28705,7 @@ exit_verwerk:
                     Case 3
                         Kar_lagenlock3_but.BackColor = Color.FromKnownColor(KnownColor.Control)
                         Kar_sdfverzonden3_chk.Checked = False
+                        Kar_fdverzonden3_chk.Checked = False
                         'Kar_scanready3_chk.Checked = False
                         Kar_vervoer3_chk.Checked = False
                         Kar_barcode3_txt.Text = ""
@@ -28646,6 +28714,7 @@ exit_verwerk:
                     Case 4
                         Kar_lagenlock4_but.BackColor = Color.FromKnownColor(KnownColor.Control)
                         Kar_sdfverzonden4_chk.Checked = False
+                        Kar_fdverzonden4_chk.Checked = False
                         'Kar_scanready4_chk.Checked = False
                         Kar_vervoer4_chk.Checked = False
                         Kar_barcode4_txt.Text = ""
@@ -31390,8 +31459,7 @@ exit_verwerk:
         'Print pakbon
         'Print brief via Floriday
         'Print brief via SDF
-        'Fd kar aanpassing 
-        'Fd brief verwijderen
+        'Floriday aanpassing 
         'Floriday rapport
         'Reset floriday error
 
@@ -31403,8 +31471,9 @@ exit_verwerk:
                 If success = True Then MsgBox("De brief wordt geprint")
 
             Case "print brief via sdf" : PrintViaSDF(karnr)
+            Case "floriday aanpassen" : Floriday_OrderAanpassen(header_id, kar_id)
             'Case "fd lagen aanpassing" : Floriday_KarLagenAanpassen(header_id, kar_id, kar_type, aantal_lagen)
-            Case "fd brief verwijderen" : Floriday_BriefVerwijderen(header_id, kar_id)
+            'Case "fd brief verwijderen" : Floriday_BriefVerwijderen(header_id, kar_id)
             Case "floriday rapport" : PrintFloridayErrorReport(kar_id)
             Case "reset floriday fout" : Resetfloridayerror(kar_id)
         End Select
@@ -36890,6 +36959,36 @@ exit_verwerk:
                         Dim delivery_location_address_postalCode As String = CHstr(Reader("delivery_location_address_postalCode"))
                         Dim delivery_location_address_stateOrProvince As String = CHstr(Reader("delivery_location_address_stateOrProvince"))
                         Dim cancellationDeadline As DateTime = CHDate2(Reader("cancellationDeadline"), Now)
+                        Dim deliveryRemarks As String = CHstr(Reader("deliveryRemarks"))
+
+                        Dim contractId As String = CHstr(Reader("contractId"))
+                        Dim blanketOrderLineId As String = CHstr(Reader("blanketOrderLineId"))
+
+
+                        Dim contractTitle As String = "" 'bij contract title ophalen
+                        If contractId <> "" Then
+                            query = "SELECT * FROM floriday_contracts WHERE contractId='" + contractId + "'"
+                            Cmd2.CommandText = query
+                            Reader2 = Cmd2.ExecuteReader()
+                            If Reader2.HasRows Then
+                                Reader2.Read()
+                                contractTitle = CHstr(Reader2("title"))
+                            End If
+                            Reader2.Close()
+                        End If
+
+                        If deliveryRemarks <> "" Then  'erase delivery remark if found in filter
+                            query = "SELECT * FROM floriday_salesorders_opmerkingfilter WHERE koper_uid='" + customerOrganizationId + "' AND opmerking=?"
+                            Cmd2.CommandText = query
+                            Cmd2.Parameters.Clear()
+                            Cmd2.Parameters.AddWithValue("", deliveryRemarks)
+                            Reader2 = Cmd2.ExecuteReader()
+                            If Reader2.HasRows Then
+                                deliveryRemarks = ""
+                            End If
+                            Reader2.Close()
+                        End If
+
                         Dim status As String = CHstr(Reader("status"))
                         Dim tradeItemName As String = "Onbekend"
                         query = "SELECT tradeItemName_nl FROM floriday_tradeitem WHERE tradeItemId='" + tradeItemId + "'"
@@ -36944,6 +37043,7 @@ exit_verwerk:
                         Dim acce6warning As Integer = 0
                         Dim acce7warning As Integer = 0
                         Dim acce8warning As Integer = 0
+                        Dim opmerkingwarning As Integer = 0
                         Dim filterstoegepast As String = ""
 
                         'preset data ophalen voor tradeitem
@@ -37137,7 +37237,7 @@ exit_verwerk:
                         Dim xapf As Integer = selectedPackingConfiguration_piecesPerPackage
 
 
-                        Dim opmerking As String = ""
+                        Dim opmerking As String = deliveryRemarks
                         Dim stikkercode As Integer = 0
                         Dim wpsfilter As Integer = 0
                         Dim boekstatus As Integer = 0
@@ -37257,6 +37357,9 @@ exit_verwerk:
 
                         End If
 
+                        If opmerking <> "" Then opmerkingwarning = opmerkingwarning + 1
+                        warningcode = warningcode + soortwarning + fustwarning + hoeswarning + acce1warning + acce2warning + acce3warning + acce4warning + acce5warning + acce6warning + acce7warning + acce8warning + opmerkingwarning
+
                         If show = True Then
 
                             Dim flexfill As New Dictionary(Of String, Object)
@@ -37276,8 +37379,11 @@ exit_verwerk:
                             flexfill.Add("accessoire7", accessoire7)
                             flexfill.Add("accessoire8", accessoire8)
                             flexfill.Add("prijs", Format(prijs, "#0.000"))
-                            If agreementReference_code <> "" Or agreementReference_description <> "" Then
-                                flexfill.Add("aanbodreferentie", agreementReference_code + ":" + agreementReference_description)
+
+                            If contractId <> "" Then
+                                flexfill.Add("aanbodreferentie", "Contract: " + contractTitle)
+                            ElseIf agreementReference_code <> "" Or agreementReference_description <> "" Then
+                                flexfill.Add("aanbodreferentie", agreementReference_code + "-" + agreementReference_description)
                             End If
 
                             flexfill.Add("opmerking", opmerking)
@@ -37301,11 +37407,11 @@ exit_verwerk:
                             If acce7warning > 0 Then flexwarning.Add("accessoire7", 1)
                             If acce8warning > 0 Then flexwarning.Add("accessoire8", 1)
                             If filterstoegepast <> "" Then flexwarning.Add("fdfilter", 2)
+                            If opmerking <> "" Then flexwarning.Add("opmerking", 1)
                             'If agreementReference_code <> "" Then flexwarning.Add("aanbodreferentie", 1)
 
                             FlexgridAddTree(FloridayOrderLines_flx, fd_orderlinetable, flexfill, flexwarning, niet_accumuleren)
                         End If
-                        warningcode = warningcode + soortwarning + fustwarning + hoeswarning + acce1warning + acce2warning + acce3warning + acce4warning + acce5warning + acce6warning + acce7warning + acce8warning
 
                     End If
                     Reader.Close()
@@ -37842,6 +37948,12 @@ exit_verwerk:
                 Dim Reader2 As OdbcDataReader
 
 
+                FormProgressBar.StartPosition = FormStartPosition.CenterScreen
+                FormProgressBar.Show()
+                FormProgressBar.DataProgressBar.Value = 5
+                Application.DoEvents()
+
+
                 Dim Start_datum As Date = Floriday_Calendar.SelectionStart.Date
                 Dim End_datum As Date = Floriday_Calendar.SelectionEnd.Date
                 If Start_datum = Now.Date Then Start_datum = DateAdd("d", -14, Start_datum)
@@ -37857,7 +37969,7 @@ exit_verwerk:
 
 
                 If Fd_nieuweOrders_rb.Checked = True Then
-                    query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders WHERE boekstatus=0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' AND DATE(boektijd) >= '" + Start_DatumStr + "' AND DATE(boektijd) <= '" + End_DatumStr + "' GROUP BY customerOrganizationId,selectedPackingConfiguration_loadCarrier, delivery_location_gln, delivery_latestDeliveryDateTime ORDER BY delivery_latestDeliveryDateTime"
+                    query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders WHERE boekstatus=0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' AND DATE(boektijd) >= '" + Start_DatumStr + "' AND DATE(boektijd) <= '" + End_DatumStr + "' GROUP BY customerOrganizationId, contractId ,selectedPackingConfiguration_loadCarrier, delivery_location_gln, delivery_latestDeliveryDateTime ORDER BY delivery_latestDeliveryDateTime"
                 Else
 
                     Start_DatumStr = Floriday_Calendar.SelectionStart.Date.ToString("yyyy/MM/dd")
@@ -37899,6 +38011,7 @@ exit_verwerk:
                     Dim delivery_location_gln As String = CHstr(Reader("delivery_location_gln"))
                     Dim orderdatetime As DateTime = CHDate2(Reader("orderdatetime"), Now)
                     Dim databaseboektijd As DateTime = CHDate2(Reader("boektijd"), Now)
+
 
                     'kopernaam ophalen
                     Dim kopernaam As String = "Koper onbekend"
@@ -38000,11 +38113,23 @@ exit_verwerk:
 
                     FlexgridAdd(FloridayOrders_flx, fd_ordertable, flexfill, flexwarning)
 
-                    Dim warning As Boolean = CheckOrderlines(False, FloridayOrders_flx.Rows.Count - 1)
-                    If warning = True Then
+                    Dim warning As Integer = CheckOrderlines(False, FloridayOrders_flx.Rows.Count - 1)
+                    If warning > 0 Then
                         FloridayOrders_flx.Rows(FloridayOrders_flx.Rows.Count - 1).Style = FloridayOrders_flx.Styles("RED")
                     End If
+
+                    Dim progress As Integer = FormProgressBar.DataProgressBar.Value
+                    progress = progress + 5
+                    If progress > 95 Then progress = 95
+                    FormProgressBar.DataProgressBar.Value = progress
+
                 Loop
+
+                FormProgressBar.DataProgressBar.Value = 95
+                FormProgressBar.Close()
+                Me.Cursor = Cursors.Default
+
+
             End Using
         Catch ex As Exception
             'ErrorLog("Database niet gevonden")
@@ -38037,73 +38162,39 @@ exit_verwerk:
                 Conn.Open()
                 Dim success As Boolean = False
                 Dim cmd As New OdbcCommand(query, Conn)
-                Dim reader As OdbcDataReader
 
-                Dim insertcommand As Boolean = True
+                query = "INSERT INTO floriday_tasks(delay,command,endpoint,path,additionalpath," _
+                                & "queryname1,queryvalue1,queryname2,queryvalue2,queryname3,queryvalue3," _
+                                & "reference_id,responce_code,status,errortext,runtime,priority,errorcount," _
+                                & "last_access,sequence,apitime,totaltime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                cmd.CommandText = query
+                cmd.Parameters.Clear()
+                cmd.Parameters.AddWithValue("", delay)
+                cmd.Parameters.AddWithValue("", command)
+                cmd.Parameters.AddWithValue("", endpoint)
+                cmd.Parameters.AddWithValue("", path)
+                cmd.Parameters.AddWithValue("", additionalpath)
+                cmd.Parameters.AddWithValue("", queryname1)
+                cmd.Parameters.AddWithValue("", queryvalue1)
+                cmd.Parameters.AddWithValue("", queryname2)
+                cmd.Parameters.AddWithValue("", queryvalue2)
+                cmd.Parameters.AddWithValue("", queryname3)
+                cmd.Parameters.AddWithValue("", queryvalue3)
+                cmd.Parameters.AddWithValue("", reference_id)
+                cmd.Parameters.AddWithValue("", 0)
+                cmd.Parameters.AddWithValue("", 0)
+                cmd.Parameters.AddWithValue("", "")
+                cmd.Parameters.AddWithValue("", Format(runtime, "yy-MM-dd HH:mm:ss"))
+                cmd.Parameters.AddWithValue("", priority)
+                cmd.Parameters.AddWithValue("", 0)
+                cmd.Parameters.AddWithValue("", Format(Now, "yy-MM-dd HH:mm:ss"))
+                cmd.Parameters.AddWithValue("", 0)
+                cmd.Parameters.AddWithValue("", 0)
+                cmd.Parameters.AddWithValue("", 0)
+                cmd.ExecuteNonQuery()
 
-                If command = "GET" Then
-                    'staat er al een zelfde task in de taskrow die nog niet is uitgevoerd -> skip 
-                    query = "SELECT id FROM floriday_tasks WHERE delay=? AND command=? AND endpoint=? AND path=? AND additionalpath=? AND " _
-                    & "queryname1=? AND queryvalue1=? AND queryname2=? AND queryvalue2=? AND queryname3=? AND queryvalue3=? AND " _
-                    & "status=0"
-                    cmd.CommandText = query
-                    cmd.Parameters.Clear()
-                    cmd.Parameters.AddWithValue("", delay)
-                    cmd.Parameters.AddWithValue("", command)
-                    cmd.Parameters.AddWithValue("", endpoint)
-                    cmd.Parameters.AddWithValue("", path)
-                    cmd.Parameters.AddWithValue("", additionalpath)
-                    cmd.Parameters.AddWithValue("", queryname1)
-                    cmd.Parameters.AddWithValue("", queryvalue1)
-                    cmd.Parameters.AddWithValue("", queryname2)
-                    cmd.Parameters.AddWithValue("", queryvalue2)
-                    cmd.Parameters.AddWithValue("", queryname3)
-                    cmd.Parameters.AddWithValue("", queryvalue3)
-                    reader = cmd.ExecuteReader()
-                    If reader.HasRows Then
-
-                        insert_id = CHint(reader("id"))
-                        'GET command staat al in wachtrij.
-                        insertcommand = False
-                    End If
-                    reader.Close()
-                End If
-
-                If insertcommand = True Then
-
-                    query = "INSERT INTO floriday_tasks(delay,command,endpoint,path,additionalpath," _
-                            & "queryname1,queryvalue1,queryname2,queryvalue2,queryname3,queryvalue3," _
-                            & "reference_id,responce_code,status,errortext,runtime,priority,errorcount," _
-                            & "last_access,sequence,apitime,totaltime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-                    cmd.CommandText = query
-                    cmd.Parameters.Clear()
-                    cmd.Parameters.AddWithValue("", delay)
-                    cmd.Parameters.AddWithValue("", command)
-                    cmd.Parameters.AddWithValue("", endpoint)
-                    cmd.Parameters.AddWithValue("", path)
-                    cmd.Parameters.AddWithValue("", additionalpath)
-                    cmd.Parameters.AddWithValue("", queryname1)
-                    cmd.Parameters.AddWithValue("", queryvalue1)
-                    cmd.Parameters.AddWithValue("", queryname2)
-                    cmd.Parameters.AddWithValue("", queryvalue2)
-                    cmd.Parameters.AddWithValue("", queryname3)
-                    cmd.Parameters.AddWithValue("", queryvalue3)
-                    cmd.Parameters.AddWithValue("", reference_id)
-                    cmd.Parameters.AddWithValue("", 0)
-                    cmd.Parameters.AddWithValue("", 0)
-                    cmd.Parameters.AddWithValue("", "")
-                    cmd.Parameters.AddWithValue("", Format(runtime, "yy-MM-dd HH:mm:ss"))
-                    cmd.Parameters.AddWithValue("", priority)
-                    cmd.Parameters.AddWithValue("", 0)
-                    cmd.Parameters.AddWithValue("", Format(Now, "yy-MM-dd HH:mm:ss"))
-                    cmd.Parameters.AddWithValue("", 0)
-                    cmd.Parameters.AddWithValue("", 0)
-                    cmd.Parameters.AddWithValue("", 0)
-                    cmd.ExecuteNonQuery()
-
-                    cmd.CommandText = "SELECT LAST_INSERT_ID()"
-                    insert_id = Convert.ToInt32(cmd.ExecuteScalar())
-                End If
+                cmd.CommandText = "SELECT LAST_INSERT_ID()"
+                insert_id = Convert.ToInt32(cmd.ExecuteScalar())
 
 
             End Using
@@ -39191,6 +39282,26 @@ skip_verwerkline:
     End Sub
 
     Private Sub FloridayOrderLines_flx_CellButtonClick(sender As Object, e As RowColEventArgs) Handles FloridayOrderLines_flx.CellButtonClick
+
+        'node met meer als 1 item? alert
+        Dim exitnode As Boolean = True
+        If FloridayOrderLines_flx.Rows(e.Row).IsNode Then
+            If e.Row + 2 < FloridayOrderLines_flx.Rows.Count Then
+                If FloridayOrderLines_flx.Rows(e.Row + 2).IsNode Then
+                    exitnode = False
+                End If
+            End If
+            If e.Row + 2 = FloridayOrderLines_flx.Rows.Count Then
+                exitnode = False
+            End If
+        Else
+            exitnode = False
+        End If
+        If exitnode = True Then
+            MsgBox("Deze line bevat meerdere orders, verwerk de orders afzonderlijk")
+            Exit Sub
+        End If
+
         Dim col As Integer = e.Col
         Dim row As Integer = e.Row
         Dim stikkercol As Integer = FindCol(FloridayOrderLines_flx, "stikkercode")
@@ -39199,6 +39310,8 @@ skip_verwerkline:
         Dim orderlineid As String = FloridayOrderLines_flx.Item(row, idcol)
         Dim aantalcol As Integer = FindCol(FloridayOrderLines_flx, "Aantal")
         Dim correctiecol As Integer = FindCol(FloridayOrderLines_flx, "Correctie")
+        Dim wisopmerkingcol As Integer = FindCol(FloridayOrderLines_flx, "XO")
+        Dim opmerkingcol As Integer = FindCol(FloridayOrderLines_flx, "Opmerking")
 
         If col = stikkercol Then
             'generate labels
@@ -39279,6 +39392,60 @@ skip_verwerkline:
             Form14.StartPosition = FormStartPosition.CenterScreen
             Form14.Show()
 
+        End If
+
+        If col = wisopmerkingcol Then
+            Dim query As String = ""
+            Try
+                Using Conn As New OdbcConnection(ConnString)
+                    Conn.Open()
+                    Dim Cmd2 As New OdbcCommand(query, Conn)
+                    Dim reader2 As OdbcDataReader
+
+                    Dim opmerking As String = ""
+                    Dim customerOrganizationId As String = ""
+                    Dim kopernaam As String = ""
+
+                    query = "SELECT * FROM floriday_salesorders_boek WHERE orderLineId='" + orderlineid + "'"
+                    Cmd2.CommandText = query
+                    Reader2 = Cmd2.ExecuteReader()
+                    If Reader2.HasRows Then
+                        Reader2.Read()  'oude data ophalen                    
+                        opmerking = CHstr(Reader2("boek_opmerking"))
+                        customerOrganizationId = CHstr(Reader2("customerOrganizationId"))
+                    End If
+                    Reader2.Close()
+
+                    query = "UPDATE floriday_salesorders_boek SET boek_opmerking=? WHERE orderLineId=?"  'clear opmerking
+                    Cmd2.CommandText = query
+                    Cmd2.Parameters.Clear()
+                    Cmd2.Parameters.AddWithValue("", "")
+                    Cmd2.Parameters.AddWithValue("", orderlineid)
+                    Cmd2.ExecuteNonQuery()
+
+                    query = "SELECT * FROM floriday_organizations WHERE organizationId='" + customerOrganizationId + "'"
+                    Cmd2.CommandText = query
+                    Reader2 = Cmd2.ExecuteReader()
+                    If Reader2.HasRows Then
+                        kopernaam = CHstr(reader2("name"))
+                    End If
+                    Reader2.Close()
+
+                    query = "INSERT INTO floriday_salesorders_opmerkingfilter(koper_uid,koper_naam,opmerking) VALUES (?,?,?)"   'create filter 
+                    Cmd2.CommandText = query
+                    Cmd2.Parameters.Clear()
+                    Cmd2.Parameters.AddWithValue("", customerOrganizationId)
+                    Cmd2.Parameters.AddWithValue("", kopernaam)
+                    Cmd2.Parameters.AddWithValue("", opmerking)
+                    Cmd2.ExecuteNonQuery()
+
+                    FloridayOrderLines_flx.Item(row, opmerkingcol) = ""
+
+
+                End Using
+            Catch ex As Exception
+                MessageBox.Show("Database fout: (floridayorder wis opmerking)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+            End Try
         End If
 
     End Sub
@@ -39793,7 +39960,46 @@ skip_verwerkline:
 
     End Sub
 
+    Private Sub FloridayOrderAanpassenToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles FloridayOrderAanpassenToolStripMenuItem.Click
 
+        Dim header_id As Integer = -1
+        Dim Nodes As TreeNodeCollection = TreeView1.Nodes
+        Dim Node As TreeNode
+        For Each Node In Nodes
+            If Node.Checked = True And Mid(Node.Tag, 1, 3) = "ID:" Then
+                header_id = Val(Mid(Node.Tag, 4))
+            End If
+
+            If Node.Nodes.Count > 0 Then
+                Dim node2 As TreeNode
+                For Each node2 In Node.Nodes
+                    If Mid(node2.Tag, 1, 3) = "ID:" And node2.Checked = True Then
+                        header_id = Val(Mid(node2.Tag, 4))
+                        Exit For
+                    End If
+                Next node2
+            End If
+        Next Node
+
+        If header_id = -1 And Not TreeView1.SelectedNode Is Nothing Then
+            If Mid(TreeView1.SelectedNode.Tag, 1, 3) = "ID:" Then
+                header_id = Val(Mid(TreeView1.SelectedNode.Tag, 4))
+            End If
+        End If
+
+        If header_id = -1 Then Exit Sub
+        Floriday_OrderAanpassen(header_id, -1)
+    End Sub
+
+    Private Sub Floriday_OrderAanpassen(header_id As Integer, kar_id As Integer)
+
+        Dim karrentabel As tablelayout() = BuildTable("floriday_aanpassen", Form16.karren_flx)
+
+        Form16.Init(header_id, kar_id)
+        Form16.StartPosition = FormStartPosition.CenterScreen
+        Form16.Show()
+
+    End Sub
 
 
 
@@ -39867,7 +40073,7 @@ Public Class DetectActivity
 End Class
 Public Module GlobalVariables
 
-    Friend BoekVersion As String = "Version 5.0.2"
+    Friend BoekVersion As String = "Version 5.0.4"
 
 
     Friend postgress As Boolean = False
