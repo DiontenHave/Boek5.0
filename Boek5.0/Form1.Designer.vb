@@ -158,6 +158,10 @@ Partial Class Form1
         Me.Kar_opslaan2_but = New System.Windows.Forms.Button()
         Me.HScrollBar1 = New System.Windows.Forms.HScrollBar()
         Me.PanelKarindelingMidden = New System.Windows.Forms.Panel()
+        Me.Kar_Kartype4_cmb = New System.Windows.Forms.ComboBox()
+        Me.Kar_Kartype3_cmb = New System.Windows.Forms.ComboBox()
+        Me.Kar_Kartype2_cmb = New System.Windows.Forms.ComboBox()
+        Me.Kar_Kartype1_cmb = New System.Windows.Forms.ComboBox()
         Me.Kar_fdverzonden4_chk = New System.Windows.Forms.CheckBox()
         Me.Kar_fdverzonden3_chk = New System.Windows.Forms.CheckBox()
         Me.Kar_fdverzonden2_chk = New System.Windows.Forms.CheckBox()
@@ -694,6 +698,7 @@ Partial Class Form1
         Me.OrderNaar900VolgendeDagToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.OvergooienHieropAanvullenToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.PakbonSamenvatting = New System.Windows.Forms.ToolStripMenuItem()
+        Me.FloridayOrderAanpassenToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripMenuItem2 = New System.Windows.Forms.ToolStripMenuItem()
         Me.TreeMenu_SortInvoer = New System.Windows.Forms.ToolStripMenuItem()
         Me.TreeMenu_SortStatus = New System.Windows.Forms.ToolStripMenuItem()
@@ -730,7 +735,6 @@ Partial Class Form1
         Me.TimerBarcodeServer = New System.Windows.Forms.Timer(Me.components)
         Me.TimerFlorecom = New System.Windows.Forms.Timer(Me.components)
         Me.InlogTimer = New System.Windows.Forms.Timer(Me.components)
-        Me.FloridayOrderAanpassenToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         CType(Me.C1SizerMainWindow, System.ComponentModel.ISupportInitialize).BeginInit
         Me.C1SizerMainWindow.SuspendLayout
         CType(Me.C1SizerTree, System.ComponentModel.ISupportInitialize).BeginInit
@@ -2269,6 +2273,10 @@ Partial Class Form1
         '
         Me.PanelKarindelingMidden.AutoScroll = True
         Me.PanelKarindelingMidden.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
+        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_Kartype4_cmb)
+        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_Kartype3_cmb)
+        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_Kartype2_cmb)
+        Me.PanelKarindelingMidden.Controls.Add(Me.Kar_Kartype1_cmb)
         Me.PanelKarindelingMidden.Controls.Add(Me.Kar_fdverzonden4_chk)
         Me.PanelKarindelingMidden.Controls.Add(Me.Kar_fdverzonden3_chk)
         Me.PanelKarindelingMidden.Controls.Add(Me.Kar_fdverzonden2_chk)
@@ -2366,6 +2374,50 @@ Partial Class Form1
         Me.PanelKarindelingMidden.Size = New System.Drawing.Size(875, 640)
         Me.PanelKarindelingMidden.TabIndex = 1
         '
+        'Kar_Kartype4_cmb
+        '
+        Me.Kar_Kartype4_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.Kar_Kartype4_cmb.FormattingEnabled = True
+        Me.Kar_Kartype4_cmb.Items.AddRange(New Object() {"deense lagen", "extra platen en 1 FH Kar", "N.V.T.", "deense lagen (geen CC)", "Euro Trolley", "Pallet", "Euro Pallet"})
+        Me.Kar_Kartype4_cmb.Location = New System.Drawing.Point(772, 438)
+        Me.Kar_Kartype4_cmb.Name = "Kar_Kartype4_cmb"
+        Me.Kar_Kartype4_cmb.Size = New System.Drawing.Size(142, 21)
+        Me.Kar_Kartype4_cmb.TabIndex = 116
+        Me.Kar_Kartype4_cmb.Tag = "4"
+        '
+        'Kar_Kartype3_cmb
+        '
+        Me.Kar_Kartype3_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.Kar_Kartype3_cmb.FormattingEnabled = True
+        Me.Kar_Kartype3_cmb.Items.AddRange(New Object() {"deense lagen", "extra platen en 1 FH Kar", "N.V.T.", "deense lagen (geen CC)", "Euro Trolley", "Pallet", "Euro Pallet"})
+        Me.Kar_Kartype3_cmb.Location = New System.Drawing.Point(539, 435)
+        Me.Kar_Kartype3_cmb.Name = "Kar_Kartype3_cmb"
+        Me.Kar_Kartype3_cmb.Size = New System.Drawing.Size(142, 21)
+        Me.Kar_Kartype3_cmb.TabIndex = 115
+        Me.Kar_Kartype3_cmb.Tag = "3"
+        '
+        'Kar_Kartype2_cmb
+        '
+        Me.Kar_Kartype2_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.Kar_Kartype2_cmb.FormattingEnabled = True
+        Me.Kar_Kartype2_cmb.Items.AddRange(New Object() {"deense lagen", "extra platen en 1 FH Kar", "N.V.T.", "deense lagen (geen CC)", "Euro Trolley", "Pallet", "Euro Pallet"})
+        Me.Kar_Kartype2_cmb.Location = New System.Drawing.Point(310, 436)
+        Me.Kar_Kartype2_cmb.Name = "Kar_Kartype2_cmb"
+        Me.Kar_Kartype2_cmb.Size = New System.Drawing.Size(142, 21)
+        Me.Kar_Kartype2_cmb.TabIndex = 114
+        Me.Kar_Kartype2_cmb.Tag = "2"
+        '
+        'Kar_Kartype1_cmb
+        '
+        Me.Kar_Kartype1_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.Kar_Kartype1_cmb.FormattingEnabled = True
+        Me.Kar_Kartype1_cmb.Items.AddRange(New Object() {"deense lagen", "extra platen en 1 FH Kar", "N.V.T.", "deense lagen (geen CC)", "Euro Trolley", "Pallet", "Euro Pallet"})
+        Me.Kar_Kartype1_cmb.Location = New System.Drawing.Point(76, 438)
+        Me.Kar_Kartype1_cmb.Name = "Kar_Kartype1_cmb"
+        Me.Kar_Kartype1_cmb.Size = New System.Drawing.Size(142, 21)
+        Me.Kar_Kartype1_cmb.TabIndex = 113
+        Me.Kar_Kartype1_cmb.Tag = "1"
+        '
         'Kar_fdverzonden4_chk
         '
         Me.Kar_fdverzonden4_chk.AutoCheck = False
@@ -2420,7 +2472,7 @@ Partial Class Form1
         Me.KarCommand4_but.Name = "KarCommand4_but"
         Me.KarCommand4_but.Size = New System.Drawing.Size(40, 21)
         Me.KarCommand4_but.TabIndex = 108
-        Me.KarCommand4_but.Tag = "1"
+        Me.KarCommand4_but.Tag = "4"
         Me.KarCommand4_but.Text = "OK"
         Me.KarCommand4_but.UseVisualStyleBackColor = True
         '
@@ -2433,6 +2485,7 @@ Partial Class Form1
         Me.KarCommand4_cmb.Name = "KarCommand4_cmb"
         Me.KarCommand4_cmb.Size = New System.Drawing.Size(168, 21)
         Me.KarCommand4_cmb.TabIndex = 107
+        Me.KarCommand4_cmb.Tag = "4"
         '
         'KarCommand3_but
         '
@@ -2440,7 +2493,7 @@ Partial Class Form1
         Me.KarCommand3_but.Name = "KarCommand3_but"
         Me.KarCommand3_but.Size = New System.Drawing.Size(40, 21)
         Me.KarCommand3_but.TabIndex = 106
-        Me.KarCommand3_but.Tag = "1"
+        Me.KarCommand3_but.Tag = "3"
         Me.KarCommand3_but.Text = "OK"
         Me.KarCommand3_but.UseVisualStyleBackColor = True
         '
@@ -2453,6 +2506,7 @@ Partial Class Form1
         Me.KarCommand3_cmb.Name = "KarCommand3_cmb"
         Me.KarCommand3_cmb.Size = New System.Drawing.Size(168, 21)
         Me.KarCommand3_cmb.TabIndex = 105
+        Me.KarCommand3_cmb.Tag = "3"
         '
         'KarCommand2_but
         '
@@ -2460,7 +2514,7 @@ Partial Class Form1
         Me.KarCommand2_but.Name = "KarCommand2_but"
         Me.KarCommand2_but.Size = New System.Drawing.Size(40, 21)
         Me.KarCommand2_but.TabIndex = 104
-        Me.KarCommand2_but.Tag = "1"
+        Me.KarCommand2_but.Tag = "2"
         Me.KarCommand2_but.Text = "OK"
         Me.KarCommand2_but.UseVisualStyleBackColor = True
         '
@@ -2473,6 +2527,7 @@ Partial Class Form1
         Me.KarCommand2_cmb.Name = "KarCommand2_cmb"
         Me.KarCommand2_cmb.Size = New System.Drawing.Size(168, 21)
         Me.KarCommand2_cmb.TabIndex = 103
+        Me.KarCommand2_cmb.Tag = "2"
         '
         'KarCommand1_but
         '
@@ -2493,6 +2548,7 @@ Partial Class Form1
         Me.KarCommand1_cmb.Name = "KarCommand1_cmb"
         Me.KarCommand1_cmb.Size = New System.Drawing.Size(168, 21)
         Me.KarCommand1_cmb.TabIndex = 101
+        Me.KarCommand1_cmb.Tag = "1"
         '
         'kar_overgooien4_wis_but
         '
@@ -2672,7 +2728,7 @@ Partial Class Form1
         '
         'Kar_lagenlock4_but
         '
-        Me.Kar_lagenlock4_but.Location = New System.Drawing.Point(705, 440)
+        Me.Kar_lagenlock4_but.Location = New System.Drawing.Point(707, 437)
         Me.Kar_lagenlock4_but.Name = "Kar_lagenlock4_but"
         Me.Kar_lagenlock4_but.Size = New System.Drawing.Size(24, 19)
         Me.Kar_lagenlock4_but.TabIndex = 73
@@ -2797,7 +2853,7 @@ Partial Class Form1
         'Kar_lagen4_lbl
         '
         Me.Kar_lagen4_lbl.AutoSize = True
-        Me.Kar_lagen4_lbl.Location = New System.Drawing.Point(770, 443)
+        Me.Kar_lagen4_lbl.Location = New System.Drawing.Point(826, 513)
         Me.Kar_lagen4_lbl.Name = "Kar_lagen4_lbl"
         Me.Kar_lagen4_lbl.Size = New System.Drawing.Size(71, 13)
         Me.Kar_lagen4_lbl.TabIndex = 53
@@ -2805,7 +2861,7 @@ Partial Class Form1
         '
         'Kar_lagen4_txt
         '
-        Me.Kar_lagen4_txt.Location = New System.Drawing.Point(735, 440)
+        Me.Kar_lagen4_txt.Location = New System.Drawing.Point(737, 437)
         Me.Kar_lagen4_txt.Name = "Kar_lagen4_txt"
         Me.Kar_lagen4_txt.Size = New System.Drawing.Size(29, 20)
         Me.Kar_lagen4_txt.TabIndex = 52
@@ -2881,7 +2937,7 @@ Partial Class Form1
         'Kar_aantaltotaal4_lbl
         '
         Me.Kar_aantaltotaal4_lbl.AutoSize = True
-        Me.Kar_aantaltotaal4_lbl.Location = New System.Drawing.Point(713, 420)
+        Me.Kar_aantaltotaal4_lbl.Location = New System.Drawing.Point(715, 417)
         Me.Kar_aantaltotaal4_lbl.Name = "Kar_aantaltotaal4_lbl"
         Me.Kar_aantaltotaal4_lbl.Size = New System.Drawing.Size(69, 13)
         Me.Kar_aantaltotaal4_lbl.TabIndex = 44
@@ -2918,7 +2974,7 @@ Partial Class Form1
         'Kar_lagen3_lbl
         '
         Me.Kar_lagen3_lbl.AutoSize = True
-        Me.Kar_lagen3_lbl.Location = New System.Drawing.Point(539, 439)
+        Me.Kar_lagen3_lbl.Location = New System.Drawing.Point(615, 507)
         Me.Kar_lagen3_lbl.Name = "Kar_lagen3_lbl"
         Me.Kar_lagen3_lbl.Size = New System.Drawing.Size(71, 13)
         Me.Kar_lagen3_lbl.TabIndex = 40
@@ -3039,7 +3095,7 @@ Partial Class Form1
         'Kar_lagen2_lbl
         '
         Me.Kar_lagen2_lbl.AutoSize = True
-        Me.Kar_lagen2_lbl.Location = New System.Drawing.Point(311, 440)
+        Me.Kar_lagen2_lbl.Location = New System.Drawing.Point(375, 509)
         Me.Kar_lagen2_lbl.Name = "Kar_lagen2_lbl"
         Me.Kar_lagen2_lbl.Size = New System.Drawing.Size(71, 13)
         Me.Kar_lagen2_lbl.TabIndex = 27
@@ -3160,7 +3216,7 @@ Partial Class Form1
         'Kar_lagen1_lbl
         '
         Me.Kar_lagen1_lbl.AutoSize = True
-        Me.Kar_lagen1_lbl.Location = New System.Drawing.Point(76, 441)
+        Me.Kar_lagen1_lbl.Location = New System.Drawing.Point(138, 511)
         Me.Kar_lagen1_lbl.Name = "Kar_lagen1_lbl"
         Me.Kar_lagen1_lbl.Size = New System.Drawing.Size(71, 13)
         Me.Kar_lagen1_lbl.TabIndex = 14
@@ -7629,7 +7685,7 @@ Partial Class Form1
         '
         Me.Tree_MenuStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.OrderToolStripMenuItem, Me.TreeMenu_Selectie, Me.TreeMenu_OrderAanpassen, Me.TreeMenu_Karindeling, Me.WpsVersturenToolStripMenuItem, Me.OrderKopierenToolStripMenuItem, Me.OrderResetToolStripMenuItem, Me.OrderStikkersVerzamelkarToolStripMenuItem, Me.LabelberichtStatusToolStripMenuItem, Me.OrderNaar900VolgendeDagToolStripMenuItem, Me.OvergooienHieropAanvullenToolStripMenuItem, Me.PakbonSamenvatting, Me.FloridayOrderAanpassenToolStripMenuItem, Me.ToolStripMenuItem2, Me.TreeMenu_SortInvoer, Me.TreeMenu_SortStatus, Me.TreeMenu_SortAlfabet, Me.TreeMenu_SortLoc, Me.TreeMenu_TijdAlles, Me.TreeMenu_Tijd10, Me.TreeMenu_Tijd13, Me.TreeMenu_StatusAlles, Me.TreeMenu_StatusVerkort, Me.TreeMenu_StatusNieuw, Me.TreeMenu_StatusNenI, Me.TreeMenu_StatusIngepakt, Me.TreeMenu_StatusVracht, Me.TreeMenu_StatusGeannuleerd})
         Me.Tree_MenuStrip.Name = "ContextMenuStrip1"
-        Me.Tree_MenuStrip.Size = New System.Drawing.Size(246, 642)
+        Me.Tree_MenuStrip.Size = New System.Drawing.Size(246, 620)
         '
         'OrderToolStripMenuItem
         '
@@ -7702,6 +7758,12 @@ Partial Class Form1
         Me.PakbonSamenvatting.Name = "PakbonSamenvatting"
         Me.PakbonSamenvatting.Size = New System.Drawing.Size(245, 22)
         Me.PakbonSamenvatting.Text = "Print samenvatting pakbon"
+        '
+        'FloridayOrderAanpassenToolStripMenuItem
+        '
+        Me.FloridayOrderAanpassenToolStripMenuItem.Name = "FloridayOrderAanpassenToolStripMenuItem"
+        Me.FloridayOrderAanpassenToolStripMenuItem.Size = New System.Drawing.Size(245, 22)
+        Me.FloridayOrderAanpassenToolStripMenuItem.Text = "Floriday aanpassing"
         '
         'ToolStripMenuItem2
         '
@@ -7906,12 +7968,6 @@ Partial Class Form1
         '
         Me.InlogTimer.Enabled = True
         Me.InlogTimer.Interval = 30000
-        '
-        'FloridayOrderAanpassenToolStripMenuItem
-        '
-        Me.FloridayOrderAanpassenToolStripMenuItem.Name = "FloridayOrderAanpassenToolStripMenuItem"
-        Me.FloridayOrderAanpassenToolStripMenuItem.Size = New System.Drawing.Size(245, 22)
-        Me.FloridayOrderAanpassenToolStripMenuItem.Text = "Floriday aanpassing"
         '
         'Form1
         '
@@ -8819,4 +8875,8 @@ Partial Class Form1
     Friend WithEvents FdMenu_Nietverwerken_but As Button
     Friend WithEvents FCMenu_Nietverwerken_but As Button
     Friend WithEvents FloridayOrderAanpassenToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents Kar_Kartype4_cmb As ComboBox
+    Friend WithEvents Kar_Kartype3_cmb As ComboBox
+    Friend WithEvents Kar_Kartype2_cmb As ComboBox
+    Friend WithEvents Kar_Kartype1_cmb As ComboBox
 End Class

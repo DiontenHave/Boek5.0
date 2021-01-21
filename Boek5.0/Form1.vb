@@ -28345,72 +28345,93 @@ exit_verwerk:
             Kar_plus4_but.Enabled = True
         End If
 
-
+        Dim karindex As Integer = 0
         Dim fixedloop As Integer = 1
         For karloop = startkar To startkar + 3
 
             If KarHeaders(karloop).tag = True Then
-
                 ' aantal lagen invullen 
                 Dim karlist = GID(kar, KarHeaders(karloop).kar_type)
+                Select Case KarHeaders(karloop).kar_type
+                    Case 1, 2 : karindex = 0
+                    Case 3 : karindex = 1
+                    Case 8, 9, 12, 13, 14, 15 : karindex = 2
+                    Case 16 : karindex = 4
+                    Case 4, 5 : karindex = 3
+                    Case 6 : karindex = 5
+                    Case 7 : karindex = 6
+                End Select
+                'kartype invullen 
+                Select Case fixedloop
+                    Case 1
+                        Kar_Kartype1_cmb.SelectedIndex = karindex
+                    Case 2
+                        Kar_Kartype2_cmb.SelectedIndex = karindex
+                    Case 3
+                        Kar_Kartype3_cmb.SelectedIndex = karindex
+                    Case 4
+                        Kar_Kartype4_cmb.SelectedIndex = karindex
+                End Select
+
+
                 If kar(karlist).fust_per_laag_code = 1 Then   ''deen 
                     Select Case fixedloop
                         Case 1
                             Kar_lagen1_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                            Kar_lagen1_lbl.Text = "deense lagen"
-                            lege_kar = "deense lagen"
+                            'Kar_lagen1_lbl.Text = "deense lagen"
+                            'lege_kar = "deense lagen"
                         Case 2
                             Kar_lagen2_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                            Kar_lagen2_lbl.Text = "deense lagen"
-                            lege_kar = "deense lagen"
+                            'Kar_lagen2_lbl.Text = "deense lagen"
+                            'lege_kar = "deense lagen"
                         Case 3
                             Kar_lagen3_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                            Kar_lagen3_lbl.Text = "deense lagen"
-                            lege_kar = "deense lagen"
+                            ' Kar_lagen3_lbl.Text = "deense lagen"
+                            'lege_kar = "deense lagen"
                         Case 4
                             Kar_lagen4_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                            Kar_lagen4_lbl.Text = "deense lagen"
-                            lege_kar = "deense lagen"
+                            'Kar_lagen4_lbl.Text = "deense lagen"
+                            'lege_kar = "deense lagen"
                     End Select
                 End If
                 If kar(karlist).fust_per_laag_code = 2 Then   'veilingkar 
                     Select Case fixedloop
                         Case 1
                             Kar_lagen1_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                            Kar_lagen1_lbl.Text = "extra platen en 1 kar"
-                            lege_kar = "extra platen en 1 kar"
+                            'Kar_lagen1_lbl.Text = "extra platen en 1 kar"
+                           ' lege_kar = "extra platen en 1 kar"
                         Case 2
                             Kar_lagen2_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                            Kar_lagen2_lbl.Text = "extra platen en 1 kar"
-                            lege_kar = "extra platen en 1 kar"
+                            ' Kar_lagen2_lbl.Text = "extra platen en 1 kar"
+                           ' lege_kar = "extra platen en 1 kar"
                         Case 3
                             Kar_lagen3_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                            Kar_lagen3_lbl.Text = "extra platen en 1 kar"
-                            lege_kar = "extra platen en 1 kar"
+                            '  Kar_lagen3_lbl.Text = "extra platen en 1 kar"
+                          '  lege_kar = "extra platen en 1 kar"
                         Case 4
                             Kar_lagen4_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                            Kar_lagen4_lbl.Text = "extra platen en 1 kar"
-                            lege_kar = "extra platen en 1 kar"
+                            ' Kar_lagen4_lbl.Text = "extra platen en 1 kar"
+                            ' lege_kar = "extra platen en 1 kar"
                     End Select
                 End If
                 If kar(karlist).fust_per_laag_code = 3 Then   'pallets e.d.
                     Select Case fixedloop
                         Case 1
                             Kar_lagen1_txt.Text = ""
-                            Kar_lagen1_lbl.Text = "N.V.T."
-                            lege_kar = "N.V.T."
+                            '  Kar_lagen1_lbl.Text = "N.V.T."
+                          '  lege_kar = "N.V.T."
                         Case 2
                             Kar_lagen2_txt.Text = ""
-                            Kar_lagen2_lbl.Text = "N.V.T."
-                            lege_kar = "N.V.T."
+                            '  Kar_lagen2_lbl.Text = "N.V.T."
+                           ''   lege_kar = "N.V.T."
                         Case 3
                             Kar_lagen3_txt.Text = ""
-                            Kar_lagen3_lbl.Text = "N.V.T."
-                            lege_kar = "N.V.T."
+                            '  Kar_lagen3_lbl.Text = "N.V.T."
+                          '  lege_kar = "N.V.T."
                         Case 4
                             Kar_lagen4_txt.Text = ""
-                            Kar_lagen4_lbl.Text = "N.V.T."
-                            lege_kar = "N.V.T."
+                            '  Kar_lagen4_lbl.Text = "N.V.T."
+                            '  lege_kar = "N.V.T."
                     End Select
                 End If
                 If KarHeaders(karloop).kar_type = 10 Or KarHeaders(karloop).kar_type = 11 Then 'DV's 
@@ -28418,25 +28439,25 @@ exit_verwerk:
                         Case 1
                             If startkar = 1 Then
                                 Kar_lagen1_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                                Kar_lagen1_lbl.Text = "extra platen en 1 kar"
-                                lege_kar = "extra platen en 1 kar"
+                                '   Kar_lagen1_lbl.Text = "extra platen en 1 kar"
+                                '    lege_kar = "extra platen en 1 kar"
                             Else
                                 Kar_lagen1_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                                Kar_lagen1_lbl.Text = "deense lagen"
-                                lege_kar = "deense lagen"
+                                '   Kar_lagen1_lbl.Text = "deense lagen"
+                                '   lege_kar = "deense lagen"
                             End If
                         Case 2
                             Kar_lagen2_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                            Kar_lagen2_lbl.Text = "deense lagen"
-                            lege_kar = "deense lagen"
+                            'Kar_lagen2_lbl.Text = "deense lagen"
+                           'lege_kar = "deense lagen"
                         Case 3
                             Kar_lagen3_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                            Kar_lagen3_lbl.Text = "deense lagen"
-                            lege_kar = "deense lagen"
+                            ' Kar_lagen3_lbl.Text = "deense lagen"
+                           ' lege_kar = "deense lagen"
                         Case 4
                             Kar_lagen4_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                            Kar_lagen4_lbl.Text = "deense lagen"
-                            lege_kar = "deense lagen"
+                            ' Kar_lagen4_lbl.Text = "deense lagen"
+                            ' lege_kar = "deense lagen"
                     End Select
                 End If
 
@@ -28666,22 +28687,33 @@ exit_verwerk:
                 End Select
 
             Else
-                'erase empty grids 
+                'erase empty grids
+
+                Select Case fixedloop
+                    Case 1
+                        Kar_Kartype1_cmb.SelectedIndex = karindex
+                    Case 2
+                        Kar_Kartype2_cmb.SelectedIndex = karindex
+                    Case 3
+                        Kar_Kartype3_cmb.SelectedIndex = karindex
+                    Case 4
+                        Kar_Kartype4_cmb.SelectedIndex = karindex
+                End Select
 
 
                 Select Case fixedloop 'erase kartypes
                     Case 1
                         Kar_lagen1_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                        Kar_lagen1_lbl.Text = lege_kar
+                        'Kar_lagen1_lbl.Text = lege_kar
                     Case 2
                         Kar_lagen2_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                        Kar_lagen2_lbl.Text = lege_kar
+                       ' Kar_lagen2_lbl.Text = lege_kar
                     Case 3
                         Kar_lagen3_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                        Kar_lagen3_lbl.Text = lege_kar
+                       ' Kar_lagen3_lbl.Text = lege_kar
                     Case 4
                         Kar_lagen4_txt.Text = Trim(Str(KarHeaders(karloop).aantal_lagen))
-                        Kar_lagen4_lbl.Text = lege_kar
+                        '  Kar_lagen4_lbl.Text = lege_kar
                 End Select
                 Select Case fixedloop  'erase extra vars
                     Case 1
@@ -28990,8 +29022,9 @@ exit_verwerk:
                         If KarHeaders(karcounter).tag = True Then
 
                             'Execute Query
-                            Cmd.CommandText = "UPDATE orderkarren SET aantal_lagen=?,aantal_lagenlock=?,sdf_flag=?,wps_status=?,vervoer_flag=?,barcode=?,overgooien_naar=?,overgooien_hierop=? WHERE kar_id=?"
+                            Cmd.CommandText = "UPDATE orderkarren SET kar_type=?,aantal_lagen=?,aantal_lagenlock=?,sdf_flag=?,wps_status=?,vervoer_flag=?,barcode=?,overgooien_naar=?,overgooien_hierop=? WHERE kar_id=?"
                             Cmd.Parameters.Clear()
+                            Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).kar_type)
                             Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).aantal_lagen)
                             Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).aantal_lagenlock)
                             Cmd.Parameters.AddWithValue("", KarHeaders(karcounter).sdf_flag)
@@ -29071,6 +29104,9 @@ exit_verwerk:
 
 
     Private Sub Kar_opslaanMainNew()
+
+
+        ' NOT USED ATM
 
         Dim orderyear As String = Trim(Str(Year(karindeling_date)))
         If staticyear = True Then orderyear = ""
@@ -30052,8 +30088,15 @@ exit_verwerk:
             aantal_lagen = 0
         Else
             aantal_lagen = laag
+
+            If aantal_lagen = 1 Then
+                If KarHeaders(kar_nr).kar_type = 1 Or KarHeaders(kar_nr).kar_type = 2 Or KarHeaders(kar_nr).kar_type = 4 Or KarHeaders(kar_nr).kar_type = 5 Then
+                    aantal_lagen = 2
+                End If
+            End If
+
         End If
-        Return aantal_lagen
+            Return aantal_lagen
     End Function
     Private Function Bereken_Aantal_LagenVkar(ByVal kar_nr As Integer) As Integer
         Dim aantal_lagen = 0
@@ -31190,21 +31233,32 @@ exit_verwerk:
             Case 1
                 karnr = Val(Kar_nummer1_lbl.Text)
                 kar_overgooien1_naar_but.BackColor = Color.Green
+                Kar_lagen1_txt.Text = "0"
+                Kar_Kartype1_cmb.SelectedIndex = 2
             Case 2
                 karnr = Val(Kar_nummer2_lbl.Text)
                 kar_overgooien2_naar_but.BackColor = Color.Green
+                Kar_lagen2_txt.Text = "0"
+                Kar_Kartype2_cmb.SelectedIndex = 2
             Case 3
                 karnr = Val(Kar_nummer3_lbl.Text)
                 kar_overgooien3_naar_but.BackColor = Color.Green
+                Kar_lagen3_txt.Text = "0"
+                Kar_Kartype3_cmb.SelectedIndex = 2
             Case 4
                 karnr = Val(Kar_nummer4_lbl.Text)
                 kar_overgooien4_naar_but.BackColor = Color.Green
+                Kar_lagen4_txt.Text = "0"
+                Kar_Kartype4_cmb.SelectedIndex = 2
         End Select
 
         Dim barcode As String = KarHeaders(karnr).barcode
         overgooier = barcode  'global
 
         KarHeaders(karnr).overgooien_naar = barcode
+
+        KarHeaders(karnr).kar_type = 8  'N.V.T.
+        KarHeaders(karnr).aantal_lagen = 0
 
 
     End Sub
@@ -31263,7 +31317,7 @@ exit_verwerk:
 
     End Sub
 
-    Private Sub kar_vergooien_wis_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles kar_overgooien1_wis_but.Click, kar_overgooien2_wis_but.Click, kar_overgooien3_wis_but.Click, kar_overgooien4_wis_but.Click
+    Private Sub kar_overgooien_wis_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles kar_overgooien1_wis_but.Click, kar_overgooien2_wis_but.Click, kar_overgooien3_wis_but.Click, kar_overgooien4_wis_but.Click
         Dim btn As Button
         Dim karnr As Integer = 0
         btn = CType(sender, Button)
@@ -31335,6 +31389,63 @@ exit_verwerk:
 
 
 
+
+
+    End Sub
+
+    Private Sub Kar_Kartype_cmb_SelectedIndexChanged(sender As Object, e As EventArgs) Handles Kar_Kartype1_cmb.SelectedIndexChanged, Kar_Kartype2_cmb.SelectedIndexChanged, Kar_Kartype3_cmb.SelectedIndexChanged, Kar_Kartype4_cmb.SelectedIndexChanged
+        Dim btn As ComboBox
+        Dim karnr As Integer = -1
+        btn = CType(sender, ComboBox)
+        Dim selectie = Val(btn.Tag)
+        Dim selectedindex As Integer = 0
+        Select Case selectie
+            Case 1
+                karnr = Val(Kar_nummer1_lbl.Text)
+                selectedindex = Kar_Kartype1_cmb.SelectedIndex
+            Case 2
+                karnr = Val(Kar_nummer2_lbl.Text)
+                selectedindex = Kar_Kartype2_cmb.SelectedIndex
+            Case 3
+                karnr = Val(Kar_nummer3_lbl.Text)
+                selectedindex = Kar_Kartype3_cmb.SelectedIndex
+            Case 4
+                karnr = Val(Kar_nummer4_lbl.Text)
+                selectedindex = Kar_Kartype4_cmb.SelectedIndex
+        End Select
+
+        If karnr = -1 Then Exit Sub
+        Dim kartype As Integer = 0
+
+        Select Case selectedindex
+            Case 0 : kartype = 2
+            Case 1 : kartype = 3
+            Case 2 : kartype = 8
+            Case 3 : kartype = 5
+            Case 4 : kartype = 16
+            Case 5 : kartype = 6
+            Case 6 : kartype = 7
+        End Select
+
+        KarHeaders(karnr).kar_type = kartype
+        Dim aantal_lagen As Integer = Bereken_Aantal_Lagen(karnr)
+
+        If kartype = 3 Then aantal_lagen = aantal_lagen - 4
+        If aantal_lagen < 0 Then aantal_lagen = 0
+        If kartype > 5 Then aantal_lagen = 0
+        KarHeaders(karnr).aantal_lagen = aantal_lagen
+
+
+        Select Case selectie
+            Case 1
+                Kar_lagen1_txt.Text = Trim(Str(KarHeaders(karnr).aantal_lagen))
+            Case 2
+                Kar_lagen2_txt.Text = Trim(Str(KarHeaders(karnr).aantal_lagen))
+            Case 3
+                Kar_lagen3_txt.Text = Trim(Str(KarHeaders(karnr).aantal_lagen))
+            Case 4
+                Kar_lagen4_txt.Text = Trim(Str(KarHeaders(karnr).aantal_lagen))
+        End Select
 
 
     End Sub
@@ -40004,6 +40115,8 @@ skip_verwerkline:
 
 
 
+
+
 #End Region
 
 
@@ -40073,7 +40186,7 @@ Public Class DetectActivity
 End Class
 Public Module GlobalVariables
 
-    Friend BoekVersion As String = "Version 5.0.4"
+    Friend BoekVersion As String = "Version 5.0.5"
 
 
     Friend postgress As Boolean = False

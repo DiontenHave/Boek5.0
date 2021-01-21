@@ -28,8 +28,7 @@ Partial Class Form16
         Me.EABAnnuleren_but = New System.Windows.Forms.Button()
         Me.TaskTimer = New System.Windows.Forms.Timer(Me.components)
         Me.StatusRapport_but = New System.Windows.Forms.Button()
-        Me.HerstelStatusRapport_but = New System.Windows.Forms.Button()
-        Me.Ok_but = New System.Windows.Forms.Button()
+        Me.HerstelFoutStatus_but = New System.Windows.Forms.Button()
         Me.KarCorrigeren_but = New System.Windows.Forms.Button()
         Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
         Me.View_txt = New System.Windows.Forms.TextBox()
@@ -56,7 +55,7 @@ Partial Class Form16
         '
         'EABAnnuleren_but
         '
-        Me.EABAnnuleren_but.Location = New System.Drawing.Point(799, 246)
+        Me.EABAnnuleren_but.Location = New System.Drawing.Point(406, 302)
         Me.EABAnnuleren_but.Name = "EABAnnuleren_but"
         Me.EABAnnuleren_but.Size = New System.Drawing.Size(387, 50)
         Me.EABAnnuleren_but.TabIndex = 3
@@ -76,36 +75,28 @@ Partial Class Form16
         Me.StatusRapport_but.Text = "Floriday status rapport"
         Me.StatusRapport_but.UseVisualStyleBackColor = True
         '
-        'HerstelStatusRapport_but
+        'HerstelFoutStatus_but
         '
-        Me.HerstelStatusRapport_but.Location = New System.Drawing.Point(406, 246)
-        Me.HerstelStatusRapport_but.Name = "HerstelStatusRapport_but"
-        Me.HerstelStatusRapport_but.Size = New System.Drawing.Size(387, 50)
-        Me.HerstelStatusRapport_but.TabIndex = 6
-        Me.HerstelStatusRapport_but.Text = "Floriday herstel fout status"
-        Me.HerstelStatusRapport_but.UseVisualStyleBackColor = True
-        '
-        'Ok_but
-        '
-        Me.Ok_but.Location = New System.Drawing.Point(406, 659)
-        Me.Ok_but.Name = "Ok_but"
-        Me.Ok_but.Size = New System.Drawing.Size(387, 47)
-        Me.Ok_but.TabIndex = 7
-        Me.Ok_but.Text = "OK"
-        Me.Ok_but.UseVisualStyleBackColor = True
+        Me.HerstelFoutStatus_but.Location = New System.Drawing.Point(406, 246)
+        Me.HerstelFoutStatus_but.Name = "HerstelFoutStatus_but"
+        Me.HerstelFoutStatus_but.Size = New System.Drawing.Size(387, 50)
+        Me.HerstelFoutStatus_but.TabIndex = 6
+        Me.HerstelFoutStatus_but.Text = "Floriday herstel fout status"
+        Me.HerstelFoutStatus_but.UseVisualStyleBackColor = True
         '
         'KarCorrigeren_but
         '
-        Me.KarCorrigeren_but.Location = New System.Drawing.Point(406, 302)
+        Me.KarCorrigeren_but.Location = New System.Drawing.Point(799, 302)
         Me.KarCorrigeren_but.Name = "KarCorrigeren_but"
         Me.KarCorrigeren_but.Size = New System.Drawing.Size(387, 50)
         Me.KarCorrigeren_but.TabIndex = 8
         Me.KarCorrigeren_but.Text = "Karren en lagen corrigeren (kar is al weg)"
         Me.KarCorrigeren_but.UseVisualStyleBackColor = True
+        Me.KarCorrigeren_but.Visible = False
         '
         'ProgressBar1
         '
-        Me.ProgressBar1.Location = New System.Drawing.Point(799, 302)
+        Me.ProgressBar1.Location = New System.Drawing.Point(799, 246)
         Me.ProgressBar1.Name = "ProgressBar1"
         Me.ProgressBar1.Size = New System.Drawing.Size(387, 50)
         Me.ProgressBar1.TabIndex = 9
@@ -116,19 +107,18 @@ Partial Class Form16
         Me.View_txt.Multiline = True
         Me.View_txt.Name = "View_txt"
         Me.View_txt.ScrollBars = System.Windows.Forms.ScrollBars.Both
-        Me.View_txt.Size = New System.Drawing.Size(1394, 266)
+        Me.View_txt.Size = New System.Drawing.Size(1394, 293)
         Me.View_txt.TabIndex = 10
         '
         'Form16
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(1419, 718)
+        Me.ClientSize = New System.Drawing.Size(1419, 680)
         Me.Controls.Add(Me.View_txt)
         Me.Controls.Add(Me.ProgressBar1)
         Me.Controls.Add(Me.KarCorrigeren_but)
-        Me.Controls.Add(Me.Ok_but)
-        Me.Controls.Add(Me.HerstelStatusRapport_but)
+        Me.Controls.Add(Me.HerstelFoutStatus_but)
         Me.Controls.Add(Me.StatusRapport_but)
         Me.Controls.Add(Me.EABAnnuleren_but)
         Me.Controls.Add(Me.KarAanpassen_but)
@@ -146,8 +136,7 @@ Partial Class Form16
     Friend WithEvents EABAnnuleren_but As Button
     Friend WithEvents TaskTimer As Timer
     Friend WithEvents StatusRapport_but As Button
-    Friend WithEvents HerstelStatusRapport_but As Button
-    Friend WithEvents Ok_but As Button
+    Friend WithEvents HerstelFoutStatus_but As Button
     Friend WithEvents KarCorrigeren_but As Button
     Friend WithEvents ProgressBar1 As ProgressBar
     Friend WithEvents View_txt As TextBox
