@@ -7,6 +7,7 @@ Public Class Form16
     Private DVtask As Integer = 0
     Private GlobalHeader_id As Integer = 0
     Private GlobalKar_id As Integer = 0
+    Private GlobalBriefnummer As String = ""
     Private GlobalActie As String = "INIT"
 
     Private GetDeliveryStatus As Boolean = False
@@ -99,6 +100,7 @@ Public Class Form16
                     Dim deliveryNotFound As Boolean = True
                     Dim kar_type As Integer = CHint(reader("kar_type"))
                     Dim aantal_lagen As Integer = CHint(reader("aantal_lagen"))
+                    Dim briefnummer As String = ""
 
                     Dim aantal_platen As Integer = aantal_lagen
                     If kar_type = 1 Or kar_type = 2 Or kar_type = 4 Or kar_type = 5 Then
@@ -114,6 +116,7 @@ Public Class Form16
 
                         deliveryOrderId = CHstr(reader2("deliveryOrderId"))
                         fulfillmentOrderId = CHstr(reader2("fulfillmentOrderId"))
+                        briefnummer = CHstr(reader2("briefnummer"))
 
                         'FFO info
                         If fulfillmentOrderId <> "" Then
@@ -192,7 +195,7 @@ Public Class Form16
                     End If
                     gridfill(12) = status
                     gridfill(13) = floriday_printflag
-
+                    gridfill(14) = briefnummer
 
 
                     karren_flx.AddItem(gridfill)
@@ -547,7 +550,8 @@ Public Class Form16
                     End Try
 
                     Exit For
-
+                Else
+                    MsgBox("Karren en platen zijn gelijk, aanpassen niet nodig")
                 End If
             End If
         Next
@@ -560,19 +564,115 @@ Public Class Form16
     End Sub
 
     Private Sub KarCorrigeren_but_Click(sender As Object, e As EventArgs) Handles KarCorrigeren_but.Click
+
         Dim kar_id As Integer = -1
         For i = 1 To karren_flx.Rows.Count - 1
             If karren_flx.Item(i, 2) = True Then
                 kar_id = CInt(karren_flx(i, 3))
+                Dim oldplaten As Integer = CInt(karren_flx.Item(i, 7))
+                Dim newplaten As Integer = CInt(karren_flx.Item(i, 8))
+                Dim kartype As String = CHstr(karren_flx.Item(i, 6))
+                GlobalBriefnummer = CHstr(karren_flx.Item(i, 14))
+                Dim kar_aanpassen As Boolean = False
+                If Val(kartype) > 0 Then
+                    kar_aanpassen = True
+                End If
+                If oldplaten <> newplaten Then
+                    kar_aanpassen = True
+                End If
 
-                GlobalActie = "CORRIGEREN"
+                If kar_aanpassen = True Then
 
-                DeleteDelivery = 1
-                DeleteFulFillment = 1
-                GlobalKar_id = kar_id
-                StartTimer()
+                    Dim query As String = ""
+                    Try
+                        'Open Connection
+                        Using Conn As New OdbcConnection(ConnString)
+                            Conn.Open()
 
-                Exit For
+                            Dim cmd As New OdbcCommand("", Conn)
+                            Dim cmd2 As New OdbcCommand("", Conn)
+                            Dim cmd3 As New OdbcCommand("", Conn)
+                            Dim reader2 As OdbcDataReader
+                            Dim reader3 As OdbcDataReader
+
+
+                            'Kar_type
+                            'Aantal_lagen
+                            'Aantal_lagenLock
+                            Dim doe_correctie As Boolean = True
+
+                            Dim fulfillmentOrderId As String = ""
+                            query = "SELECT * From floriday_taskrun WHERE kar_id =" + Str(kar_id)
+                            cmd2.CommandText = query
+                            reader2 = cmd2.ExecuteReader()
+                            If reader2.HasRows Then
+                                reader2.Read()
+                                fulfillmentOrderId = CHstr(reader2("fulfillmentOrderId"))
+                            End If
+                            query = "SELECT * From floriday_fulfillmentorderssync_logisticlabelcodes WHERE value ='" + GlobalBriefnummer + "'"
+                            cmd2.CommandText = query
+                            reader2 = cmd2.ExecuteReader()
+                            If reader2.HasRows Then
+                                reader2.Read()
+                                Dim parent_id As Integer = CHint(reader2("parent_id"))
+
+                                query = "SELECT * From fulfillmentOrderId WHERE id =" + Str(parent_id)
+                                cmd3.CommandText = query
+                                reader3 = cmd3.ExecuteReader()
+                                If reader3.HasRows Then
+                                    reader3.Read()
+                                    Dim fulfillmentOrderId2 As String = CHstr(reader3("fulfillmentOrderId"))
+                                    If fulfillmentOrderId <> fulfillmentOrderId2 Then
+                                        MsgBox("Briefnummer komt niet overeen met briefnummers in EAB, correctie niet mogelijk")
+                                        doe_correctie = False
+                                    End If
+                                End If
+
+                            Else
+                                MsgBox("Briefnummer niet gevonden, aanpassing niet mogelijk")
+                                doe_correctie = False
+                            End If
+
+                            If doe_correctie = True Then
+
+
+                                Dim kartypeint As Integer = CInt(Val(kartype))
+                                Dim aantal_lagen As Integer = newplaten
+                                If (kartypeint = 1 Or kartypeint = 2 Or kartypeint = 4 Or kartypeint = 5) And aantal_lagen > 0 Then
+                                    aantal_lagen = aantal_lagen + 1
+                                End If
+                                If kartypeint = 8 Then aantal_lagen = 0
+                                If kartypeint = 0 Then
+                                    'kar niet aanpassen
+                                    query = "UPDATE orderkarren SET aantal_lagen=?,aantal_lagenlock=true WHERE kar_id=" + Str(kar_id)
+                                    cmd.CommandText = query
+                                    cmd.Parameters.Clear()
+                                    cmd.Parameters.AddWithValue("", aantal_lagen)
+                                    cmd.ExecuteNonQuery()
+                                Else
+                                    query = "UPDATE orderkarren SET Kar_type=?, aantal_lagen=?,aantal_lagenlock=true WHERE kar_id=" + Str(kar_id)
+                                    cmd.CommandText = query
+                                    cmd.Parameters.Clear()
+                                    cmd.Parameters.AddWithValue("", kartypeint)
+                                    cmd.Parameters.AddWithValue("", aantal_lagen)
+                                    cmd.ExecuteNonQuery()
+
+                                End If
+                                GlobalActie = "CORRIGEREN"
+                                GlobalKar_id = kar_id
+                                StartTimer()
+                            End If
+                        End Using
+                    Catch ex As Exception
+                        MessageBox.Show("Fout: FD Kar aanpassen" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+                    End Try
+
+                    Exit For
+
+                Else
+                    MsgBox("Karren en platen zijn gelijk, corrigeren niet nodig")
+
+                End If
             End If
         Next
         If kar_id = -1 Then
@@ -743,6 +843,7 @@ Public Class Form16
                             reader3.Close()
                         End If
                     End If
+
                     If ffstatus = "NOTFOUND" Then
                         View_txt.Text = View_txt.Text + "Fulfillment order kan niet gevonden worden, Fulfillment(EAB) verwijderen niet nodig." + vbNewLine
                         DeleteFulFillment = 0
@@ -829,49 +930,86 @@ Public Class Form16
                     DeleteFulFillment = 3
                 End If
 
-                'If GlobalActie = "CORRIGEREN" Then
-
-                '    query = "INSERT INTO floriday_fulfillmentorders_corrections(correctionId,status,creationDateTime,lastModifiedDateTime,crc,crc_delete) VALUES (?,?,?,?,?,?)"
-                '    cmd2.CommandText = query
-                '    cmd2.Parameters.Clear()
-
-                '    Dim newid As String = System.Guid.NewGuid().ToString()
-
-                '    cmd2.Parameters.AddWithValue("", newid)
-                '    cmd2.Parameters.AddWithValue("", "")
-                '    cmd2.Parameters.AddWithValue("", Format(Now, "yy-MM-dd HH:mm:ss"))
-                '    cmd2.Parameters.AddWithValue("", Format(Now, "yy-MM-dd HH:mm:ss"))
-                '    cmd2.Parameters.AddWithValue("", 0)
-                '    cmd2.Parameters.AddWithValue("", 0)
-                '    cmd2.ExecuteNonQuery()
-
-                '    cmd2.CommandText = "SELECT LAST_INSERT_ID()"
-                '    Dim id As Integer = Convert.ToInt32(cmd2.ExecuteScalar())
-
-                '    query = "INSERT INTO floriday_fulfillmentorders_corrections_loadcarriercorrections(logisticLabelCode,loadCarrierType,numberOfAdditionalLayers,crc,crc_delete,parent_id) VALUES (?,?,?,?,?,?)"
-                '    cmd2.CommandText = query
-                '    cmd2.Parameters.Clear()
-
-                '    cmd2.Parameters.AddWithValue("", briefnummer)
-                '    cmd2.Parameters.AddWithValue("", kar_enum)
-                '    cmd2.Parameters.AddWithValue("", extralagen)
-                '    cmd2.Parameters.AddWithValue("", 0)
-                '    cmd2.Parameters.AddWithValue("", 0)
-                '    cmd2.Parameters.AddWithValue("", id)
-                '    cmd2.ExecuteNonQuery()
+                If GlobalActie = "CORRIGEREN" Then
 
 
-                '    FFtask = Form1.InsertTask(0, 80, "PUT", "fulfillment-orders", fulfillmentOrderId, "corrections", "", "", "", "", "", "", id)
-                '    View_txt.Text = View_txt.Text + "Correctie op brief verstuurd." + vbNewLine
-                '    View_txt.Text = View_txt.Text + "Check of Fulfillment-order is geaccepteerd." + vbNewLine
+                    Dim fulfillmentOrderId As String = ""
+                    query = "SELECT * From floriday_taskrun WHERE kar_id =" + Str(GlobalKar_id)
+                    cmd2.CommandText = query
+                    reader2 = cmd2.ExecuteReader()
+                    If reader2.HasRows Then
+                        reader2.Read()
+                        fulfillmentOrderId = CHstr(reader2("fulfillmentOrderId"))
+                    End If
+                    reader2.Close()
+
+                    query = "INSERT INTO floriday_fulfillmentorders_corrections(correctionId,status,creationDateTime,lastModifiedDateTime,crc,crc_delete) VALUES (?,?,?,?,?,?)"
+                    cmd2.CommandText = query
+                    cmd2.Parameters.Clear()
+
+                    Dim newid As String = System.Guid.NewGuid().ToString()
+
+                    cmd2.Parameters.AddWithValue("", newid)
+                    cmd2.Parameters.AddWithValue("", "")
+                    cmd2.Parameters.AddWithValue("", Format(Now, "yy-MM-dd HH:mm:ss"))
+                    cmd2.Parameters.AddWithValue("", Format(Now, "yy-MM-dd HH:mm:ss"))
+                    cmd2.Parameters.AddWithValue("", 0)
+                    cmd2.Parameters.AddWithValue("", 0)
+                    cmd2.ExecuteNonQuery()
+
+                    cmd2.CommandText = "SELECT LAST_INSERT_ID()"
+                    Dim id As Integer = Convert.ToInt32(cmd2.ExecuteScalar())
+
+                    query = "INSERT INTO floriday_fulfillmentorders_corrections_loadcarriercorrections(logisticLabelCode,loadCarrierType,numberOfAdditionalLayers,crc,crc_delete,parent_id) VALUES (?,?,?,?,?,?)"
+                    cmd2.CommandText = query
+                    cmd2.Parameters.Clear()
+
+                    Dim kar_type As Integer = 0
+                    Dim aantal_lagen As Integer = 4
+
+                    query = "SELECT * From orderkarren WHERE kar_id =" + Str(GlobalKar_id)
+                    cmd2.CommandText = query
+                    reader2 = cmd2.ExecuteReader()
+                    If reader2.HasRows Then
+                        reader2.Read()
+                        kar_type = CHint(reader2("kar_type"))
+                        aantal_lagen = CHint(reader2("aantal_lagen"))
+                    End If
+                    reader2.Close()
+
+                    Dim kar_enum As String = "AUCTION_TROLLEY"
+                    Dim extralagen As Integer = 1
+                    Select Case kar_type
+                        Case 1, 2
+                            kar_enum = "DANISH_TROLLEY"
+                            extralagen = aantal_lagen - 1
+                        Case 3, 13, 14, 15
+                            kar_enum = "AUCTION_TROLLEY"
+                            extralagen = aantal_lagen
+                        Case 4, 5
+                            kar_enum = "DANISH_TROLLEY_NON_CC_RFID"
+                            extralagen = aantal_lagen - 1
+                        Case 8, 9, 10, 11, 12 : kar_enum = "NONE"
+                        Case 6 : kar_enum = "PALLET"
+                        Case 7 : kar_enum = "EURO_PALLET"
+                        Case 16 : kar_enum = "EURO_TROLLEY"
+                    End Select
+
+                    cmd2.Parameters.AddWithValue("", GlobalBriefnummer)
+                    cmd2.Parameters.AddWithValue("", kar_enum)
+                    cmd2.Parameters.AddWithValue("", extralagen)
+                    cmd2.Parameters.AddWithValue("", 0)
+                    cmd2.Parameters.AddWithValue("", 0)
+                    cmd2.Parameters.AddWithValue("", id)
+                    cmd2.ExecuteNonQuery()
 
 
+                    FFtask = Form1.InsertTask(0, 80, "PUT", "fulfillment-orders", fulfillmentOrderId, "corrections", "", "", "", "", "", "", id)
+                    View_txt.Text = View_txt.Text + "Correctie op brief verstuurd." + vbNewLine
+                    View_txt.Text = View_txt.Text + "Check of Fulfillment-order is geaccepteerd." + vbNewLine
 
-                'End If
 
-
-
-
+                End If
 
                 If GetDeliveryStatus = False And GetFulfillmentStatus = False And DeleteDelivery = 0 And DeleteFulFillment = 0 Then
 
@@ -901,10 +1039,10 @@ Public Class Form16
                         Form1.SetNewStatusFlag(Now, GlobalHeader_id, True)
                     End If
 
-                    'If GlobalActie = "CORRIGEREN" Then
-                    '    View_txt.Text = View_txt.Text + "De correctie zal spoedig worden verwerkt, dit kan enige tijd duren (correcties op de veiling zijn traag)." + vbNewLine
-                    '    View_txt.Text = View_txt.Text + "Verwerking klaar." + vbNewLine
-                    'End If
+                    If GlobalActie = "CORRIGEREN" Then
+                        View_txt.Text = View_txt.Text + "De correctie zal spoedig worden verwerkt, dit kan enige tijd duren (correcties op de veiling zijn traag)." + vbNewLine
+                        View_txt.Text = View_txt.Text + "Verwerking klaar." + vbNewLine
+                    End If
 
                     StopTimer()
 

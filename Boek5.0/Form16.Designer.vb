@@ -92,7 +92,6 @@ Partial Class Form16
         Me.KarCorrigeren_but.TabIndex = 8
         Me.KarCorrigeren_but.Text = "Karren en lagen corrigeren (kar is al weg)"
         Me.KarCorrigeren_but.UseVisualStyleBackColor = True
-        Me.KarCorrigeren_but.Visible = False
         '
         'ProgressBar1
         '
