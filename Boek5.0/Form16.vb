@@ -5,6 +5,7 @@ Public Class Form16
 
     Private FFtask As Integer = 0
     Private DVtask As Integer = 0
+    Private CRtask As Integer = 0
     Private GlobalHeader_id As Integer = 0
     Private GlobalKar_id As Integer = 0
     Private GlobalBriefnummer As String = ""
@@ -12,6 +13,7 @@ Public Class Form16
 
     Private GetDeliveryStatus As Boolean = False
     Private GetFulfillmentStatus As Boolean = False
+    Private GetCorrectionStatus As Boolean = False
     Private DeleteDelivery As Integer = 0
     Private DeleteFulFillment As Integer = 0
 
@@ -494,6 +496,13 @@ Public Class Form16
                 Dim oldplaten As Integer = CInt(karren_flx.Item(i, 7))
                 Dim newplaten As Integer = CInt(karren_flx.Item(i, 8))
                 Dim kartype As String = CHstr(karren_flx.Item(i, 6))
+                Dim ffstatus As String = CHstr(karren_flx.Item(i, 12))
+
+                If (ffstatus = "DRAFT" Or ffstatus = "PENDING") Then
+                    MsgBox("De kar kan pas aangepast worden als de fulfillment/EAB de status 'ACCEPTED' heeft")
+                    Exit Sub
+                End If
+
                 Dim kar_aanpassen As Boolean = False
                 If Val(kartype) > 0 Then
                     kar_aanpassen = True
@@ -573,6 +582,14 @@ Public Class Form16
                 Dim newplaten As Integer = CInt(karren_flx.Item(i, 8))
                 Dim kartype As String = CHstr(karren_flx.Item(i, 6))
                 GlobalBriefnummer = CHstr(karren_flx.Item(i, 14))
+
+                Dim ffstatus As String = CHstr(karren_flx.Item(i, 12))
+
+                If (ffstatus = "DRAFT" Or ffstatus = "PENDING") Then
+                    MsgBox("De kar kan pas aangepast worden als de fulfillment/EAB de status 'ACCEPTED' heeft")
+                    Exit Sub
+                End If
+
                 Dim kar_aanpassen As Boolean = False
                 If Val(kartype) > 0 Then
                     kar_aanpassen = True
@@ -609,6 +626,9 @@ Public Class Form16
                                 reader2.Read()
                                 fulfillmentOrderId = CHstr(reader2("fulfillmentOrderId"))
                             End If
+                            reader2.Close()
+
+
                             query = "SELECT * From floriday_fulfillmentorderssync_logisticlabelcodes WHERE value ='" + GlobalBriefnummer + "'"
                             cmd2.CommandText = query
                             reader2 = cmd2.ExecuteReader()
@@ -616,7 +636,7 @@ Public Class Form16
                                 reader2.Read()
                                 Dim parent_id As Integer = CHint(reader2("parent_id"))
 
-                                query = "SELECT * From fulfillmentOrderId WHERE id =" + Str(parent_id)
+                                query = "SELECT * From floriday_fulfillmentorderssync WHERE id =" + Str(parent_id)
                                 cmd3.CommandText = query
                                 reader3 = cmd3.ExecuteReader()
                                 If reader3.HasRows Then
@@ -627,19 +647,21 @@ Public Class Form16
                                         doe_correctie = False
                                     End If
                                 End If
+                                reader3.Close()
 
                             Else
                                 MsgBox("Briefnummer niet gevonden, aanpassing niet mogelijk")
                                 doe_correctie = False
                             End If
+                            reader2.Close()
 
                             If doe_correctie = True Then
 
 
                                 Dim kartypeint As Integer = CInt(Val(kartype))
                                 Dim aantal_lagen As Integer = newplaten
-                                If (kartypeint = 1 Or kartypeint = 2 Or kartypeint = 4 Or kartypeint = 5) And aantal_lagen > 0 Then
-                                    aantal_lagen = aantal_lagen + 1
+                                If (kartypeint = 1 Or kartypeint = 2 Or kartypeint = 4 Or kartypeint = 5) And aantal_lagen > 1 Then
+                                    aantal_lagen = aantal_lagen - 1
                                 End If
                                 If kartypeint = 8 Then aantal_lagen = 0
                                 If kartypeint = 0 Then
@@ -714,12 +736,14 @@ Public Class Form16
                     If reader.HasRows Then
                         reader.Read()
                         Dim xffstatus As Integer = CHint(reader("status"))
+                        Dim errortext As String = CHstr(reader("errortext"))
                         If xffstatus = 2 Then
                             View_txt.Text = View_txt.Text + "Fulfillment POST gechecked" + vbNewLine
                             GetFulfillmentStatus = False
                             FFtask = 0
                         ElseIf xffstatus = 12 Then
                             View_txt.Text = View_txt.Text + "Er is wat mis met de floriday servers, fulfillment check mislukt." + vbNewLine
+                            View_txt.Text = View_txt.Text + "Fout: " + errortext + vbNewLine
                             GetFulfillmentStatus = False
                             FFtask = 0
                         ElseIf xffstatus = 0 Then
@@ -731,7 +755,6 @@ Public Class Form16
                     GetFulfillmentStatus = False
                 End If
 
-
                 If DVtask > 0 Then
                     query = "SELECT * From floriday_tasks WHERE id=" + Str(DVtask)
                     cmd.CommandText = query
@@ -739,12 +762,14 @@ Public Class Form16
                     If reader.HasRows Then
                         reader.Read()
                         Dim dvstatus As Integer = CHint(reader("status"))
+                        Dim errortext As String = CHstr(reader("errortext"))
                         If dvstatus = 2 Then
                             View_txt.Text = View_txt.Text + "Delivery POST gechecked" + vbNewLine
                             GetDeliveryStatus = False
                             DVtask = 0
                         ElseIf dvstatus = 12 Then
                             View_txt.Text = View_txt.Text + "Er is wat mis met de floriday servers, delivery check mislukt." + vbNewLine
+                            View_txt.Text = View_txt.Text + "Fout: " + errortext + vbNewLine
                             GetDeliveryStatus = False
                             DVtask = 0
                         ElseIf dvstatus = 0 Then
@@ -930,7 +955,7 @@ Public Class Form16
                     DeleteFulFillment = 3
                 End If
 
-                If GlobalActie = "CORRIGEREN" Then
+                If GlobalActie = "CORRIGEREN" And CRtask = 0 Then
 
 
                     Dim fulfillmentOrderId As String = ""
@@ -960,9 +985,6 @@ Public Class Form16
                     cmd2.CommandText = "SELECT LAST_INSERT_ID()"
                     Dim id As Integer = Convert.ToInt32(cmd2.ExecuteScalar())
 
-                    query = "INSERT INTO floriday_fulfillmentorders_corrections_loadcarriercorrections(logisticLabelCode,loadCarrierType,numberOfAdditionalLayers,crc,crc_delete,parent_id) VALUES (?,?,?,?,?,?)"
-                    cmd2.CommandText = query
-                    cmd2.Parameters.Clear()
 
                     Dim kar_type As Integer = 0
                     Dim aantal_lagen As Integer = 4
@@ -995,6 +1017,10 @@ Public Class Form16
                         Case 16 : kar_enum = "EURO_TROLLEY"
                     End Select
 
+
+                    query = "INSERT INTO floriday_fulfillmentorders_corrections_loadcarriercorrections(logisticLabelCode,loadCarrierType,numberOfAdditionalLayers,crc,crc_delete,parent_id) VALUES (?,?,?,?,?,?)"
+                    cmd2.CommandText = query
+                    cmd2.Parameters.Clear()
                     cmd2.Parameters.AddWithValue("", GlobalBriefnummer)
                     cmd2.Parameters.AddWithValue("", kar_enum)
                     cmd2.Parameters.AddWithValue("", extralagen)
@@ -1004,14 +1030,41 @@ Public Class Form16
                     cmd2.ExecuteNonQuery()
 
 
-                    FFtask = Form1.InsertTask(0, 80, "PUT", "fulfillment-orders", fulfillmentOrderId, "corrections", "", "", "", "", "", "", id)
+                    CRtask = Form1.InsertTask(0, 80, "PUT", "fulfillment-orders", fulfillmentOrderId, "corrections", "", "", "", "", "", "", id)
                     View_txt.Text = View_txt.Text + "Correctie op brief verstuurd." + vbNewLine
                     View_txt.Text = View_txt.Text + "Check of Fulfillment-order is geaccepteerd." + vbNewLine
-
+                    GetCorrectionStatus = True
 
                 End If
 
-                If GetDeliveryStatus = False And GetFulfillmentStatus = False And DeleteDelivery = 0 And DeleteFulFillment = 0 Then
+                If CRtask > 0 Then
+                    query = "SELECT * From floriday_tasks WHERE id=" + Str(CRtask)
+                    cmd.CommandText = query
+                    reader = cmd.ExecuteReader()
+                    If reader.HasRows Then
+                        reader.Read()
+                        Dim xffstatus As Integer = CHint(reader("status"))
+                        Dim errortext As String = CHstr(reader("errortext"))
+                        If xffstatus = 2 Then
+                            View_txt.Text = View_txt.Text + "Correction POST gechecked" + vbNewLine
+                            GetCorrectionStatus = False
+                            CRtask = 0
+                        ElseIf xffstatus = 12 Then
+                            View_txt.Text = View_txt.Text + "Er is wat mis met de floriday servers, correction check mislukt." + vbNewLine
+                            View_txt.Text = View_txt.Text + "Fout: " + errortext + vbNewLine
+                            GetCorrectionStatus = False
+                            CRtask = 0
+                        ElseIf xffstatus = 0 Then
+                            View_txt.Text = View_txt.Text + "Correction POST staat nog in de wachtrij." + vbNewLine
+                        End If
+                    End If
+                    reader.Close()
+                Else
+                    GetCorrectionStatus = False
+                End If
+
+
+                If GetDeliveryStatus = False And GetFulfillmentStatus = False And GetCorrectionStatus = False And DeleteDelivery = 0 And DeleteFulFillment = 0 Then
 
 
                     If GlobalActie = "AANPASSEN" Or GlobalActie = "ANNULEREN" Or GlobalActie = "RESETFOUT" Then
@@ -1040,7 +1093,6 @@ Public Class Form16
                     End If
 
                     If GlobalActie = "CORRIGEREN" Then
-                        View_txt.Text = View_txt.Text + "De correctie zal spoedig worden verwerkt, dit kan enige tijd duren (correcties op de veiling zijn traag)." + vbNewLine
                         View_txt.Text = View_txt.Text + "Verwerking klaar." + vbNewLine
                     End If
 

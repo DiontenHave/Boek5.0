@@ -43,14 +43,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Boek5.0.exe" size="1375704">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Boek5.0.exe" size="1379800">
       <assemblyIdentity name="Boek5.0" version="5.0.0.0" language="neutral" processorArchitecture="x86" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>+CIxoICGmPjk04QTfHJls/yVSCUXXyPXr20uZqdbc5Q=</dsig:DigestValue>
+        <dsig:DigestValue>FPaqymqD4ieSgSQ0IcC7zYkUPS+Ji3zyc3xjviMuzNA=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

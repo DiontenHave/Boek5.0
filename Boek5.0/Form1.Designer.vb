@@ -2480,7 +2480,7 @@ Partial Class Form1
         '
         Me.KarCommand4_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.KarCommand4_cmb.FormattingEnabled = True
-        Me.KarCommand4_cmb.Items.AddRange(New Object() {"Print pakbon", "Print brief via Floriday", "Print brief via SDF", "Floriday aanpassing", "Floriday rapport", "Reset floriday fout"})
+        Me.KarCommand4_cmb.Items.AddRange(New Object() {"Print pakbon", "Print brief via Floriday", "Print brief via SDF"})
         Me.KarCommand4_cmb.Location = New System.Drawing.Point(705, 463)
         Me.KarCommand4_cmb.Name = "KarCommand4_cmb"
         Me.KarCommand4_cmb.Size = New System.Drawing.Size(168, 21)
@@ -2501,7 +2501,7 @@ Partial Class Form1
         '
         Me.KarCommand3_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.KarCommand3_cmb.FormattingEnabled = True
-        Me.KarCommand3_cmb.Items.AddRange(New Object() {"Print pakbon", "Print brief via Floriday", "Print brief via SDF", "Floriday aanpassing", "Floriday rapport", "Reset floriday fout"})
+        Me.KarCommand3_cmb.Items.AddRange(New Object() {"Print pakbon", "Print brief via Floriday", "Print brief via SDF"})
         Me.KarCommand3_cmb.Location = New System.Drawing.Point(474, 465)
         Me.KarCommand3_cmb.Name = "KarCommand3_cmb"
         Me.KarCommand3_cmb.Size = New System.Drawing.Size(168, 21)
@@ -2522,7 +2522,7 @@ Partial Class Form1
         '
         Me.KarCommand2_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.KarCommand2_cmb.FormattingEnabled = True
-        Me.KarCommand2_cmb.Items.AddRange(New Object() {"Print pakbon", "Print brief via Floriday", "Print brief via SDF", "Floriday aanpassing", "Floriday rapport", "Reset floriday fout"})
+        Me.KarCommand2_cmb.Items.AddRange(New Object() {"Print pakbon", "Print brief via Floriday", "Print brief via SDF"})
         Me.KarCommand2_cmb.Location = New System.Drawing.Point(245, 466)
         Me.KarCommand2_cmb.Name = "KarCommand2_cmb"
         Me.KarCommand2_cmb.Size = New System.Drawing.Size(168, 21)
@@ -2543,7 +2543,7 @@ Partial Class Form1
         '
         Me.KarCommand1_cmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.KarCommand1_cmb.FormattingEnabled = True
-        Me.KarCommand1_cmb.Items.AddRange(New Object() {"Print pakbon", "Print brief via Floriday", "Print brief via SDF", "Floriday aanpassing", "Floriday rapport", "Reset floriday fout"})
+        Me.KarCommand1_cmb.Items.AddRange(New Object() {"Print pakbon", "Print brief via Floriday", "Print brief via SDF"})
         Me.KarCommand1_cmb.Location = New System.Drawing.Point(11, 465)
         Me.KarCommand1_cmb.Name = "KarCommand1_cmb"
         Me.KarCommand1_cmb.Size = New System.Drawing.Size(168, 21)
