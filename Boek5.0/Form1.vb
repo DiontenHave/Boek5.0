@@ -4088,7 +4088,7 @@ Public Class Form1
                 Do While recalcReader.Read
                     Dim header_id As Integer = CHint(recalcReader("header_id"))
                     SetNewStatusFlag(Now, header_id, False)
-                    Dim cmdrecalcset As New OdbcCommand("update orderheaders set recalc_status=0 WHERE orderheader=" + Str(header_id), Conn)
+                    Dim cmdrecalcset As New OdbcCommand("update orderheaders set recalc_status=0 WHERE header_id=" + Str(header_id), Conn)
                     cmdrecalcset.ExecuteNonQuery()
                 Loop
 
