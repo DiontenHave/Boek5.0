@@ -4439,9 +4439,9 @@ Partial Class Form1
         Me.inst_database_boekjenp.AutoSize = True
         Me.inst_database_boekjenp.Location = New System.Drawing.Point(272, 129)
         Me.inst_database_boekjenp.Name = "inst_database_boekjenp"
-        Me.inst_database_boekjenp.Size = New System.Drawing.Size(81, 17)
+        Me.inst_database_boekjenp.Size = New System.Drawing.Size(96, 17)
         Me.inst_database_boekjenp.TabIndex = 72
-        Me.inst_database_boekjenp.Text = "Test Server"
+        Me.inst_database_boekjenp.Text = "Test JP Server"
         Me.inst_database_boekjenp.UseVisualStyleBackColor = True
         '
         'inst_boekreload_lbl

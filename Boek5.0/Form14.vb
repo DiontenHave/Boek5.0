@@ -17,7 +17,7 @@ Public Class Form14
     '  "piecesPerPackage": 0,
     '  "reason": "string"
     '}
-
+    Private fdtask As Integer = 0
 
     Public Sub Init(OrderlineId As String)
         Dim query As String = ""
@@ -56,6 +56,10 @@ Public Class Form14
                     aantalperfust2.Text = Str(selectedPackingConfiguration_piecesPerPackage)
 
                     OrderID_lbl.Text = OrderlineId
+
+                    order_aanpassen_but.Enabled = True
+                    annuleren_but.Enabled = True
+
                 End If
                 Reader2.Close()
 
@@ -77,6 +81,30 @@ Public Class Form14
                 Dim answer As DialogResult = MessageBox.Show("Weet u zeker dat deze order gewist moet worden", "Order wissen?", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
                 If answer = vbYes Then
 
+                    Dim aantal As Integer = CInt(Val(aantal_aanpassing_txt.Text))
+                    If aantal = 0 Then
+                        MsgBox("Aantal moet bij aanpassen groter dan nul zijn.")
+                        Exit Sub
+                    End If
+
+                    Dim prijs As Double = CVal(prijs_aanpassing_txt.Text)
+                    If prijs <= 0 Then
+                        MsgBox("Prijs moet bij aanpassen groter dan nul zijn.")
+                        Exit Sub
+                    End If
+
+                    Dim fustcode As Integer = CInt(Val(fustcode_aanpassing_txt.Text))
+                    If fustcode <= 0 Then
+                        MsgBox("Fout bij fustcode.")
+                        Exit Sub
+                    End If
+
+                    Dim apf As Integer = CInt(Val(apf_aanpassing_txt.Text))
+                    If apf <= 0 Then
+                        MsgBox("Fout bij aantal per fust")
+                        Exit Sub
+                    End If
+
                     query = "INSERT INTO floriday_salesorders_corrections(correctionId,correctionType," _
                            & "numberOfPieces,pricePerPiece_currency,pricePerPiece_value," _
                            & "package_vbnPackageCode,package_customPackageId,piecesPerPackage," _
@@ -88,12 +116,12 @@ Public Class Form14
 
                     Cmd2.Parameters.AddWithValue("", newid)
                     Cmd2.Parameters.AddWithValue("", "CANCELLATION")
-                    Cmd2.Parameters.AddWithValue("", -1)
+                    Cmd2.Parameters.AddWithValue("", aantal)
+                    Cmd2.Parameters.AddWithValue("", "EUR")
+                    Cmd2.Parameters.AddWithValue("", prijs)
+                    Cmd2.Parameters.AddWithValue("", fustcode)
                     Cmd2.Parameters.AddWithValue("", "")
-                    Cmd2.Parameters.AddWithValue("", -1)
-                    Cmd2.Parameters.AddWithValue("", -1)
-                    Cmd2.Parameters.AddWithValue("", "")
-                    Cmd2.Parameters.AddWithValue("", -1)
+                    Cmd2.Parameters.AddWithValue("", apf)
                     Cmd2.Parameters.AddWithValue("", Mid(reden_annuleren_txt.Text, 1, 500))
                     Cmd2.Parameters.AddWithValue("", 0)
                     Cmd2.Parameters.AddWithValue("", 0)
@@ -103,8 +131,11 @@ Public Class Form14
                 Cmd2.CommandText = "SELECT LAST_INSERT_ID()"
                 Dim id As Integer = Convert.ToInt32(Cmd2.ExecuteScalar())
                 Dim salesorderid = OrderID_lbl.Text
-                Form1.InsertTask(0, 99, "PUT", "sales-orders", salesorderid, "corrections", "", "", "", "", "", "", id)
-
+                fdtask = Form1.InsertTask(0, 99, "PUT", "sales-orders", salesorderid, "corrections", "", "", "", "", "", "", id)
+                TaskTimer.Enabled = True
+                TaskLog_txt.Text = "Verbinding maken met Floriday..." + vbCrLf
+                order_aanpassen_but.Enabled = False
+                annuleren_but.Enabled = False
 
             End Using
         Catch ex As Exception
@@ -182,9 +213,11 @@ Public Class Form14
                     Cmd2.CommandText = query
                     Cmd2.ExecuteNonQuery()
                     'Dim wait5 As DateTime = DateAdd("s", 5, Now)
-                    Form1.InsertTask(5, 99, "GET", "sales-orders", "sync")
-
-
+                    fdtask = Form1.InsertTask(5, 99, "GET", "sales-orders", "sync")
+                    TaskTimer.Enabled = True
+                    TaskLog_txt.Text = "Verbinding maken met Floriday..." + vbCrLf
+                    order_aanpassen_but.Enabled = False
+                    annuleren_but.Enabled = False
                 End If
             End Using
         Catch ex As Exception
@@ -228,4 +261,54 @@ Public Class Form14
 
     End Function
 
+    Private Sub TaskTimer_Tick(sender As Object, e As EventArgs) Handles TaskTimer.Tick
+        Dim query As String = ""
+        Try
+            'Open Connection
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+
+                Dim reader As OdbcDataReader
+                Dim cmd As New OdbcCommand("", Conn)
+
+                ' STATUSSEN OPHALEN
+
+                If fdtask > 0 Then
+                    query = "SELECT * From floriday_tasks WHERE id=" + Str(fdtask)
+                    cmd.CommandText = query
+                    reader = cmd.ExecuteReader()
+                    If reader.HasRows Then
+                        reader.Read()
+                        Dim xffstatus As Integer = CHint(reader("status"))
+                        Dim errortext As String = CHstr(reader("errortext"))
+                        If xffstatus = 2 Then
+                            TaskLog_txt.Text = TaskLog_txt.Text + "Correctie gelukt" + vbNewLine
+                            TaskLog_txt.Text = TaskLog_txt.Text + "Het scherm kan afgesloten worden" + vbNewLine
+                            fdtask = 0
+                            order_aanpassen_but.Enabled = True
+                            annuleren_but.Enabled = True
+                            TaskTimer.Enabled = False
+                            Form1.InsertTask(0, 80, "GET", "fulfillment-orders", "sync")
+                        ElseIf xffstatus = 12 Then
+                            TaskLog_txt.Text = TaskLog_txt.Text + "Er ging wat mis, correctie mislukt." + vbNewLine
+                            TaskLog_txt.Text = TaskLog_txt.Text + "Fout: " + errortext + vbNewLine
+                            fdtask = 0
+                            order_aanpassen_but.Enabled = True
+                            annuleren_but.Enabled = True
+                            TaskTimer.Enabled = False
+                        ElseIf xffstatus = 0 Then
+                            TaskLog_txt.Text = TaskLog_txt.Text + "Correctie staat nog in de wachtrij." + vbNewLine
+                        End If
+                    End If
+                    reader.Close()
+                End If
+
+
+
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Fout: FD Error reporter" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
+
+    End Sub
 End Class

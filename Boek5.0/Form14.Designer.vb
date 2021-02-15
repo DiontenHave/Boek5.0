@@ -22,6 +22,7 @@ Partial Class Form14
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Me.components = New System.ComponentModel.Container()
         Me.annuleren_but = New System.Windows.Forms.Button()
         Me.order_aanpassen_but = New System.Windows.Forms.Button()
         Me.aantal_bestelling_txt = New System.Windows.Forms.TextBox()
@@ -44,11 +45,13 @@ Partial Class Form14
         Me.reden_annuleren_txt = New System.Windows.Forms.TextBox()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.aantalperfust2 = New System.Windows.Forms.TextBox()
+        Me.Label10 = New System.Windows.Forms.Label()
+        Me.fust = New System.Windows.Forms.TextBox()
         Me.Label9 = New System.Windows.Forms.Label()
         Me.OrderID_lbl = New System.Windows.Forms.Label()
-        Me.fust = New System.Windows.Forms.TextBox()
-        Me.Label10 = New System.Windows.Forms.Label()
-        Me.aantalperfust2 = New System.Windows.Forms.TextBox()
+        Me.TaskTimer = New System.Windows.Forms.Timer(Me.components)
+        Me.TaskLog_txt = New System.Windows.Forms.TextBox()
         Me.GroupBox1.SuspendLayout()
         Me.GroupBox2.SuspendLayout()
         Me.SuspendLayout()
@@ -59,7 +62,7 @@ Partial Class Form14
         Me.annuleren_but.Name = "annuleren_but"
         Me.annuleren_but.Size = New System.Drawing.Size(252, 29)
         Me.annuleren_but.TabIndex = 0
-        Me.annuleren_but.Text = "Order geheel anulleren"
+        Me.annuleren_but.Text = "Orderline geheel anulleren"
         Me.annuleren_but.UseVisualStyleBackColor = True
         '
         'order_aanpassen_but
@@ -68,7 +71,7 @@ Partial Class Form14
         Me.order_aanpassen_but.Name = "order_aanpassen_but"
         Me.order_aanpassen_but.Size = New System.Drawing.Size(252, 29)
         Me.order_aanpassen_but.TabIndex = 1
-        Me.order_aanpassen_but.Text = "Order aanpassen"
+        Me.order_aanpassen_but.Text = "Orderline aanpassen"
         Me.order_aanpassen_but.UseVisualStyleBackColor = True
         '
         'aantal_bestelling_txt
@@ -223,7 +226,7 @@ Partial Class Form14
         Me.GroupBox1.Controls.Add(Me.reden_annuleren_txt)
         Me.GroupBox1.Controls.Add(Me.annuleren_but)
         Me.GroupBox1.Controls.Add(Me.Label8)
-        Me.GroupBox1.Location = New System.Drawing.Point(12, 269)
+        Me.GroupBox1.Location = New System.Drawing.Point(15, 299)
         Me.GroupBox1.Name = "GroupBox1"
         Me.GroupBox1.Size = New System.Drawing.Size(555, 123)
         Me.GroupBox1.TabIndex = 21
@@ -252,37 +255,20 @@ Partial Class Form14
         Me.GroupBox2.Controls.Add(Me.aantal_aanpassing_txt)
         Me.GroupBox2.Controls.Add(Me.Label4)
         Me.GroupBox2.Controls.Add(Me.Label5)
-        Me.GroupBox2.Location = New System.Drawing.Point(12, 12)
+        Me.GroupBox2.Location = New System.Drawing.Point(12, 45)
         Me.GroupBox2.Name = "GroupBox2"
         Me.GroupBox2.Size = New System.Drawing.Size(555, 239)
         Me.GroupBox2.TabIndex = 22
         Me.GroupBox2.TabStop = False
         Me.GroupBox2.Text = "Order aanpassen"
         '
-        'Label9
+        'aantalperfust2
         '
-        Me.Label9.AutoSize = True
-        Me.Label9.Location = New System.Drawing.Point(12, 398)
-        Me.Label9.Name = "Label9"
-        Me.Label9.Size = New System.Drawing.Size(50, 13)
-        Me.Label9.TabIndex = 19
-        Me.Label9.Text = "Order ID:"
-        '
-        'OrderID_lbl
-        '
-        Me.OrderID_lbl.AutoSize = True
-        Me.OrderID_lbl.Location = New System.Drawing.Point(68, 398)
-        Me.OrderID_lbl.Name = "OrderID_lbl"
-        Me.OrderID_lbl.Size = New System.Drawing.Size(24, 13)
-        Me.OrderID_lbl.TabIndex = 23
-        Me.OrderID_lbl.Text = "-ID-"
-        '
-        'fust
-        '
-        Me.fust.Location = New System.Drawing.Point(434, 42)
-        Me.fust.Name = "fust"
-        Me.fust.Size = New System.Drawing.Size(38, 20)
-        Me.fust.TabIndex = 19
+        Me.aantalperfust2.Enabled = False
+        Me.aantalperfust2.Location = New System.Drawing.Point(496, 42)
+        Me.aantalperfust2.Name = "aantalperfust2"
+        Me.aantalperfust2.Size = New System.Drawing.Size(43, 20)
+        Me.aantalperfust2.TabIndex = 21
         '
         'Label10
         '
@@ -293,19 +279,50 @@ Partial Class Form14
         Me.Label10.TabIndex = 20
         Me.Label10.Text = "x"
         '
-        'aantalperfust2
+        'fust
         '
-        Me.aantalperfust2.Enabled = False
-        Me.aantalperfust2.Location = New System.Drawing.Point(496, 42)
-        Me.aantalperfust2.Name = "aantalperfust2"
-        Me.aantalperfust2.Size = New System.Drawing.Size(43, 20)
-        Me.aantalperfust2.TabIndex = 21
+        Me.fust.Location = New System.Drawing.Point(434, 42)
+        Me.fust.Name = "fust"
+        Me.fust.Size = New System.Drawing.Size(38, 20)
+        Me.fust.TabIndex = 19
+        '
+        'Label9
+        '
+        Me.Label9.AutoSize = True
+        Me.Label9.Location = New System.Drawing.Point(12, 9)
+        Me.Label9.Name = "Label9"
+        Me.Label9.Size = New System.Drawing.Size(50, 13)
+        Me.Label9.TabIndex = 19
+        Me.Label9.Text = "Order ID:"
+        '
+        'OrderID_lbl
+        '
+        Me.OrderID_lbl.AutoSize = True
+        Me.OrderID_lbl.Location = New System.Drawing.Point(68, 9)
+        Me.OrderID_lbl.Name = "OrderID_lbl"
+        Me.OrderID_lbl.Size = New System.Drawing.Size(24, 13)
+        Me.OrderID_lbl.TabIndex = 23
+        Me.OrderID_lbl.Text = "-ID-"
+        '
+        'TaskTimer
+        '
+        Me.TaskTimer.Interval = 1000
+        '
+        'TaskLog_txt
+        '
+        Me.TaskLog_txt.Location = New System.Drawing.Point(15, 433)
+        Me.TaskLog_txt.Multiline = True
+        Me.TaskLog_txt.Name = "TaskLog_txt"
+        Me.TaskLog_txt.ScrollBars = System.Windows.Forms.ScrollBars.Both
+        Me.TaskLog_txt.Size = New System.Drawing.Size(552, 115)
+        Me.TaskLog_txt.TabIndex = 24
         '
         'Form14
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(612, 420)
+        Me.ClientSize = New System.Drawing.Size(612, 560)
+        Me.Controls.Add(Me.TaskLog_txt)
         Me.Controls.Add(Me.OrderID_lbl)
         Me.Controls.Add(Me.Label9)
         Me.Controls.Add(Me.GroupBox2)
@@ -348,4 +365,6 @@ Partial Class Form14
     Friend WithEvents aantalperfust2 As TextBox
     Friend WithEvents Label10 As Label
     Friend WithEvents fust As TextBox
+    Friend WithEvents TaskTimer As Timer
+    Friend WithEvents TaskLog_txt As TextBox
 End Class

@@ -4032,11 +4032,11 @@ Public Class Form1
         End If
 
         If Tree_BBKlok_cmb.SelectedIndex = 1 Then  'Alleen BB
-            cmdstring = cmdstring + "AND TIME(afleverdatum) <= '17:00' "
+            cmdstring = cmdstring + "AND TIME(afleverdatum) <= '17:30' "
         End If
 
         If Tree_BBKlok_cmb.SelectedIndex = 2 Then  'Alleen Klok
-            cmdstring = cmdstring + "AND TIME(afleverdatum) > '17:00' "
+            cmdstring = cmdstring + "AND TIME(afleverdatum) > '17:30' "
         End If
 
 
@@ -5118,25 +5118,53 @@ nexttreeline:
                     Dim overgooi_kar_id As Integer = 0
 
                     Dim aantal_lagen_overgooier As Integer = 0
+                    Dim aantalbakken_overgooier As Integer = 0
                     If Val(overgooien_hierop) > 0 Then
                         Dim Reader2 As OdbcDataReader
-                        Dim Cmd2 As New OdbcCommand("SELECT * FROM orderkarren where overgooien_naar=?", Conn)
+                        Dim overgooierKarId As Integer = 0
+                        Dim Cmd2 As New OdbcCommand("SELECT kar_id FROM orderkarren where barcode=?", Conn)
                         Cmd2.Parameters.Clear()
                         Cmd2.Parameters.AddWithValue("", overgooien_hierop)
                         Reader2 = Cmd2.ExecuteReader()
                         If Reader2.HasRows Then
                             Reader2.Read()
-                            aantal_lagen_overgooier = CHint(Reader2("Aantal_lagen"))
-                            overgooi_kar_id = CHint(Reader2("kar_id"))
+                            overgooierKarId = CHint(Reader2("kar_id"))
                         End If
+                        Reader2.Close()
+
+                        If overgooierKarId > 0 Then
+                            Cmd2.CommandText = "SELECT SUM(aantal) as aantalbakken FROM orderkarlines where kar_id=?"
+                            Cmd2.Parameters.Clear()
+                            Cmd2.Parameters.AddWithValue("", overgooierKarId)
+                            Reader2 = Cmd2.ExecuteReader()
+                            If Reader2.HasRows Then
+                                Reader2.Read()
+                                aantalbakken_overgooier = CHint(Reader2("aantalbakken"))
+                            End If
+                            Reader2.Close()
+                        End If
+
                     End If
 
-                    Dim karstring As String = "Kar-" + Trim(Str(karcount)) + "   " + Trim(Str(aantal_lagen)) + " lagen"
-                    If aantal_lagen_overgooier > 0 Then
-                        karstring = karstring + " + " + Trim(Str(aantal_lagen_overgooier)) + " lagen overgooier/aanvulling"
+                    Dim karstring As String = "Kar-" + Trim(Str(karcount)) + "  " '   ' + Trim(Str(aantal_lagen)) + " lagen"
+                    'If aantal_lagen_overgooier > 0 Then
+                    'karstring = karstring + " + " + Trim(Str(aantal_lagen_overgooier)) + " lagen overgooier/aanvulling"
+                    'End If
+                    If aantalbakken_overgooier > 0 Then
+                        karstring = karstring + " + " + Trim(Str(aantalbakken_overgooier)) + " fusten overgooier/aanvulling"
                     End If
                     If Val(overgooien_naar) > 0 Then
-                        karstring = karstring + " overgooier/aanvulling naar andere order"
+                        Dim Cmd2 As New OdbcCommand("SELECT SUM(aantal) as aantalbakken FROM orderkarlines where kar_id=?", Conn)
+                        Cmd2.Parameters.Clear()
+                        Cmd2.Parameters.AddWithValue("", kar_id)
+                        Dim Reader2 As OdbcDataReader
+                        Reader2 = Cmd2.ExecuteReader()
+                        If Reader2.HasRows Then
+                            Reader2.Read()
+                            aantalbakken_overgooier = CHint(Reader2("aantalbakken"))
+                        End If
+                        Reader2.Close()
+                        karstring = karstring + Trim(Str(aantalbakken_overgooier)) + " fusten overgooier naar andere order"
                     End If
 
                     '*kar node toevoegen
@@ -6383,11 +6411,38 @@ nexttreeline:
 
     Private Sub Inst_run_update_but_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Inst_run_update_but.Click
         Try
+            Using Conn As New OdbcConnection(ConnString)
+                Conn.Open()
+                Dim Cmd2 As New OdbcCommand("SELECT * FROM instellingen", Conn)
+                Dim Reader2 As OdbcDataReader = Cmd2.ExecuteReader()
+                If Reader2.HasRows Then
+                    Reader2.Read()
+                    Dim new_version As String = CHstr(Reader2("version"))
+                    Dim update_mandatory As Boolean = CHbool(Reader2("update_mandatory"))
+
+                    Dim current_version As String = My.Settings.Versie
+                    If current_version <> new_version Then
+                        My.Settings.Versie = new_version
+                        My.Settings.Save()
+                    End If
+                End If
+
+            End Using
+        Catch ex As Exception
+            ErrorLog("Database fout: (update boek )" + ex.Message)
+            MessageBox.Show("Database fout: (update boek)" + ex.Message, "Fout", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1)
+        End Try
+
+
+        Try
             Process.Start("c:\boek\update.appref-ms", "app1")
             Application.Exit()
         Catch ex As Exception
             MsgBox("Updater not found")
         End Try
+
+
+
 
     End Sub
 
@@ -18119,6 +18174,8 @@ next_fav:
         Dim vestiging1 As Integer = 1
         Dim vestiging2 As Integer = 1
         Dim pakbon_opmerking As String = ""
+        Dim afleverlocatie1 As String = ""
+        Dim afleverlocatie2 As String = ""
 
         Try
             'Open Connection
@@ -18136,6 +18193,7 @@ next_fav:
                     wps_status1 = CHint(Reader("status"))
                     sticker1 = CHint(Reader("sticker"))
                     vestiging1 = CHint(Reader("vestiging"))
+                    afleverlocatie1 = CHstr(Reader("afleverloc_ean"))
                 End If
                 Reader.Close()
                 'Execute Query
@@ -18150,6 +18208,7 @@ next_fav:
                     sticker2 = CHint(Reader("sticker"))
                     pakbon_opmerking = CHstr(Reader("pakbon_opmerking"))
                     vestiging2 = CHint(Reader("vestiging"))
+                    afleverlocatie2 = CHstr(Reader("afleverloc_ean"))
                 End If
 
 
@@ -18169,6 +18228,11 @@ next_fav:
 
                 If Not (ean1 = ean2) Then
                     MsgBox("Alleen orders van dezelfde koper kunnen worden samengevoegd", vbOKOnly)
+                    Exit Sub
+                End If
+
+                If Not (afleverlocatie1 = afleverlocatie2) Then
+                    MsgBox("Alleen orders met dezelfde afleverlocatie kunnen worden samengevoegd", vbOKOnly)
                     Exit Sub
                 End If
 
@@ -22713,6 +22777,37 @@ next_fav:
         Dim rs As C1.Win.C1FlexGrid.CellStyle
         rs = FC_Flexgrid_orderlines.Styles.Add("kleur")
 
+        Fc_Flexgrid_LineData.Styles.Clear()
+
+        Dim rs1 As C1.Win.C1FlexGrid.CellStyle
+        rs1 = Fc_Flexgrid_LineData.Styles.Add("RED")
+        rs1.BackColor = Color.Red
+
+        Dim rs2 As C1.Win.C1FlexGrid.CellStyle
+        rs2 = Fc_Flexgrid_LineData.Styles.Add("CORAL")
+        rs2.BackColor = Color.Coral
+
+        Dim rs3 As C1.Win.C1FlexGrid.CellStyle
+        rs3 = Fc_Flexgrid_LineData.Styles.Add("GREEN")
+        rs3.BackColor = Color.Green
+
+        Dim rs4 As C1.Win.C1FlexGrid.CellStyle
+        rs4 = Fc_Flexgrid_LineData.Styles.Add("ORANGE")
+        rs4.BackColor = Color.Orange
+
+        Dim rs5 As C1.Win.C1FlexGrid.CellStyle
+        rs5 = Fc_Flexgrid_LineData.Styles.Add("YELLOW")
+        rs5.BackColor = Color.Yellow
+
+        Dim rs6 As C1.Win.C1FlexGrid.CellStyle
+        rs6 = Fc_Flexgrid_LineData.Styles.Add("LAVENDER")
+        rs6.BackColor = Color.Lavender
+
+        Dim rs7 As C1.Win.C1FlexGrid.CellStyle
+        rs7 = Fc_Flexgrid_LineData.Styles.Add("WHITE")
+        rs7.BackColor = Color.Lavender
+
+
         With FC_Flexgrid_orderlines
             .Rows.Count = 2
             .Cols(1).DataType = System.Type.GetType("System.String")
@@ -23834,12 +23929,12 @@ search_on:
                     Dim SoortId = CHint(Reader("Soort_id"))
                     If SoortId = 0 Then
                         warning = True
-                        addline("Soort", "SOORT", "Onbekend soort", "#FF9999")
+                        addline("Soort", "SOORT", "Onbekend soort", "CORAL")
                     Else
                         If SoortId < 10000 Then
-                            addline("Soort", "SOORT", soorten(GID(soorten, SoortId)).soortnaam, "#CCCCFF", Str(SoortId))
+                            addline("Soort", "SOORT", soorten(GID(soorten, SoortId)).soortnaam, "LAVENDER", Str(SoortId))
                         Else
-                            addline("Soort", "SOORT", mixen(GID(mixen, SoortId - 10000)).naam, "#CCCCFF", Str(0))
+                            addline("Soort", "SOORT", mixen(GID(mixen, SoortId - 10000)).naam, "LAVENDER", Str(0))
                         End If
                     End If
                     Dim accessoire1 As Integer = CHint(Reader("Accessoire1"))
@@ -23956,14 +24051,14 @@ search_on:
                         boekprijs = FindAccessoirePrijs(CHstr(Reader("NAD_BY_EAN")), boekprijs, accessoire1, SoortId, Reader("boektijd"), actie_type)
                     End If
 
-                    addline("Accessoire 1", "ACCE1", accessoire(GID(accessoire, accessoire1)).naam, "#CCCCFF", Str(accessoire1))
-                    addline("Accessoire 2", "ACCE2", accessoire(GID(accessoire, accessoire2)).naam, "#CCCCFF", Str(accessoire2))
+                    addline("Accessoire 1", "ACCE1", accessoire(GID(accessoire, accessoire1)).naam, "LAVENDER", Str(accessoire1))
+                    addline("Accessoire 2", "ACCE2", accessoire(GID(accessoire, accessoire2)).naam, "LAVENDER", Str(accessoire2))
                     If hoes = 0 Then
                         Dim accessoire3 As Integer = FindHoes(CHstr(Reader("NAD_BY_EAN")), SoortId)
                     End If
-                    addline("Hoes", "ACCE3", accessoire(GID(accessoire, hoes)).naam, "#CCCCFF", Str(hoes))
+                    addline("Hoes", "ACCE3", accessoire(GID(accessoire, hoes)).naam, "LAVENDER", Str(hoes))
                     If wps_filternr = 0 Then
-                        addline("Filter", "WPSFILTER", "-", "#CCCCFF")
+                        addline("Filter", "WPSFILTER", "-", "LAVENDER")
                     Else
                         Dim filternaam As String = "-"
                         For i = 0 To UBound(wpsfilter)
@@ -23973,12 +24068,12 @@ search_on:
                             End If
                         Next i
 
-                        addline("Filter", "WPSFILTER", filternaam, "#CCCCFF")
+                        addline("Filter", "WPSFILTER", filternaam, "LAVENDER")
                     End If
-                    addline("Labelnummer", "LABELGEN", label_nummer, "#CCCCFF")
+                    addline("Labelnummer", "LABELGEN", label_nummer, "LAVENDER")
 
 
-                    addline("", "", "", "#FFFFFF")
+                    addline("", "", "", "WHITE")
                     '
                     'edi soortomschrijving
 
@@ -23999,31 +24094,31 @@ search_on:
                     Next
 
                     If vbnfound = True Then
-                        addline("VBN Code", "", vbnstring, "#FFFFFF")
+                        addline("VBN Code", "", vbnstring, "WHITE")
                     Else
-                        addline("VBN Code", "", vbnstring, "#FF9999")
+                        addline("VBN Code", "", vbnstring, "LAVENDER")
                         warning = True
                     End If
 
-                    addline("Soort Omschrijving", "", CHstr(Reader("IMD_Full_Name")), "#FFFFFF")
-                    addline("Artikelcode Danpot", "", CHstr(Reader("PIA_CC_EAN")), "#FFFFFF")
-                    addline("Artikelcode Winkel", "", CHstr(Reader("PIA_UA_EAN")), "#FFFFFF")
-                    addline("Artikelcode Koper", "", CHstr(Reader("PIA_IN_EAN")), "#FFFFFF")
+                    addline("Soort Omschrijving", "", CHstr(Reader("IMD_Full_Name")), "WHITE")
+                    addline("Artikelcode Danpot", "", CHstr(Reader("PIA_CC_EAN")), "WHITE")
+                    addline("Artikelcode Winkel", "", CHstr(Reader("PIA_UA_EAN")), "WHITE")
+                    addline("Artikelcode Koper", "", CHstr(Reader("PIA_IN_EAN")), "WHITE")
 
                     Dim artikelcode_kweker As String = CHstr(Reader("PIA_SA_EAN"))
                     If Trim(artikelcode_kweker) = "" Then
-                        addline("Artikelcode Teler", "", "Geen artikel code", "#FFAA00")
+                        addline("Artikelcode Teler", "", "Geen artikel code", "CORAL")
                         geen_kwekercode = True
                     Else
-                        addline("Artikelcode Teler", "", artikelcode_kweker, "#FFFFFF")
+                        addline("Artikelcode Teler", "", artikelcode_kweker, "WHITE")
                     End If
-                    addline("", "", "", "#FFFFFF")
+                    addline("", "", "", "WHITE")
 
                     If boekprijs = 0 Then
-                        addline("Prijs aanbod", "PRIJSAANBOD", pformatprijs(boekprijs, 2), "#FF0000")
+                        addline("Prijs aanbod", "PRIJSAANBOD", pformatprijs(boekprijs, 2), "RED")
                         double_warning = True
                     Else
-                        addline("Prijs aanbod", "PRIJSAANBOD", pformatprijs(boekprijs, 2), "#FFFFFF")
+                        addline("Prijs aanbod", "PRIJSAANBOD", pformatprijs(boekprijs, 2), "WHITE")
                     End If
 
 
@@ -24046,7 +24141,7 @@ search_on:
                     Dim lb_opslag As Double = 0
                     If labelberichtopslag >= 0 Then
                         lb_opslag = labelberichtopslag / 100
-                        addline("Prijs sticker", "", pformatprijs(lb_opslag, 2), "#FFFFFF")
+                        addline("Prijs sticker", "", pformatprijs(lb_opslag, 2), "WHITE")
 
                         Dim CmdString21 = "UPDATE edi2_lines SET label_status = 1 WHERE id = " + Str(line_id)  'save line status
                         Dim Cmd21 As New OdbcCommand(CmdString21, Conn)
@@ -24059,27 +24154,27 @@ search_on:
                     Dim jp_opslag As Double = 0
                     If jpkorting > 0 Then
                         jp_opslag = -jpkorting / 100
-                        addline("Korting", "", pformatprijs(jp_opslag, 2), "#FFFFFF")
+                        addline("Korting", "", pformatprijs(jp_opslag, 2), "WHITE")
                     End If
 
                     boekprijs = boekprijs + lb_opslag + jp_opslag
                     If boekprijs = 0 Then
-                        addline("Totaal prijs", "TOTPRIJS", pformatprijs(boekprijs, 2), "#FF9999")
+                        addline("Totaal prijs", "TOTPRIJS", pformatprijs(boekprijs, 2), "RED")
                         'warning = True
                     Else
-                        addline("Totaal prijs", "TOTPRIJS", pformatprijs(boekprijs, 2), "#FFFFFF")
+                        addline("Totaal prijs", "TOTPRIJS", pformatprijs(boekprijs, 2), "WHITE")
                     End If
 
                     Dim prijs As Double = Val(CHstr(Reader("PRI_INV_Price_Amount")))
 
                     If CInt(prijs * 1000) < CInt(boekprijs * 1000) Then
-                        addline("Prijs koper", "PRIJS", pformatprijs(prijs, 2), "#FF0000", pformatprijs(prijs, 2))
+                        addline("Prijs koper", "PRIJS", pformatprijs(prijs, 2), "RED", pformatprijs(prijs, 2))
                         warning = True
                         double_warning = True
                     ElseIf CInt(prijs * 1000) > CInt(boekprijs * 1000) Then
-                        addline("Prijs koper", "PRIJS", pformatprijs(prijs, 2), "#00FF00", pformatprijs(prijs, 2))
+                        addline("Prijs koper", "PRIJS", pformatprijs(prijs, 2), "GREEN", pformatprijs(prijs, 2))
                     Else
-                        addline("Prijs koper", "PRIJS", pformatprijs(prijs, 2), "#FFFFFF", pformatprijs(prijs, 2))
+                        addline("Prijs koper", "PRIJS", pformatprijs(prijs, 2), "WHITE", pformatprijs(prijs, 2))
                     End If
                     ' TimePassed("Part6")
                     If actie_type > 0 And boekprijs = prijs Then
@@ -24097,21 +24192,21 @@ search_on:
                         prijsvoorwaarde = ReadSQLData("data_elementen", "date_element_code", 5387, "date_element_value", prijsvoorwaarde_value, "date_element_value_description")
                     End If
 
-                    addline("Prijsvoorwaarde", "", prijsvoorwaarde, "#FFFFFF")
-                    addline("Munteenheid", "", CHstr(Reader("CUX_INV")), "#FFFFFF")
-                    addline("", "", "", "#FFFFFF")
+                    addline("Prijsvoorwaarde", "", prijsvoorwaarde, "WHITE")
+                    addline("Munteenheid", "", CHstr(Reader("CUX_INV")), "WHITE")
+                    addline("", "", "", "WHITE")
 
                     ' fust
                     'get aantal/per fust 
                     Dim MEA_Aantal_per_fust As Integer = CHint(Reader("MEA_Aantal_per_Fust"))
                     Dim PAC_Fust_Code As Integer = CHint(Reader("PAC_Fust_Code"))
                     Dim decorum As Integer = CHint(Reader("Decorum"))
-                    addline("Fust", "EDIFUST", PAC_Fust_Code, "#FFFFFF")
+                    addline("Fust", "EDIFUST", PAC_Fust_Code, "WHITE")
                     Dim boekfustid As Integer = CHint(Reader("boekfustid"))
                     If MEA_Aantal_per_fust <> fust(GID(fust, boekfustid)).aantal_per_fust Then
                     End If
 
-                    addline("Aantal per fust", "AANTALPERFUST", MEA_Aantal_per_fust, "#FFFFFF")
+                    addline("Aantal per fust", "AANTALPERFUST", MEA_Aantal_per_fust, "WHITE")
 
                     Dim boekfust As String = ""
                     Dim fustid As Integer = CHint(Reader("boekfustid"))
@@ -24119,11 +24214,11 @@ search_on:
                     boekfust = fust(GID(fust, fustid)).fustnaam
 
                     If boekfust = "" Or IsNothing(boekfust) Then
-                        addline("Boek fust", "BOEKFUST", "Fust onbekend", "#FF0000")
+                        addline("Boek fust", "BOEKFUST", "Fust onbekend", "RED")
                         warning = True
                         double_warning = True
                     Else
-                        addline("Boek fust", "BOEKFUST", boekfust, "#CCCCFF", Str(fustid))
+                        addline("Boek fust", "BOEKFUST", boekfust, "LAVENDER", Str(fustid))
                     End If
                     'kar
                     Dim PAC_Kar_code = CHint(Reader("PAC_Kar_code"))
@@ -24132,9 +24227,9 @@ search_on:
 
                     Dim KarString As String = ReadSQLData("data_elementen", "date_element_code", 7065, "date_element_value", PAC_Kar_code, "date_element_value_description")
                     If PAC_Kar_code = "2" Or PAC_Kar_code = "6" Then
-                        addline("Kar", "", KarString, "#FFFFFF")
+                        addline("Kar", "", KarString, "WHITE")
                     Else
-                        addline("Kar", "", KarString, "#FF9999")
+                        addline("Kar", "", KarString, "CORAL")
                         warning = True
                     End If
 
@@ -24163,24 +24258,24 @@ search_on:
                         Cmd7.CommandText = "UPDATE edi2_lines SET BoekKarId ='" + Str(karid) + "' WHERE id = " + Str(line_id)
                         Cmd7.ExecuteNonQuery()
                     End If
-                    addline("Boek kar", "KAR", kar(GID(kar, karid)).karnaam, "#CCCCFF")
+                    addline("Boek kar", "KAR", kar(GID(kar, karid)).karnaam, "LAVENDER")
 
-                    addline("", "", "", "#FFFFFF")
+                    addline("", "", "", "WHITE")
 
                     'get aantal
                     Dim QTY_Unit_Code As Integer = CHint(Reader("QTY_Unit_Code"))
                     Dim QTY_Quantity As Integer = CHint(Reader("QTY_Quantity"))
-                    addline("Aantal", "AANTAL", CHstr(QTY_Quantity), "#FFFFFF")
+                    addline("Aantal", "AANTAL", CHstr(QTY_Quantity), "WHITE")
                     Dim eenheid As String = ReadSQLData("data_elementen", "date_element_code", 6411, "date_element_value", QTY_Unit_Code, "date_element_value_description")
-                    addline("Eenheid", "", eenheid, "#FFFFFF")
+                    addline("Eenheid", "", eenheid, "WHITE")
                     Dim boekaantal As Integer = CHint(Reader("Aantal"))
                     If boekaantal = 0 Then
-                        addline("Aantal fust boek", "AANTALBOEK", CHint(Reader("Aantal")), "#FF0000")
+                        addline("Aantal fust boek", "AANTALBOEK", CHint(Reader("Aantal")), "RED")
                     Else
-                        addline("Aantal fust boek", "AANTALBOEK", CHint(Reader("Aantal")), "#CCCCFF")
+                        addline("Aantal fust boek", "AANTALBOEK", CHint(Reader("Aantal")), "LAVENDER")
                     End If
 
-                    addline("", "", "", "#FFFFFF")
+                    addline("", "", "", "WHITE")
 
                     '
                     Dim paspoort_toevoegen As Boolean = False
@@ -24191,20 +24286,20 @@ search_on:
                         If InStr(FTX_Text_Literal_1.ToLower, "paspoort") > 0 Or InStr(FTX_Text_Literal_2.ToLower, "paspoort") > 0 Then
                             warning = True
                             double_warning = True
-                            addline("Opmerking1", "OPM1", FTX_Text_Literal_1, "#FF0000")
-                            addline("Opmerking2", "OPM2", FTX_Text_Literal_2, "#FF0000")
+                            addline("Opmerking1", "OPM1", FTX_Text_Literal_1, "RED")
+                            addline("Opmerking2", "OPM2", FTX_Text_Literal_2, "RED")
                             paspoort_toevoegen = True
                         ElseIf check_opmerking(FTX_Text_Literal_1, FTX_Text_Literal_2, CHstr(Reader("NAD_BY_EAN")), CHstr(Reader("LIN_Product_Code")), CHstr(Reader("IMD_Full_Name")), CHstr(Reader("PIA_SA_EAN"))) = False Then
                             warning = True
-                            addline("Opmerking1", "OPM1", FTX_Text_Literal_1, "#FF9999")
-                            addline("Opmerking2", "OPM2", FTX_Text_Literal_2, "#FF9999")
+                            addline("Opmerking1", "OPM1", FTX_Text_Literal_1, "CORAL")
+                            addline("Opmerking2", "OPM2", FTX_Text_Literal_2, "CORAL")
                         Else
-                            addline("Opmerking1", "OPM1", FTX_Text_Literal_1, "#FFFFFF")
-                            addline("Opmerking2", "OPM2", FTX_Text_Literal_2, "#FFFFFF")
+                            addline("Opmerking1", "OPM1", FTX_Text_Literal_1, "WHITE")
+                            addline("Opmerking2", "OPM2", FTX_Text_Literal_2, "WHITE")
                         End If
                     Else
-                        addline("Opmerking1", "OPM1", FTX_Text_Literal_1, "#FFFFFF")
-                        addline("Opmerking2", "OPM2", FTX_Text_Literal_2, "#FFFFFF")
+                        addline("Opmerking1", "OPM1", FTX_Text_Literal_1, "WHITE")
+                        addline("Opmerking2", "OPM2", FTX_Text_Literal_2, "WHITE")
                     End If
 
                     'opmerking COI
@@ -24214,20 +24309,20 @@ search_on:
                         If InStr(FTX_COI_Text_Literal_1.ToLower, "paspoort") > 0 Or InStr(FTX_COI_Text_Literal_2.ToLower, "paspoort") > 0 Then
                             warning = True
                             double_warning = True
-                            addline("Opmerking1", "OPM1", FTX_COI_Text_Literal_1, "#FF0000")
-                            addline("Opmerking2", "OPM2", FTX_COI_Text_Literal_2, "#FF0000")
+                            addline("Opmerking1", "OPM1", FTX_COI_Text_Literal_1, "RED")
+                            addline("Opmerking2", "OPM2", FTX_COI_Text_Literal_2, "RED")
                             paspoort_toevoegen = True
                         ElseIf check_opmerking(FTX_COI_Text_Literal_1, FTX_COI_Text_Literal_2, CHstr(Reader("NAD_BY_EAN")), CHstr(Reader("LIN_Product_Code")), CHstr(Reader("IMD_Full_Name")), CHstr(Reader("PIA_SA_EAN"))) = False Then
                             warning = True
-                            addline("Opmerking3", "OPM3", FTX_COI_Text_Literal_1, "#FF9999")
-                            addline("Opmerking4", "OPM4", FTX_COI_Text_Literal_2, "#FF9999")
+                            addline("Opmerking3", "OPM3", FTX_COI_Text_Literal_1, "CORAL")
+                            addline("Opmerking4", "OPM4", FTX_COI_Text_Literal_2, "CORAL")
                         Else
-                            addline("Opmerking3", "OPM3", FTX_COI_Text_Literal_1, "#FFFFFF")
-                            addline("Opmerking4", "OPM4", FTX_COI_Text_Literal_2, "#FFFFFF")
+                            addline("Opmerking3", "OPM3", FTX_COI_Text_Literal_1, "WHITE")
+                            addline("Opmerking4", "OPM4", FTX_COI_Text_Literal_2, "WHITE")
                         End If
                     Else
-                        addline("Opmerking3", "OPM3", FTX_COI_Text_Literal_1, "#FFFFFF")
-                        addline("Opmerking4", "OPM4", FTX_COI_Text_Literal_2, "#FFFFFF")
+                        addline("Opmerking3", "OPM3", FTX_COI_Text_Literal_1, "WHITE")
+                        addline("Opmerking4", "OPM4", FTX_COI_Text_Literal_2, "WHITE")
                     End If
 
 
@@ -24256,8 +24351,8 @@ search_on:
 
                     End If
 
-                    addline("Opmerking boek", "OPMB", opmerkingboek, "#CCCCFF")
-                    addline("", "", "", "#FFFFFF")
+                    addline("Opmerking boek", "OPMB", opmerkingboek, "LAVENDER")
+                    addline("", "", "", "WHITE")
 
                     ' TimePassed("Part8")
                     'kenmerken
@@ -24284,7 +24379,7 @@ search_on:
                         If cci = "S61" And cav = "004" Then  'PLANTENPASPOORT
                             warning = True
                             double_warning = True
-                            addline(kenmerk, "CCI:" + cci, waarde, "#FF0000")
+                            addline(kenmerk, "CCI:" + cci, waarde, "RED")
                             paspoort_toevoegen = True
                         End If
 
@@ -24302,61 +24397,61 @@ search_on:
                             End If
                             If accessoire1 = 0 Or accessoire_potmaat = 0 Then
                                 If Val(cav) * 10 <> soort_potmaat Then 'potmaat
-                                    addline(kenmerk, "CCI:" + cci, waarde, "#FF9999")
+                                    addline(kenmerk, "CCI:" + cci, waarde, "CORAL")
                                     warning = True
                                 Else
-                                    addline(kenmerk, "CCI:" + cci, waarde, "#FFFFFF")
+                                    addline(kenmerk, "CCI:" + cci, waarde, "WHITE")
                                 End If
                             Else
                                 If accessoire_potmaat <> (Val(cav) * 10) Then
-                                    addline(kenmerk, "CCI:" + cci, waarde, "#FF9999")
+                                    addline(kenmerk, "CCI:" + cci, waarde, "CORAL")
                                     warning = True
                                 Else
-                                    addline(kenmerk, "CCI:" + cci, waarde, "#FFFFFF")
+                                    addline(kenmerk, "CCI:" + cci, waarde, "WHITE")
                                 End If
                             End If
                         ElseIf cci = "S51" And Val(cav) > 2 Then 'potvorm
-                            addline(kenmerk, "CCI:" + cci, waarde, "#FF9999")
+                            addline(kenmerk, "CCI:" + cci, waarde, "CORAL")
                             warning = True
                         ElseIf cci = "S05" Then
                             If jenptenhave = False Then
                                 If SoortId < 10000 Then
                                     If soorten(GID(soorten, SoortId)).klokrijpheid = Val(cav) Or soorten(GID(soorten, SoortId)).bbrijpheid = Val(cav) Then
-                                        addline(kenmerk, "cci:" + cci, waarde, "#ffffff")
+                                        addline(kenmerk, "cci:" + cci, waarde, "WHITE")
                                     Else
-                                        addline(kenmerk, "cci:" + cci, waarde, "#ff9999")
+                                        addline(kenmerk, "cci:" + cci, waarde, "CORAL")
                                         warning = True
                                     End If
                                 Else
                                     If mixen(GID(mixen, SoortId - 10000)).rijpheid = Val(cav) Then
-                                        addline(kenmerk, "cci:" + cci, waarde, "#ffffff")
+                                        addline(kenmerk, "cci:" + cci, waarde, "WHITE")
                                     Else
-                                        addline(kenmerk, "cci:" + cci, waarde, "#ff9999")
+                                        addline(kenmerk, "cci:" + cci, waarde, "CORAL")
                                         warning = True
                                     End If
 
                                 End If
                             End If
                         ElseIf kenmerk = "Labelbericht" Then
-                            addline(kenmerk, "CCI:" + cci, waarde, "#FF9999")
+                            addline(kenmerk, "CCI:" + cci, waarde, "CORAL")
                             warning = True
                             labelbericht_gevonden = True
                         Else
-                            addline(kenmerk, "CCI:" + cci, waarde, "#FFFFFF")
+                            addline(kenmerk, "CCI:" + cci, waarde, "WHITE")
                         End If
 
                     Next
 
                     If labelbericht_gevonden = True Then
-                        addline("", "", "", "#FFFFFF")
+                        addline("", "", "", "WHITE")
                         If paspoort_toevoegen = True Then
-                            addline("LB Paspoort", "PASPOORT", "Ja", "#FF0000")
+                            addline("LB Paspoort", "PASPOORT", "Ja", "RED")
                             Dim Cmd17 As New OdbcCommand("UPDATE edi2_lines SET Label_referentie ='paspoort' WHERE id =?", Conn)
                             Cmd17.Parameters.Clear()
                             Cmd17.Parameters.AddWithValue("", line_id)
                             Cmd17.ExecuteNonQuery()
                         Else
-                            addline("Paspoort", "PASPOORT", "Nee", "#FFFFFF")
+                            addline("Paspoort", "PASPOORT", "Nee", "WHITE")
                             Dim Cmd17 As New OdbcCommand("UPDATE edi2_lines SET Label_referentie ='' WHERE id =?", Conn)
                             Cmd17.Parameters.Clear()
                             Cmd17.Parameters.AddWithValue("", line_id)
@@ -24366,70 +24461,70 @@ search_on:
 
 
 
-                    addline("", "", "", "#FFFFFF")
+                    addline("", "", "", "WHITE")
 
                     '  TimePassed("Part9")
 
                     ' referenties koper/kweker
                     Dim kopernad As NAD
                     kopernad = ReadNAD(line_id, "BY")
-                    addline("Koper Referenties", "", ".", "#FFFFFF")
+                    addline("Koper Referenties", "", ".", "WHITE")
                     ShowRefs(kopernad.id, line_id)
 
                     'Dim kwekernad As NAD
                     'kwekernad = ReadNAD(line_id, "SE")
-                    'addline("Kweker Referenties", "", ".", "#FFFFFF")
+                    'addline("Kweker Referenties", "", ".", "WHITE")
                     'ShowRefs(kwekernad.id)
-                    addline("", "", "", "#FFFFFF")
+                    addline("", "", "", "WHITE")
 
                     'diverse retailprice/docs etc
                     For i = 0 To 5
                         Dim edidoc As String = CHstr(Reader("DOC_" + Trim(Str(i))))
                         If edidoc <> "" Then
                             Dim docdesc = ReadSQLData("data_elementen", "date_element_code", "1001", "date_element_value", edidoc, "date_element_value_description")
-                            addline("Document bijvoegen", "", docdesc, "#FF9999")
+                            addline("Document bijvoegen", "", docdesc, "CORAL")
                             warning = True
                         End If
                     Next
 
                     Dim rprijs As Double = Val(CHstr(Reader("PRI_AAE_Price_Amount")))
                     If rprijs > 0 Then
-                        addline("Retail prijs", "", pformatprijs(rprijs, 2), "#FFFFFF")
+                        addline("Retail prijs", "", pformatprijs(rprijs, 2), "WHITE")
                         Dim rprijsvoorwaarde As String = ReadSQLData("data_elementen", "date_element_code", 5387, "date_element_value", CHstr(Reader("PRI_AAE_Price_specification_code")), "date_element_value_description")
-                        addline("Prijsvoorwaarde", "", rprijsvoorwaarde, "#FFFFFF")
-                        addline("Munteenheid", "", CHstr(Reader("CUX_AAE")), "#FFFFFF")
-                        addline("", "", "", "#FFFFFF")
+                        addline("Prijsvoorwaarde", "", rprijsvoorwaarde, "WHITE")
+                        addline("Munteenheid", "", CHstr(Reader("CUX_AAE")), "WHITE")
+                        addline("", "", "", "WHITE")
                     End If
 
                     If CHstr(Reader("PCI_Label_Description_fust")) <> "" Then
                         warning = True
-                        addline("Fustlabel", "", CHstr(Reader("PCI_Label_Description_fust")), "#FFFFFF")
+                        addline("Fustlabel", "", CHstr(Reader("PCI_Label_Description_fust")), "WHITE")
                     End If
                     If CHstr(Reader("PCI_Label_Description_kar")) <> "" Then
                         warning = True
-                        addline("Fustlabel", "", CHstr(Reader("PCI_Label_Description_kar")), "#FFFFFF")
+                        addline("Fustlabel", "", CHstr(Reader("PCI_Label_Description_kar")), "WHITE")
                     End If
 
                     If CHstr(Reader("PCI_Label_Code_fust")) <> "" Then
                         warning = True
                         Dim code As String = ReadSQLData("data_elementen", "date_element_code", "7511", "date_element_value", CHstr(Reader("PCI_Label_Code_fust")), "date_element_value_description")
-                        addline("Barcode type fust", "", code, "#FFFFFF")
+                        addline("Barcode type fust", "", code, "WHITE")
                     End If
                     If CHstr(Reader("PCI_Label_Code_kar")) <> "" Then
                         warning = True
                         Dim code As String = ReadSQLData("data_elementen", "date_element_code", "7511", "date_element_value", CHstr(Reader("PCI_Label_Code_kar")), "date_element_value_description")
-                        addline("Barcode type kar", "", code, "#FFFFFF")
+                        addline("Barcode type kar", "", code, "WHITE")
                     End If
                     Dim plpk As String = CHstr(Reader("MEA_Aantal_plant_per_kar"))
                     Dim lpk As String = CHstr(Reader("MEA_Aantal_lagen_per_kar"))
                     If plpk <> "" Or lpk <> "" Then
 
-                        addline("Laadvoorstel:", "", ".", "#FFFFFF")
-                        addline("Planten per kar:", "", plpk, "#FFFFFF")
-                        addline("lagen per kar:", "", lpk, "#FFFFFF")
+                        addline("Laadvoorstel:", "", ".", "WHITE")
+                        addline("Planten per kar:", "", plpk, "WHITE")
+                        addline("lagen per kar:", "", lpk, "WHITE")
                     End If
-                    addline("", "", "", "#FFFFFF")
-                    addline("Florecom line ID", "", "L" + Trim(Str(line_id)), "#FFFFFF")
+                    addline("", "", "", "WHITE")
+                    addline("Florecom line ID", "", "L" + Trim(Str(line_id)), "WHITE")
                 End If
 
                 'TimePassed("Part10")
@@ -24499,7 +24594,7 @@ search_on:
                     End If
 
                     Dim title As String = ReadSQLData("data_elementen", "date_element_code", "1153", "date_element_value", Nad_rff_code, "date_element_value_description")
-                    addline(title, "", nad_rff_id + " " + nad_RFF_version, "#FFFFFF")
+                    addline(title, "", nad_rff_id + " " + nad_RFF_version, "WHITE")
                 Loop
                 Reader.Close()
 
@@ -24976,7 +25071,6 @@ search_on:
                                             Dim AccessoireId2_code As String = Mid(PIA_SA_EAN, 8, 2)
                                             For i = 0 To UBound(accessoire)
                                                 If AccessoireId1_code = accessoire(i).code Then
-
 
 
                                                     'Decorum accessoire ombouwen potcover
@@ -26277,11 +26371,13 @@ search_on:
             '  fxfill(3) = value
         End If
         Fc_Flexgrid_LineData.AddItem(fxfill)
-        Fc_Flexgrid_LineData.Styles.Clear()
-        Dim rs As C1.Win.C1FlexGrid.CellStyle
-        rs = Fc_Flexgrid_LineData.Styles.Add("kleur")
-        rs.BackColor = GetColorValue(kleur)
-        Fc_Flexgrid_LineData.Rows(Fc_Flexgrid_LineData.Rows.Count - 1).Style = Fc_Flexgrid_LineData.Styles("kleur")
+        'Fc_Flexgrid_LineData.Styles.Clear()
+        'Dim rs As C1.Win.C1FlexGrid.CellStyle
+        'rs = Fc_Flexgrid_LineData.Styles.Add("kleur")
+        'rs.BackColor = GetColorValue(kleur)
+        'Fc_Flexgrid_LineData.Rows(Fc_Flexgrid_LineData.Rows.Count - 1).Style = Fc_Flexgrid_LineData.Styles("kleur")
+
+        Fc_Flexgrid_LineData.Rows(Fc_Flexgrid_LineData.Rows.Count - 1).Style = Fc_Flexgrid_LineData.Styles(kleur)
     End Sub
     Private Function ReadNAD(ByVal line_id As Integer, ByVal code As String) As NAD
         Dim nd As NAD
@@ -31287,6 +31383,7 @@ exit_verwerk:
         If Not (overgooier = "" Or overgooier = "-") Then  'global saved in overgooien_naar
             KarHeaders(karnr).overgooien_hierop = overgooier
             Dim barcode As String = KarHeaders(karnr).barcode
+
             Try
                 'Open Connection
                 Using Conn As New OdbcConnection(ConnString)
@@ -31487,6 +31584,18 @@ exit_verwerk:
                     Using Conn As New OdbcConnection(ConnString)
                         Conn.Open()
 
+                        'read barcode from kar_id
+                        Dim barcode As String = ""
+                        Dim query As String = "SELECT barcode from orderkarren WHERE kar_id=" + Str(kar_id)
+                        Dim Cmd4 As New OdbcCommand(query, Conn)
+                        Dim reader4 As OdbcDataReader
+                        reader4 = Cmd4.ExecuteReader
+                        If reader4.HasRows Then
+                            reader4.Read()
+                            barcode = CHstr(reader4("barcode"))
+                        End If
+                        reader4.Close()
+
                         Dim Cmd3 As New OdbcCommand("UPDATE orderkarren SET overgooien_hierop=? WHERE kar_id=?", Conn)
                         Cmd3.Parameters.Clear()
                         Cmd3.Parameters.AddWithValue("", overgooier)
@@ -31495,16 +31604,23 @@ exit_verwerk:
 
                         Dim Cmd2 As New OdbcCommand("UPDATE orderkarren SET overgooien_naar=? WHERE barcode=?", Conn)
                         Cmd2.Parameters.Clear()
-                        Cmd2.Parameters.AddWithValue("", overgooier)
+                        Cmd2.Parameters.AddWithValue("", barcode)
                         Cmd2.Parameters.AddWithValue("", overgooier)
                         Cmd2.ExecuteNonQuery()
+
+
 
                         'zoek eerste header
                         Dim header_id = -1
                         For i = 1 To Max_Kar_Headers
                             If KarHeaders(i).tag = True Then
+
+                                'update overgooien naar array
+                                If KarHeaders(i).barcode = overgooier Then
+                                    KarHeaders(i).overgooien_naar = barcode
+                                End If
                                 header_id = KarHeaders(i).header_id
-                            End If
+                                End If
                         Next
                         If header_id = -1 Then
                             Exit Sub
@@ -37039,7 +37155,7 @@ exit_verwerk:
                     Reader = Cmd.ExecuteReader()
                     If Reader.HasRows Then
                         Reader.Read()
-
+                        Dim parent_id As Integer = CHint(Reader("id"))
                         Dim orderLineId As String = CHstr(Reader("orderLineId"))
                         Dim salesChannelOrderId As String = CHstr(Reader("salesChannelOrderId"))
                         Dim customerOrderId As String = CHstr(Reader("customerOrderId"))
@@ -37074,6 +37190,24 @@ exit_verwerk:
 
                         Dim contractId As String = CHstr(Reader("contractId"))
                         Dim blanketOrderLineId As String = CHstr(Reader("blanketOrderLineId"))
+
+                        'package prijs erbij optellen
+                        If selectedPackingConfiguration_additionalPricePerPiece_value > 0 Then
+                            pricePerPiece_value = pricePerPiece_value + selectedPackingConfiguration_additionalPricePerPiece_value
+                        End If
+
+                        'additional service ophalen en bij prijs toevoegen
+                        query = "SELECT * FROM floriday_salesorders_additionalservices WHERE parent_Id=" + Str(parent_id)
+                        Cmd2.CommandText = query
+                        Reader2 = Cmd2.ExecuteReader()
+                        Do While Reader2.Read()
+                            Dim addservice_price_value As Double = CHdouble(Reader2("price_value"))
+                            If addservice_price_value > 0 Then
+                                pricePerPiece_value = pricePerPiece_value + addservice_price_value
+                            End If
+                        Loop
+                        Reader2.Close()
+
 
 
                         Dim contractTitle As String = "" 'bij contract title ophalen
@@ -37226,13 +37360,24 @@ exit_verwerk:
                             End If
                             If fustfound = False Then   'normaal fust zoeken
                                 For i = 1 To UBound(fust)
-                                    If fust(i).fustcode = selectedPackingConfiguration_package_vbnPackageCode Then
+                                    If fust(i).fustcode = selectedPackingConfiguration_package_vbnPackageCode And fust(i).decorum = False Then  'niet decorum fust zoeken
                                         fustfound = True
                                         fust_id = fust(i).id
                                         Exit For
                                     End If
                                 Next
                             End If
+                            If fustfound = False Then   'nogmaals al het fust zoeken
+                                For i = 1 To UBound(fust)
+                                    If fust(i).fustcode = selectedPackingConfiguration_package_vbnPackageCode Then  'al het fust doorzoeken, deco of niet deco
+                                        fustfound = True
+                                        fust_id = fust(i).id
+                                        Exit For
+                                    End If
+                                Next
+                            End If
+
+
                         End If
                         If fustfound = False Then fustwarning = 1
                         If soortfound = False Then soortwarning = 1
@@ -37385,9 +37530,9 @@ exit_verwerk:
                             Else
                                 Reader2.Close()
                                 query = "UPDATE floriday_salesorders_boek SET boek_soortId=?,boek_hoesId=?,boek_accessoire1=?," _
-                                      & "boek_accessoire2=?,boek_accessoire3=?,boek_accessoire4=?,boek_accessoire5=?,boek_accessoire6=?,boek_accessoire7=?," _
-                                      & "boek_accessoire8=?,boek_opmerking=?,boek_wpsfilter=?,boek_status=?,boek_fustid=?,boek_stikkercode=?,selectie=?" _
-                                      & " WHERE orderLineId=?"
+                                              & "boek_accessoire2=?,boek_accessoire3=?,boek_accessoire4=?,boek_accessoire5=?,boek_accessoire6=?,boek_accessoire7=?," _
+                                              & "boek_accessoire8=?,boek_opmerking=?,boek_wpsfilter=?,boek_status=?,boek_fustid=?,boek_stikkercode=?,selectie=?" _
+                                              & " WHERE orderLineId=?"
                                 Cmd2.CommandText = query
                                 Cmd2.Parameters.Clear()
                                 Cmd2.Parameters.AddWithValue("", soort_id)
@@ -37415,12 +37560,12 @@ exit_verwerk:
                             Reader2.Close()
                             'save orderlines
                             query = "INSERT INTO floriday_salesorders_boek(orderLineId,boek_soortId,boek_hoesId,boek_accessoire1," _
-                                & "boek_accessoire2,boek_accessoire3,boek_accessoire4,boek_accessoire5,boek_accessoire6,boek_accessoire7," _
-                                & "boek_accessoire8,boek_opmerking,boek_wpsfilter,boek_status,boek_fustid,boek_stikkercode,boek_aantal,customerOrganizationId," _
-                                & "org_soortId,org_hoesId,org_fustId,org_accessoire1,org_accessoire2,org_accessoire3," _
-                                & "org_accessoire4,org_accessoire5,org_accessoire6,org_accessoire7,org_accessoire8,tradeItemName,tradeItemId,selectie," _
-                                & "boek_stikkerstatus,packages_to_fullfill,agreementReference_code)" _
-                                & " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                                        & "boek_accessoire2,boek_accessoire3,boek_accessoire4,boek_accessoire5,boek_accessoire6,boek_accessoire7," _
+                                        & "boek_accessoire8,boek_opmerking,boek_wpsfilter,boek_status,boek_fustid,boek_stikkercode,boek_aantal,customerOrganizationId," _
+                                        & "org_soortId,org_hoesId,org_fustId,org_accessoire1,org_accessoire2,org_accessoire3," _
+                                        & "org_accessoire4,org_accessoire5,org_accessoire6,org_accessoire7,org_accessoire8,tradeItemName,tradeItemId,selectie," _
+                                        & "boek_stikkerstatus,packages_to_fullfill,agreementReference_code)" _
+                                        & " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                             Cmd2.CommandText = query
                             Cmd2.Parameters.Clear()
                             Cmd2.Parameters.AddWithValue("", orderLineId)
@@ -38080,16 +38225,16 @@ exit_verwerk:
 
 
                 If Fd_nieuweOrders_rb.Checked = True Then
-                    query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders WHERE boekstatus=0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' AND DATE(boektijd) >= '" + Start_DatumStr + "' AND DATE(boektijd) <= '" + End_DatumStr + "' GROUP BY customerOrganizationId, contractId ,selectedPackingConfiguration_loadCarrier, delivery_location_gln, delivery_latestDeliveryDateTime ORDER BY delivery_latestDeliveryDateTime"
+                    query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders WHERE boekstatus=0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' AND DATE(boektijd) >= '" + Start_DatumStr + "' AND DATE(boektijd) <= '" + End_DatumStr + "' GROUP BY customerOrganizationId, contractId ,selectedPackingConfiguration_loadCarrier, delivery_location_gln, boektijd ORDER BY delivery_latestDeliveryDateTime"
                 Else
 
                     Start_DatumStr = Floriday_Calendar.SelectionStart.Date.ToString("yyyy/MM/dd")
                     End_DatumStr = Floriday_Calendar.SelectionEnd.Date.ToString("yyyy/MM/dd")
-                    query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders WHERE boekstatus>0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' AND DATE(boektijd) >= '" + Start_DatumStr + "' AND DATE(boektijd) <= '" + End_DatumStr + "' GROUP BY boekstatus ORDER BY delivery_latestDeliveryDateTime"
+                    query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders WHERE boekstatus>0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' AND DATE(boektijd) >= '" + Start_DatumStr + "' AND DATE(boektijd) <= '" + End_DatumStr + "' GROUP BY boekstatus ORDER BY boektijd"
 
                     If FdMenu_Zoek_chk.Checked = True Then
                         'zoeken
-                        query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(FLS.id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders AS FLS LEFT JOIN Floriday_Salesorders_Boek AS FSB ON FLS.OrderLineId=FSB.OrderlineId WHERE boekstatus>0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' AND DATE(boektijd) >= '" + Start_DatumStr + "' AND DATE(boektijd) <= '" + End_DatumStr + "' AND kopernaam LIKE '%" + FdMenu_Zoek_txt.Text + "%' GROUP BY boekstatus ORDER BY delivery_latestDeliveryDateTime"
+                        query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(FLS.id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders AS FLS LEFT JOIN Floriday_Salesorders_Boek AS FSB ON FLS.OrderLineId=FSB.OrderlineId WHERE boekstatus>0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' AND DATE(boektijd) >= '" + Start_DatumStr + "' AND DATE(boektijd) <= '" + End_DatumStr + "' AND kopernaam LIKE '%" + FdMenu_Zoek_txt.Text + "%' GROUP BY boekstatus ORDER BY boektijd"
                     End If
 
                     If FdMenu_ordernr_chk.Checked = True Then
@@ -38099,7 +38244,7 @@ exit_verwerk:
                             fdnummer = CInt(Val(Mid(floridaynrstr, 3, 8)))
                         End If
                         If fdnummer > 0 Then
-                            query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(FLS.id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders AS FLS LEFT JOIN Floriday_Salesorders_Boek AS FSB ON FLS.OrderLineId=FSB.OrderlineId WHERE boekstatus>0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' AND boek_floridaynr=" + Str(fdnummer) + " GROUP BY boekstatus ORDER BY delivery_latestDeliveryDateTime"
+                            query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(FLS.id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders AS FLS LEFT JOIN Floriday_Salesorders_Boek AS FSB ON FLS.OrderLineId=FSB.OrderlineId WHERE boekstatus>0 AND status = 'COMMITTED' AND tradeInstrument='DIRECT_SALES' AND boek_floridaynr=" + Str(fdnummer) + " GROUP BY boekstatus ORDER BY boektijd"
                         Else
                             MsgBox("Geen valide nummer niet gevonden")
                         End If
@@ -38107,7 +38252,7 @@ exit_verwerk:
                 End If
 
                 If orderlineid > 0 Then
-                    query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(FLS.id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders AS FLS LEFT JOIN Floriday_Salesorders_Boek AS FSB ON FLS.OrderLineId=FSB.OrderlineId WHERE FSB.boek_orderlineid=" + Str(orderlineid) + " ORDER BY delivery_latestDeliveryDateTime"
+                    query = "SELECT *, SUM(numberOfPieces / selectedPackingConfiguration_piecesPerPackage) As totaalbakken, GROUP_CONCAT(FLS.id SEPARATOR ';') AS grouped_ids FROM floriday_salesorders AS FLS LEFT JOIN Floriday_Salesorders_Boek AS FSB ON FLS.OrderLineId=FSB.OrderlineId WHERE FSB.boek_orderlineid=" + Str(orderlineid) + " ORDER BY boektijd"
                 End If
 
                 Cmd.CommandText = query
@@ -38315,7 +38460,6 @@ exit_verwerk:
         Return insert_id
 
     End Function
-
 
     Private Sub FloridayOrders_flx_AfterEdit(sender As Object, e As RowColEventArgs) Handles FloridayOrders_flx.AfterEdit
         Dim row As Integer = e.Row
@@ -38652,7 +38796,7 @@ exit_verwerk:
 
                     fd_afleverdatum = CHDate2(reader("boektijd"), Now)
                     Dim customerOrganizationId As String = CHstr(reader("customerOrganizationId"))
-                    fd_afleverloc = CHstr(reader("delivery_location_gln"))
+                    fd_locatie_ean = CHstr(reader("delivery_location_gln"))
                     Dim loadCarrier As String = CHstr(reader("selectedPackingConfiguration_loadCarrier"))
                     reader.Close()
 
@@ -40008,7 +40152,7 @@ skip_verwerkline:
     Private Sub fd_updatelist_but_Click(sender As Object, e As EventArgs) Handles fd_updatelist_but.Click
         FloridayOrderLines_flx.Rows.Count = 1
         FloridayOrdersShow()
-
+        FdMenu_Verwerk_but.Enabled = True
     End Sub
 
     Private Sub FdMenu_Nietverwerken_but_Click(sender As Object, e As EventArgs) Handles FdMenu_Nietverwerken_but.Click
@@ -40186,7 +40330,7 @@ Public Class DetectActivity
 End Class
 Public Module GlobalVariables
 
-    Friend BoekVersion As String = "Version 5.0.5"
+    Friend BoekVersion As String = "Version 5.0.10"
 
 
     Friend postgress As Boolean = False
