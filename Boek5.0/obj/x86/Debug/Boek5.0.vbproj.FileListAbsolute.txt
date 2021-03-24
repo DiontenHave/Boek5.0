@@ -71,3 +71,4 @@ C:\CodingV4\Boek5.0\Boek5.0\obj\x86\Debug\Boek5.Form14.resources
 C:\CodingV4\Boek5.0\Boek5.0\obj\x86\Debug\Boek5.Form15.resources
 C:\CodingV4\Boek5.0\Boek5.0\obj\x86\Debug\Boek5.Form2.resources
 C:\CodingV4\Boek5.0\Boek5.0\obj\x86\Debug\Boek5.Form16.resources
+C:\CodingV4\Boek5.0\Boek5.0\obj\x86\Debug\Boek5.Form17.resources

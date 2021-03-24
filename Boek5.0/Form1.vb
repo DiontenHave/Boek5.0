@@ -7013,7 +7013,7 @@ nexttreeline:
                     Dim Reader3 As OdbcDataReader
                     Dim Cmd4 As New OdbcCommand(query, Conn)
                     '2 tabellen vergelijken, en daarna synchoriseren
-                    query = "SELECT tradeItemId FROM (SELECT tradeItemId FROM floriday_tradeitem UNION ALL SELECT tradeItemId FROM floriday_tradeitem_boek)utable GROUP BY tradeItemId HAVING COUNT(*) = 1"
+                    query = "SELECT tradeItemId FROM (SELECT tradeItemId FROM floriday_tradeitem WHERE parentId='' AND isDeleted=0 UNION ALL SELECT tradeItemId FROM floriday_tradeitem_boek)utable GROUP BY tradeItemId HAVING COUNT(*) = 1"
                     Cmd2.CommandText = query
                     Reader2 = Cmd2.ExecuteReader()
                     Do While Reader2.Read
@@ -15836,6 +15836,7 @@ next_fav:
             Dim opmerking As String = Order_invoer_FlexGrid.Item(e.Row, opmerkingcol)
             Dim accessoire1 As Integer = Val(Order_invoer_FlexGrid.Item(e.Row, acce1col))
 
+            If koper_ean = "8717263898467" Then koper_ean = "8714231202301"  ' tweede intratuin verbouwen naar eerste
 
             Dim accessoire1naam As String = ""
             If accessoire(GID(accessoire, accessoire1)).fust > 0 Then
@@ -16582,11 +16583,11 @@ next_fav:
 
                     If neworder = True Then   'nieuwe order
                         .CommandText = "INSERT INTO " + orderheader_db + "(afleverdatum,invoerdatumtijd,koper_ean,koper_naam,afleverloc,veilingbrief_id," _
-                                        & "vervoerder_id,contact,opmerking,inlog_naam,prijs_opslag,agenda_mark,decorum,status,kar_id,versie,aanvulling,sticker,pakbon_opmerking,vestiging,koppelnummer,gpflags) " _
-                                        & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                                        & "vervoerder_id,contact,opmerking,inlog_naam,prijs_opslag,agenda_mark,decorum,status,kar_id,versie,aanvulling,sticker,pakbon_opmerking,vestiging,koppelnummer,gpflags,powerBi) " _
+                                        & "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     Else   'veranderde order 
                         .CommandText = "UPDATE " + orderheader_db + " SET afleverdatum=?,koper_ean=?,koper_naam=?, afleverloc=?,veilingbrief_id=?,vervoerder_id=?," _
-                                        & "contact=?,opmerking=?,inlog_naam=?,prijs_opslag=?,agenda_mark=?,decorum=?,status=?,kar_id=?,versie=?,aanvulling=?,sticker=?,pakbon_opmerking=?,vestiging=?,gpflags=? " _
+                                        & "contact=?,opmerking=?,inlog_naam=?,prijs_opslag=?,agenda_mark=?,decorum=?,status=?,kar_id=?,versie=?,aanvulling=?,sticker=?,pakbon_opmerking=?,vestiging=?,gpflags=?,powerBi=? " _
                                         & "WHERE header_id = " + Trim(Str(header_id))
                     End If
                     .Parameters.Clear()
@@ -16699,6 +16700,8 @@ next_fav:
                         gpstring = gpstring + "0"
                     Next
                     .Parameters.AddWithValue("", gpstring)
+
+                    .Parameters.AddWithValue("", 0)  'reset powerBi to 0
 
                     .ExecuteNonQuery()
 
@@ -18092,7 +18095,7 @@ next_fav:
                 Conn.Open()
 
                 'Execute Query
-                Dim Cmd As New OdbcCommand("UPDATE orderheaders SET status=99 WHERE header_id = ?", Conn)
+                Dim Cmd As New OdbcCommand("UPDATE orderheaders SET status=99,powerBI=0 WHERE header_id = ?", Conn)
                 Cmd.Parameters.Clear()
                 Cmd.Parameters.AddWithValue("", header_id)
                 Cmd.ExecuteNonQuery()
@@ -18176,7 +18179,8 @@ next_fav:
         Dim pakbon_opmerking As String = ""
         Dim afleverlocatie1 As String = ""
         Dim afleverlocatie2 As String = ""
-
+        Dim floridayflag1 As Boolean = False
+        Dim floridayflag2 As Boolean = False
         Try
             'Open Connection
             Using Conn As New OdbcConnection(ConnString)
@@ -18194,6 +18198,7 @@ next_fav:
                     sticker1 = CHint(Reader("sticker"))
                     vestiging1 = CHint(Reader("vestiging"))
                     afleverlocatie1 = CHstr(Reader("afleverloc_ean"))
+                    floridayflag1 = CHbool(Reader("floridayflag"))
                 End If
                 Reader.Close()
                 'Execute Query
@@ -18209,6 +18214,7 @@ next_fav:
                     pakbon_opmerking = CHstr(Reader("pakbon_opmerking"))
                     vestiging2 = CHint(Reader("vestiging"))
                     afleverlocatie2 = CHstr(Reader("afleverloc_ean"))
+                    floridayflag2 = CHbool(Reader("floridayflag"))
                 End If
 
 
@@ -18231,9 +18237,11 @@ next_fav:
                     Exit Sub
                 End If
 
-                If Not (afleverlocatie1 = afleverlocatie2) Then
-                    MsgBox("Alleen orders met dezelfde afleverlocatie kunnen worden samengevoegd", vbOKOnly)
-                    Exit Sub
+                If floridayflag1 = True Or floridayflag2 = True Then
+                    If Not (afleverlocatie1 = afleverlocatie2) Then
+                        MsgBox("Alleen orders met dezelfde afleverlocatie kunnen worden samengevoegd", vbOKOnly)
+                        Exit Sub
+                    End If
                 End If
 
                 If header1_id = -1 Or header2_id = -1 Then Exit Sub
@@ -25634,6 +25642,10 @@ search_on:
         If accessoire(GID(accessoire, accessoire1)).fust > 0 Then
             accessoire1naam = accessoire(GID(accessoire, accessoire1)).naam
         End If
+
+
+        If koper_ean = "8717263898467" Then koper_ean = "8714231202301"  ' tweede intratuin verbouwen naar eerste
+
 
         LabelWindow.Init(labelnummer, soort_id, aantal_boek, fust_id, row, koper_ean, koper_naam, opmerking, accessoire1naam, 1)
 
@@ -35868,6 +35880,7 @@ exit_verwerk:
 
                             Dim aantalstuks As Integer = CHint(reader("aantal"))
                             Dim gp As Integer = CHint(reader("gp"))
+                            If gp = 0 Then gp = 1
                             Dim totaantal As Long = gp * aantalstuks * aantalperfust
                             Dim soortfound As Boolean = False
                             If soortid < 10000 Then
@@ -37321,15 +37334,43 @@ exit_verwerk:
                                 For i = 0 To UBound(mixen)
                                     Dim mixfustid = mixen(i).fust
                                     If mixen(i).interne_code = interne_code Then
-                                        If fust(GID(fust, mixfustid)).fustcode_florecom = selectedPackingConfiguration_package_vbnPackageCode Then
-                                            If fust(GID(fust, mixfustid)).aantal_per_fust = selectedPackingConfiguration_piecesPerPackage Then
-                                                soort_id = mixen(i).id + 10000
-                                                fust_id = mixen(i).fust
-                                                soortfound = True
-                                                fustfound = True
-                                                Exit For
+
+                                        If decorum = True Then
+                                            'deco fust zoeken
+                                            If fust(GID(fust, mixfustid)).fustcode_florecom = selectedPackingConfiguration_package_vbnPackageCode And fust(GID(fust, mixfustid)).decorum = True Then
+                                                If fust(GID(fust, mixfustid)).aantal_per_fust = selectedPackingConfiguration_piecesPerPackage Then
+                                                    soort_id = mixen(i).id + 10000
+                                                    fust_id = mixen(i).fust
+                                                    soortfound = True
+                                                    fustfound = True
+                                                    Exit For
+                                                End If
+                                            End If
+                                        Else
+                                            'zoek naar niet deco fust
+                                            If fust(GID(fust, mixfustid)).fustcode_florecom = selectedPackingConfiguration_package_vbnPackageCode And fust(GID(fust, mixfustid)).decorum = False Then
+                                                If fust(GID(fust, mixfustid)).aantal_per_fust = selectedPackingConfiguration_piecesPerPackage Then
+                                                    soort_id = mixen(i).id + 10000
+                                                    fust_id = mixen(i).fust
+                                                    soortfound = True
+                                                    fustfound = True
+                                                    Exit For
+                                                End If
                                             End If
                                         End If
+
+                                        If fustfound = False Then  'alles nog een keer doorzoeken als niet gevonden is
+                                            If fust(GID(fust, mixfustid)).fustcode_florecom = selectedPackingConfiguration_package_vbnPackageCode Then
+                                                If fust(GID(fust, mixfustid)).aantal_per_fust = selectedPackingConfiguration_piecesPerPackage Then
+                                                    soort_id = mixen(i).id + 10000
+                                                    fust_id = mixen(i).fust
+                                                    soortfound = True
+                                                    fustfound = True
+                                                    Exit For
+                                                End If
+                                            End If
+                                        End If
+
                                     End If
                                 Next
                                 If soortfound = False Then
@@ -38594,9 +38635,11 @@ exit_verwerk:
             Dim weekendtest As Integer = Now.DayOfWeek
             If weekendtest = 0 Then 'zondag 
                 boekdatum = DateAdd("d", 1, boekdatum)
+                currentboektime = "9:00"
             End If
             If weekendtest = 6 Then 'zaterdag 
                 boekdatum = DateAdd("d", 2, boekdatum)
+                currentboektime = "9:00"
             End If
             boektijd = Date.Parse(boekdatum + " " + currentboektime)
         End If
@@ -38841,7 +38884,7 @@ exit_verwerk:
                         'afleverlocatie bepalen
                         query = "SELECT city_name FROM locatielijst WHERE GLN_location_code=?"
                         Cmd.Parameters.Clear()
-                        Cmd.Parameters.AddWithValue("", fd_afleverloc)
+                        Cmd.Parameters.AddWithValue("", fd_locatie_ean)
                         Cmd.CommandText = query
                         reader = Cmd.ExecuteReader()
                         If reader.HasRows Then
@@ -38857,7 +38900,7 @@ exit_verwerk:
                             End If
                             If plaats = "RIJNSBURG" Then fd_afleverloc = 8
                             If plaats = "BLEIWIJK" Then fd_afleverloc = 2
-                            If plaats = "RHEINMAAS" Then fd_afleverloc = 4
+                            If plaats = "STRAELEN-HERONGEN" Then fd_afleverloc = 4
                             If plaats = "EELDE" Then fd_afleverloc = 6
                             If plaats = "BOSKOOP" Then fd_afleverloc = 5
                             If jenptenhave = True Then
@@ -39630,6 +39673,10 @@ skip_verwerkline:
                 accessoire1naam = accessoire(GID(accessoire, accessoire1)).naam
             End If
 
+
+            If koper_ean = "8717263898467" Then koper_ean = "8714231202301"  ' tweede intratuin verbouwen naar eerste
+
+
             LabelWindow.Init(labelnummer, soort_id, aantal_boek, fust_id, row, koper_ean, kopernaam, opmerking, accessoire1naam, 2)
             LabelWindow.Show()
 
@@ -40256,6 +40303,14 @@ skip_verwerkline:
 
     End Sub
 
+    Private Sub DBOverzichten_but_Click(sender As Object, e As EventArgs) Handles DBOverzichten_but.Click
+
+        Form17.StartPosition = FormStartPosition.CenterScreen
+        Form17.WindowState = FormWindowState.Maximized
+        Form17.Show()
+
+    End Sub
+
 
 
 
@@ -40330,7 +40385,10 @@ Public Class DetectActivity
 End Class
 Public Module GlobalVariables
 
-    Friend BoekVersion As String = "Version 5.0.10"
+
+
+
+    Friend BoekVersion As String = "Version 5.0.16"
 
 
     Friend postgress As Boolean = False

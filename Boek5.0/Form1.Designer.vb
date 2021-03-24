@@ -663,6 +663,7 @@ Partial Class Form1
         Me.FcMenu_nieuw_but = New System.Windows.Forms.Button()
         Me.C1NavBarPanelDatabase = New C1.Win.C1Command.C1NavBarPanel()
         Me.C1NavPanelDatabase1 = New System.Windows.Forms.Panel()
+        Me.DBOverzichten_but = New System.Windows.Forms.Button()
         Me.DatabaseMenuCopy_but = New System.Windows.Forms.Button()
         Me.DatabaseMenuHerladen_but = New System.Windows.Forms.Button()
         Me.Database_preselect_cmb = New System.Windows.Forms.ComboBox()
@@ -7454,6 +7455,7 @@ Partial Class Form1
         '
         'C1NavPanelDatabase1
         '
+        Me.C1NavPanelDatabase1.Controls.Add(Me.DBOverzichten_but)
         Me.C1NavPanelDatabase1.Controls.Add(Me.DatabaseMenuCopy_but)
         Me.C1NavPanelDatabase1.Controls.Add(Me.DatabaseMenuHerladen_but)
         Me.C1NavPanelDatabase1.Controls.Add(Me.Database_preselect_cmb)
@@ -7468,6 +7470,16 @@ Partial Class Form1
         Me.C1NavPanelDatabase1.Name = "C1NavPanelDatabase1"
         Me.C1NavPanelDatabase1.Size = New System.Drawing.Size(205, 707)
         Me.C1NavPanelDatabase1.TabIndex = 0
+        '
+        'DBOverzichten_but
+        '
+        Me.DBOverzichten_but.Location = New System.Drawing.Point(15, 407)
+        Me.DBOverzichten_but.Name = "DBOverzichten_but"
+        Me.DBOverzichten_but.Size = New System.Drawing.Size(174, 35)
+        Me.DBOverzichten_but.TabIndex = 14
+        Me.DBOverzichten_but.Text = "Overzichten"
+        Me.DBOverzichten_but.UseVisualStyleBackColor = True
+        Me.DBOverzichten_but.Visible = False
         '
         'DatabaseMenuCopy_but
         '
@@ -8879,4 +8891,5 @@ Partial Class Form1
     Friend WithEvents Kar_Kartype3_cmb As ComboBox
     Friend WithEvents Kar_Kartype2_cmb As ComboBox
     Friend WithEvents Kar_Kartype1_cmb As ComboBox
+    Friend WithEvents DBOverzichten_but As Button
 End Class
